@@ -329,6 +329,10 @@ CREATE TABLE IF NOT EXISTS faturaDetalhes (
     PRIMARY KEY (faturaID, descricao)
 );*/
 
+
+/*==============================================================*/
+/* INDEXES                                                      */
+/*==============================================================*/
 --INDEXES FOR PERFORMANCE
 -- CREATE INDEX idx_room_hotelID ON ROOM(HOTEL_ID);
 -- CREATE INDEX idx_reservation_clientID ON RESERVATION(CLIENT_ID);
