@@ -1,0 +1,8 @@
+asgiref==3.8.1
+Django==5.1.1
+dnspython==2.7.0
+psycopg2-binary==2.9.10
+pymongo==4.10.1
+python-decouple==3.8
+sqlparse==0.5.1
+typing_extensions==4.12.2

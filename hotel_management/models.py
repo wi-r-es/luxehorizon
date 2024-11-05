@@ -1,6 +1,5 @@
 from django.db import models
 
-# Define ENUM-like choices in Django for room_view_type and room_quality_type
 class RoomViewType(models.TextChoices):
     POOL = 'P', 'Piscina'
     SEA = 'M', 'Mar'
@@ -29,6 +28,9 @@ class Hotel(models.Model):
     details = models.CharField(max_length=200)
     stars = models.IntegerField()
 
+    class Meta:
+        db_table = 'hotel'
+
     def __str__(self):
         return self.h_name
 
@@ -37,11 +39,17 @@ class RoomType(models.Model):
     room_view = models.CharField(max_length=1, choices=RoomViewType.choices)
     room_quality = models.CharField(max_length=1, choices=RoomQualityType.choices)
 
+    class Meta:
+        db_table = 'room_type'
+
     def __str__(self):
         return f"{self.type_initials} - {self.get_room_view_display()} - {self.get_room_quality_display()}"
 
 class Commodity(models.Model):
     details = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'commodity'
 
     def __str__(self):
         return self.details
@@ -51,10 +59,11 @@ class Room(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     room_number = models.IntegerField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    condition = models.IntegerField()  # e.g., 0 - available, 1 - dirty, 2 - maintenance
+    condition = models.IntegerField()  # 0 - available, 1 - dirty, 2 - maintenance
     capacity = models.CharField(max_length=1, choices=CapacityType.choices)
 
     class Meta:
+        db_table = 'room'
         unique_together = ('hotel', 'room_number')
 
     def __str__(self):
@@ -65,6 +74,7 @@ class RoomCommodity(models.Model):
     commodity = models.ForeignKey(Commodity, on_delete=models.CASCADE)
 
     class Meta:
+        db_table = 'room_commodity'
         unique_together = ('room', 'commodity')
 
     def __str__(self):
