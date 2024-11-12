@@ -1,114 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load static %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dream Vacation</title>
-    {% comment %} <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> {% endcomment %}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% extends "base.html" %}
 
-</head>
-<body>
-    <header>
-        <!-- Navbar and header content -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">My Dream Place</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Discover</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Hotels</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">About</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
-                </ul>
+{% block title %}Home - Dream Vacation{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container text-center">
+        <h1>Welcome to Your Dream Vacation</h1>
+        <p>Plan your ideal getaway with ease and excitement.</p>
+        <form class="form-inline justify-content-center">
+            <input type="text" class="form-control mr-sm-2" placeholder="Enter Destination">
+            <select class="form-control mr-sm-2">
+                <option>Hotels</option>
+                <option>Flights</option>
+                <option>Car rentals</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</section>
+
+<section class="destinations my-5">
+    <div class="container">
+        <h2>Explore Our Top Destinations</h2>
+        <div class="row">
+            <div class="col-md-3">
+                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Australia">
+                <p>Australia</p>
             </div>
-        </nav>
-    </header>
-
-    <section class="hero">
-        <div class="container text-center">
-            <h1>Enjoy Your Dream Vacation</h1>
-            <p>Find deals on hotels, flights, and explore breathtaking destinations.</p>
-            <form class="form-inline justify-content-center">
-                <input type="text" class="form-control mr-sm-2" placeholder="Destination">
-                <select class="form-control mr-sm-2">
-                    <option>Hotels</option>
-                    <option>Flights</option>
-                    <option>Car rentals</option>
-                </select>
-                <button type="submit" class="btn btn-primary">Search</button>
-            </form>
-        </div>
-    </section>
-
-    <section class="destinations my-5">
-        <div class="container">
-            <h2>Enjoy your dream vacation</h2>
-            <div class="row">
-                <div class="col-md-3">
-                    <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Australia">
-                    <p>Australia</p>
-                </div>
-                <div class="col-md-3">
-                    <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Japan">
-                    <p>Japan</p>
-                </div>
-                <div class="col-md-3">
-                    <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="New Zealand">
-                    <p>New Zealand</p>
-                </div>
-                <div class="col-md-3">
-                    <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Greece">
-                    <p>Greece</p>
-                </div>
+            <div class="col-md-3">
+                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Japan">
+                <p>Japan</p>
+            </div>
+            <div class="col-md-3">
+                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="New Zealand">
+                <p>New Zealand</p>
+            </div>
+            <div class="col-md-3">
+                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Greece">
+                <p>Greece</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="inspiration my-5">
-        <div class="container">
-            <h2>Get inspiration for your next trip</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <img src="https://via.placeholder.com/600x300" class="img-fluid" alt="Inspirational Trip 1">
-                    <p>Inspiration: Cityscapes and Culture</p>
-                </div>
-                <div class="col-md-6">
-                    <img src="https://via.placeholder.com/600x300" class="img-fluid" alt="Inspirational Trip 2">
-                    <p>Inspiration: Adventures and Nature</p>
-                </div>
+<section class="inspiration my-5">
+    <div class="container">
+        <h2>Get Inspired for Your Next Trip</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <img src="https://via.placeholder.com/600x300" class="img-fluid" alt="Cityscapes and Culture">
+                <p>Cityscapes and Culture</p>
+            </div>
+            <div class="col-md-6">
+                <img src="https://via.placeholder.com/600x300" class="img-fluid" alt="Adventures and Nature">
+                <p>Adventures and Nature</p>
             </div>
         </div>
-    </section>
-
-    <section class="hotels my-5">
-        <div class="container">
-            <h2>Popular hotels</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <img src="https://via.placeholder.com/400x300" class="img-fluid" alt="Hotel 1">
-                    <p>Seaside Resort</p>
-                </div>
-                <div class="col-md-4">
-                    <img src="https://via.placeholder.com/400x300" class="img-fluid" alt="Hotel 2">
-                    <p>Mountain Lodge</p>
-                </div>
-                <div class="col-md-4">
-                    <img src="https://via.placeholder.com/400x300" class="img-fluid" alt="Hotel 3">
-                    <p>Beachfront Hotel</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="bg-light text-center py-3">
-        <p>&copy; 2024 My Dream Place</p>
-    </footer>
-
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-</body>
-</html>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="{% url 'index' %}">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 40px;">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <a href="{% url 'index' %}" class="nav-link">Home</a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'discover' %}active{% endif %}">
+                <a href="#" class="nav-link">Discover</a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'hotels' %}active{% endif %}">
+                <a href="#" class="nav-link">Hotels</a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                <a href="#" class="nav-link">About</a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
+                <a href="#" class="nav-link">Contact</a>
+            </li>
+        </ul>
+
+        <!-- Right-aligned buttons for Register, Login, and Logout -->
+        <div class="ml-3">
+            {% if request.user.is_authenticated %}
+                <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-outline-primary mr-2">Register</a>
+                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
