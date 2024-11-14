@@ -1,0 +1,32 @@
+/* Custom Styles */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+}
+.login-form {
+    width: 100%;
+    max-width: 400px;
+}
+.navbar-brand {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 600px;
+}
+.btn-home {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}

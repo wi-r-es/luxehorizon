@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Editar Perfil de {{ user.first_name }} {{ user.last_name }}</h1>
+    <hr>
+    
+    <!-- Profile Update Form -->
+    <form method="post" action="{% url 'update_profile' %}">
+        {% csrf_token %}
+        
+        <!-- Basic Information Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Basic Information</h3>
+
+                <!-- First Name Field -->
+                <div class="form-group">
+                    <label for="id_first_name">First Name</label>
+                    <input type="text" class="form-control" id="id_first_name" name="first_name" value="{{ user.first_name }}">
+                </div>
+
+                <!-- Last Name Field -->
+                <div class="form-group">
+                    <label for="id_last_name">Last Name</label>
+                    <input type="text" class="form-control" id="id_last_name" name="last_name" value="{{ user.last_name }}">
+                </div>
+
+                <!-- Email Field (Read-Only if you don't want it changed) -->
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    <input type="email" class="form-control" id="id_email" name="email" value="{{ user.email }}" readonly>
+                </div>
+
+                <!-- NIF Field -->
+                <div class="form-group">
+                    <label for="id_nif">NIF</label>
+                    <input type="text" class="form-control" id="id_nif" name="nif" value="{{ user.nif }}">
+                </div>
+
+                <!-- Phone Field -->
+                <div class="form-group">
+                    <label for="id_phone">Phone</label>
+                    <input type="text" class="form-control" id="id_phone" name="phone" value="{{ user.phone }}">
+                </div>
+
+                <!-- Address Field -->
+                <div class="form-group">
+                    <label for="id_full_address">Full Address</label>
+                    <input type="text" class="form-control" id="id_full_address" name="full_address" value="{{ user.full_address }}">
+                </div>
+
+                <!-- Postal Code Field -->
+                <div class="form-group">
+                    <label for="id_postal_code">Postal Code</label>
+                    <input type="text" class="form-control" id="id_postal_code" name="postal_code" value="{{ user.postal_code }}">
+                </div>
+
+                <!-- City Field -->
+                <div class="form-group">
+                    <label for="id_city">City</label>
+                    <input type="text" class="form-control" id="id_city" name="city" value="{{ user.city }}">
+                </div>
+            </div>
+
+            <!-- Additional Employee Information if user is an Employee -->
+            {% if user_type == "Employee" %}
+            <div class="col-md-6">
+                <h3>Employee Information</h3>
+
+                <!-- Role Field (Display Only) -->
+                <div class="form-group">
+                    <label for="id_role">Role</label>
+                    <input type="text" class="form-control" id="id_role" name="role" value="{{ role }}" readonly>
+                </div>
+
+                <!-- Social Security Field -->
+                <div class="form-group">
+                    <label for="id_social_security">Social Security</label>
+                    <input type="text" class="form-control" id="id_social_security" name="social_security" value="{{ social_security }}">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <!-- Password History Section -->
+        <h3>Password History</h3>
+        <ul>
+            {% for entry in password_history %}
+                <li>Valid From: {{ entry.valid_from }} - Valid To: {{ entry.valid_to }}</li>
+            {% empty %}
+                <p>No password history available.</p>
+            {% endfor %}
+        </ul>
+
+        <hr>
+
+        <!-- Action Buttons Section -->
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

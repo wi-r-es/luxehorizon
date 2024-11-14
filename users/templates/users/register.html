@@ -5,31 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .navbar-brand {
-            font-size: 24px;
-        }
-        .form-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .form-wrapper {
-            width: 100%;
-            max-width: 600px;
-        }
-        .btn-home {
-            width: 100%;
-            margin-top: 10px;
-        }
-    </style>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/styles.css' %}">
 </head>
 <body>
 
-    <!-- Logo in the top left corner -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'index' %}">My Dream Place</a>
+        <a class="navbar-brand" href="{% url 'index' %}">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 40px;">
+           Luxe Horizon
+        </a>
     </nav>
 
     <!-- Centering the form -->

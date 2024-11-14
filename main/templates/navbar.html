@@ -27,16 +27,24 @@
         </ul>
 
         <!-- Right-aligned buttons for Register, Login, and Logout -->
-        <div class="ml-3">
+        <div class="ml-3 d-flex align-items-center">
             {% if request.user.is_authenticated %}
+                <!-- Display the profile picture if available -->
+                <a href="{% url 'profile' %}" class="mr-2">
+                    <img src="https://robohash.org/placeholder.png?size=200x200" alt="Profile Picture" class="rounded-circle" width="40" height="40">
+                </a>
+                
+                <!-- Logout Form -->
                 <form method="POST" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Logout</button>
                 </form>
             {% else %}
+                <!-- Register and Login Buttons for unauthenticated users -->
                 <a href="{% url 'register' %}" class="btn btn-outline-primary mr-2">Register</a>
                 <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
             {% endif %}
         </div>
+        
     </div>
 </nav>
