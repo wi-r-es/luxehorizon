@@ -85,7 +85,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER MANAGEMENT.trg_default_role_for_employee
+CREATE TRIGGER trg_default_role_for_employee
 BEFORE INSERT ON HR.U_EMPLOYEE
 FOR EACH ROW
 EXECUTE FUNCTION MANAGEMENT.trg_default_role_for_employee();
@@ -114,6 +114,9 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     _is_employee BOOLEAN;
+    msg TEXT;
+    content TEXT;
+    hint TEXT;
 BEGIN
     -- Validate if the user is an employee
     SELECT EXISTS (
@@ -172,6 +175,9 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     _user_exists BOOLEAN;
+    msg TEXT;
+    content TEXT;
+    hint TEXT;
 BEGIN
     -- Check if the user exists
     SELECT EXISTS (
