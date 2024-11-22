@@ -1,4 +1,11 @@
-
+/*
+███████ ██████          ██████  ███████  ██████  ██ ███████ ████████ ███████ ██████          ██    ██ ███████ ███████ ██████  
+██      ██   ██         ██   ██ ██      ██       ██ ██         ██    ██      ██   ██         ██    ██ ██      ██      ██   ██ 
+███████ ██████          ██████  █████   ██   ███ ██ ███████    ██    █████   ██████          ██    ██ ███████ █████   ██████  
+     ██ ██              ██   ██ ██      ██    ██ ██      ██    ██    ██      ██   ██         ██    ██      ██ ██      ██   ██ 
+███████ ██      ███████ ██   ██ ███████  ██████  ██ ███████    ██    ███████ ██   ██ ███████  ██████  ███████ ███████ ██   ██ 
+                                                                                                                              
+*/
 -- SP TO REGISTER A NEW USER (CLIENT OR EMPLOYEE)
 CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_register_user(
     _first_name VARCHAR(100),
@@ -22,7 +29,7 @@ BEGIN
     -- Validate input for email uniqueness | can also be done via django instead 
     IF EXISTS (
         SELECT 1 
-        FROM USERS 
+        FROM HR.USERS 
         WHERE EMAIL = _email
     ) THEN
         RAISE EXCEPTION 'Email % is already registered', _email;
@@ -51,7 +58,21 @@ END;
 $$;
 
 
-
+/*
+████████ ██████   ██████          ██████  ███████ ███████  █████  ██    ██ ██      ████████         
+   ██    ██   ██ ██               ██   ██ ██      ██      ██   ██ ██    ██ ██         ██            
+   ██    ██████  ██   ███         ██   ██ █████   █████   ███████ ██    ██ ██         ██            
+   ██    ██   ██ ██    ██         ██   ██ ██      ██      ██   ██ ██    ██ ██         ██            
+   ██    ██   ██  ██████  ███████ ██████  ███████ ██      ██   ██  ██████  ███████    ██    ███████ 
+                                                                                                    
+██████   ██████  ██      ███████         ███████  ██████  ██████          ███████ ███    ███ ██████  ██       ██████  ██    ██ ███████ ███████ 
+██   ██ ██    ██ ██      ██              ██      ██    ██ ██   ██         ██      ████  ████ ██   ██ ██      ██    ██  ██  ██  ██      ██      
+██████  ██    ██ ██      █████           █████   ██    ██ ██████          █████   ██ ████ ██ ██████  ██      ██    ██   ████   █████   █████   
+██   ██ ██    ██ ██      ██              ██      ██    ██ ██   ██         ██      ██  ██  ██ ██      ██      ██    ██    ██    ██      ██      
+██   ██  ██████  ███████ ███████ ███████ ██       ██████  ██   ██ ███████ ███████ ██      ██ ██      ███████  ██████     ██    ███████ ███████ 
+                                                                                                                                                                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                   
+*/
 -- Assign default role for employee
 CREATE OR REPLACE FUNCTION MANAGEMENT.trg_default_role_for_employee()
 RETURNS TRIGGER AS $$
@@ -65,11 +86,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER MANAGEMENT.trg_default_role_for_employee
-BEFORE INSERT ON U_EMPLOYEE
+BEFORE INSERT ON HR.U_EMPLOYEE
 FOR EACH ROW
-EXECUTE FUNCTION trg_default_role_for_employee();
+EXECUTE FUNCTION MANAGEMENT.trg_default_role_for_employee();
 
-
+/*
+███████ ██████          ██    ██ ██████  ██████   █████  ████████ ███████         
+██      ██   ██         ██    ██ ██   ██ ██   ██ ██   ██    ██    ██              
+███████ ██████          ██    ██ ██████  ██   ██ ███████    ██    █████           
+     ██ ██              ██    ██ ██      ██   ██ ██   ██    ██    ██              
+███████ ██      ███████  ██████  ██      ██████  ██   ██    ██    ███████ ███████ 
+                                                                                  
+███████ ███    ███ ██████  ██       ██████  ██    ██ ███████ ███████         ██████   ██████  ██      ███████ 
+██      ████  ████ ██   ██ ██      ██    ██  ██  ██  ██      ██              ██   ██ ██    ██ ██      ██      
+█████   ██ ████ ██ ██████  ██      ██    ██   ████   █████   █████           ██████  ██    ██ ██      █████   
+██      ██  ██  ██ ██      ██      ██    ██    ██    ██      ██              ██   ██ ██    ██ ██      ██      
+███████ ██      ██ ██      ███████  ██████     ██    ███████ ███████ ███████ ██   ██  ██████  ███████ ███████ 
+                                                                                                              
+                                                                                                                                                                                                
+*/
 -- SP TO ASSING A new ROLE TO A EMPLOYEE, VIA ITS ID
 CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_update_employee_role(
     _user_id INT,
@@ -83,7 +118,7 @@ BEGIN
     -- Validate if the user is an employee
     SELECT EXISTS (
         SELECT 1
-        FROM U_EMPLOYEE
+        FROM HR.U_EMPLOYEE
         WHERE ID = _user_id
     ) INTO _is_employee;
 
@@ -95,7 +130,7 @@ BEGIN
         RAISE EXCEPTION 'Invalid role ID %. Only 1 (Admin), 2 (Manager) or 3 (Employee) are allowed', _new_role_id;
     END IF;
     BEGIN
-        UPDATE U_EMPLOYEE
+        UPDATE HR.U_EMPLOYEE
         SET ROLE_ID = _new_role_id
         WHERE ID = _user_id;
 
@@ -113,9 +148,22 @@ $$;
 
 
 
+/*
+███████ ██████          ██    ██ ██████  ██████   █████  ████████ ███████         
+██      ██   ██         ██    ██ ██   ██ ██   ██ ██   ██    ██    ██              
+███████ ██████          ██    ██ ██████  ██   ██ ███████    ██    █████           
+     ██ ██              ██    ██ ██      ██   ██ ██   ██    ██    ██              
+███████ ██      ███████  ██████  ██      ██████  ██   ██    ██    ███████ ███████ 
 
 
-
+██    ██ ███████ ███████ ██████          ███████ ████████  █████  ████████ ██    ██ ███████ 
+██    ██ ██      ██      ██   ██         ██         ██    ██   ██    ██    ██    ██ ██      
+██    ██ ███████ █████   ██████          ███████    ██    ███████    ██    ██    ██ ███████ 
+██    ██      ██ ██      ██   ██              ██    ██    ██   ██    ██    ██    ██      ██ 
+ ██████  ███████ ███████ ██   ██ ███████ ███████    ██    ██   ██    ██     ██████  ███████ 
+                                                                                            
+                                                                                                                                                                                                                                                                                                                                                     
+*/
 CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_update_user_status(
     _user_id INT,
     _inactive BOOLEAN
@@ -128,7 +176,7 @@ BEGIN
     -- Check if the user exists
     SELECT EXISTS (
         SELECT 1 
-        FROM USERS
+        FROM HR.USERS
         WHERE ID = _user_id
     ) INTO _user_exists;
 
@@ -137,7 +185,7 @@ BEGIN
     END IF;
 
     BEGIN 
-        UPDATE USERS
+        UPDATE HR.SERS
         SET INACTIVE = _inactive
         WHERE ID = _user_id;
 
