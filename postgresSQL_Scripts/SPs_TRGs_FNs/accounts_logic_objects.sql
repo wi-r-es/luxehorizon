@@ -179,7 +179,6 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    -- Check if the user exists
     SELECT EXISTS (
         SELECT 1 
         FROM HR.USERS

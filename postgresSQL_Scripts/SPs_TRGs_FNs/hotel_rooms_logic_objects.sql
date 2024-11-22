@@ -68,7 +68,6 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    -- Check if the hotel exists
     SELECT EXISTS (
         SELECT 1 
         FROM MANAGEMENT.HOTEL 
@@ -79,7 +78,6 @@ BEGIN
         RAISE EXCEPTION 'Hotel ID % does not exist', _hotel_id;
     END IF;
 
-    -- Check if the room type exists
     SELECT EXISTS (
         SELECT 1 
         FROM ROOM_MANAGEMENT.ROOM_TYPES 
@@ -136,7 +134,6 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    -- Check if the room exists
     SELECT EXISTS (
         SELECT 1 
         FROM ROOM_MANAGEMENT.ROOM 
@@ -192,7 +189,6 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    -- Check if the room exists
     SELECT EXISTS (
         SELECT 1 
         FROM ROOM_MANAGEMENT.ROOM 
@@ -203,7 +199,6 @@ BEGIN
         RAISE EXCEPTION 'Room ID % does not exist', _room_id;
     END IF;
 
-    -- Check if the commodity exists
     SELECT EXISTS (
         SELECT 1 
         FROM ROOM_MANAGEMENT.COMMODITY 

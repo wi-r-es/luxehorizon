@@ -243,7 +243,6 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    -- Check if the reservation exists
     IF NOT EXISTS (
         SELECT 1 
         FROM RESERVES.RESERVATION 
@@ -258,7 +257,7 @@ BEGIN
 
         -- Update reservation status to "Cancelled"
         UPDATE RESERVES.RESERVATION
-        SET R_DETAIL = 'CC' -- R for Rejected/Cancelled
+        SET R_DETAIL = 'CC' 
         WHERE ID = _reservation_id;
 
         RAISE NOTICE 'Reservation ID % cancelled successfully.', _reservation_id;
@@ -296,13 +295,10 @@ DECLARE
     _tax_rate FLOAT;
     _total_price NUMERIC(10, 2);
 BEGIN
-    -- Get base price of the room
     SELECT BASE_PRICE INTO _base_price FROM ROOM_MANAGEMENT.ROOM WHERE ID = _room_id;
 
-    -- Get season tax rate
     SELECT TAX INTO _tax_rate FROM FINANCE.PRICE_PER_SEASON WHERE SEASON_ID = _season_id;
 
-    -- Calculate total price
     _total_price := _base_price + (_base_price * _tax_rate );
 
     RETURN _total_price;
