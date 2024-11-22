@@ -193,7 +193,7 @@ VALUES (1, 'Admin', 1),
 ON CONFLICT (ID) DO NOTHING;
 
 /*==============================================================*/
-/* Table: USERS                                                  */
+/* Table: USERS                                                 */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS HR.USERS(
     ID                      SERIAL,
@@ -260,7 +260,7 @@ CREATE TABLE IF NOT EXISTS SEC.USER_LOGIN_AUDIT (
 /*==============================================================*/
 /* Table: RESERVATION                                           */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS MANAGEMENT.RESERVATION (
+CREATE TABLE IF NOT EXISTS RESERVES.RESERVATION (
     ID                  SERIAL ,
     CLIENT_ID           INT                 NOT NULL,
     BEGIN_DATE          DATE                NOT NULL,
@@ -276,7 +276,7 @@ CREATE TABLE IF NOT EXISTS MANAGEMENT.RESERVATION (
 /*==============================================================*/
 /* Table: ROOM_RESERVATION                                      */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS MANAGEMENT.ROOM_RESERVATION (
+CREATE TABLE IF NOT EXISTS RESERVES.ROOM_RESERVATION (
     RESERVATION_ID          INT                 NOT NULL,
     ROOM_ID                 INT                 NOT NULL,
     PRICE_RESERVATION       NUMERIC(10, 2)      NOT NULL,
@@ -288,7 +288,7 @@ CREATE TABLE IF NOT EXISTS MANAGEMENT.ROOM_RESERVATION (
 /*==============================================================*/
 /* Table: GUESTS                                                */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS MANAGEMENT.GUESTS (
+CREATE TABLE IF NOT EXISTS RESERVES.GUESTS (
     ID                      SERIAL ,
     RESERVATION_ID          INT                     NOT NULL,
     FULL_NAME               VARCHAR(100)            NOT NULL,
