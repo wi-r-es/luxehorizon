@@ -125,8 +125,8 @@ END $$;
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS ROOM (
     ID                  SERIAL ,
-    TYPE_ID             INT                 NOT NULL,
-    HOTEL_ID            INT                 NOT NULL,
+    TYPE_ID             SERIAL                 NOT NULL,
+    HOTEL_ID            SERIAL                 NOT NULL,
     ROOM_NUMBER         INT                 NOT NULL, 
     BASE_PRICE          NUMERIC(10, 2)      NOT NULL, -- changed from float for more appropriate data type
     CONDITION           INT                 NOT NULL, -- 0 - livre, 1 - Sujo, 2 - manutenção
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS SEASON (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS PRICE_PER_SEASON (
     ID                  SERIAL ,
-    SEASON_ID           INT         NOT NULL,
+    SEASON_ID           SERIAL         NOT NULL,
     TAX                 FLOAT       NOT NULL,
 
     CONSTRAINT      PK_PRICE_PER_SEASON       PRIMARY KEY (ID),
@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS PRICE_PER_SEASON (
 /* Table: ROOM_COMMODITY                                        */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS ROOM_COMMODITY (
-    ROOM_ID             INT         NOT NULL,
-    COMMODITY_ID        INT         NOT NULL,
+    ROOM_ID             SERIAL         NOT NULL,
+    COMMODITY_ID        SERIAL         NOT NULL,
     
     CONSTRAINT      PK_ROOM_COMMODITY        PRIMARY KEY (ROOM_ID, COMMODITY_ID),
     CONSTRAINT      FK_RC_ROOM               FOREIGN KEY (ROOM_ID)               REFERENCES SEASON(ID),
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS USERS(
     FIRST_NAME              VARCHAR(100)            NOT NULL,
     LAST_NAME               VARCHAR(100)            NOT NULL,
     EMAIL                   VARCHAR(100)            NOT NULL,
-    HASHED_PASSWORD         NVARCHAR(255)           NOT NULL,
+    HASHED_PASSWORD         VARCHAR(255)           NOT NULL,
     INACTIVE                BOOLEAN                 NOT NULL, 
     NIF                     VARCHAR(20)             NOT NULL,
     PHONE                   VARCHAR(20)             NOT NULL,
@@ -226,10 +226,10 @@ CREATE TABLE IF NOT EXISTS USERS(
 -- FOR VALUES IN ('F');
 
 
-CREATE TABLE U_CLIENT (
+CREATE TABLE IF NOT EXISTS U_CLIENT (
     CHECK (UTP = 'C')
 ) INHERITS (USERS);
-CREATE TABLE U_EMPLOYEE (
+CREATE TABLE IF NOT EXISTS U_EMPLOYEE (
     ROLE_ID             INT         NOT NULL        REFERENCES ACC_PERMISSIONS(ID),
     SOCIAL_SECURITY     INT         NOT NULL,
     CHECK (UTP = 'F')
@@ -237,8 +237,8 @@ CREATE TABLE U_EMPLOYEE (
 
 
 CREATE TABLE IF NOT EXISTS SEC.USER_PASSWORDS_DICTIONARY (
-	USER_ID                 INT				        NOT NULL,
-	HASHED_PASSWD			NVARCHAR(255)	        NOT NULL,
+	USER_ID                 SERIAL				        NOT NULL,
+	HASHED_PASSWD			VARCHAR(255)	        NOT NULL,
 	ValidFrom               TIMESTAMP               NOT NULL     DEFAULT CURRENT_TIMESTAMP,
     ValidTo                 TIMESTAMP               NOT NULL, -- Set to six months from ValidFrom for each new record for employees ONLY,
 
@@ -252,11 +252,11 @@ CREATE TABLE IF NOT EXISTS SEC.USER_PASSWORDS_DICTIONARY (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS RESERVATION (
     ID                  SERIAL ,
-    CLIENT_ID           INT                 NOT NULL,
+    CLIENT_ID           SERIAL                 NOT NULL,
     BEGIN_DATE          DATE                NOT NULL,
     END_DATE            DATE                NOT NULL,
     R_DETAIL            CHAR(1)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, 
-    SEASON_ID           INT                 NOT NULL, 
+    SEASON_ID           SERIAL                 NOT NULL, 
     TOTAL_VALUE         NUMERIC(10, 2)      NOT NULL,
 
     CONSTRAINT      PK_RESERVATION          PRIMARY KEY (ID),
@@ -267,8 +267,8 @@ CREATE TABLE IF NOT EXISTS RESERVATION (
 /* Table: ROOM_RESERVATION                                      */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS ROOM_RESERVATION (
-    RESERVATION_ID          INT                 NOT NULL,
-    ROOM_ID                 INT                 NOT NULL,
+    RESERVATION_ID          SERIAL                 NOT NULL,
+    ROOM_ID                 SERIAL                 NOT NULL,
     PRICE_RESERVATION       NUMERIC(10, 2)      NOT NULL,
 
     CONSTRAINT      PK_ROOM_RESERVATION         PRIMARY KEY (RESERVATION_ID, ROOM_ID),
@@ -280,7 +280,7 @@ CREATE TABLE IF NOT EXISTS ROOM_RESERVATION (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS GUESTS (
     ID                      SERIAL ,
-    RESERVATION_ID          INT                     NOT NULL,
+    RESERVATION_ID          SERIAL                     NOT NULL,
     FULL_NAME               VARCHAR(100)            NOT NULL,
     CC_PASS                 VARCHAR(20)             NOT NULL, --CC OR PASSPORT
     PHONE                   VARCHAR(20)             NOT NULL,
@@ -306,13 +306,13 @@ CREATE TABLE IF NOT EXISTS PAYMENT_METHOD (
 /*==============================================================*/
 CREATE table if not exists INVOICE (
     ID                          SERIAL,
-    RESERVATION_ID              INT                     NOT NULL,
-    CLIENT_ID                   INT                     NOT NULL,
+    RESERVATION_ID              SERIAL                     NOT NULL,
+    CLIENT_ID                   SERIAL                     NOT NULL,
     FINAL_VALUE                 NUMERIC(10, 2)          NOT NULL,
     EMISSION_DATE               DATE                    NOT NULL,
     BILLING_DATE                DATE                    NOT NULL,
     INVOICE_STATUS              BOOLEAN                 NOT NULL, 
-    PAYMENT_METHOD_ID           INT                     NOT NULL,
+    PAYMENT_METHOD_ID           SERIAL                     NOT NULL,
 
     CONSTRAINT      PK_INVOICE          PRIMARY KEY (ID),
     CONSTRAINT      FK_INV_RESERV       FOREIGN KEY (RESERVATION_ID)        REFERENCES RESERVATION(ID),
