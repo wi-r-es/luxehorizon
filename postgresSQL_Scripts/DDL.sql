@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS FINANCE.SEASON (
 /*==============================================================*/
 /* Table: PRICE_PER_SEASON                                      */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS ROOM_MANAGEMENT.PRICE_PER_SEASON (
+CREATE TABLE IF NOT EXISTS FINANCE.PRICE_PER_SEASON (
     ID                  SERIAL ,
     SEASON_ID           INT         NOT NULL,
     TAX                 FLOAT       NOT NULL,
@@ -265,7 +265,7 @@ CREATE TABLE IF NOT EXISTS RESERVES.RESERVATION (
     CLIENT_ID           INT                 NOT NULL,
     BEGIN_DATE          DATE                NOT NULL,
     END_DATE            DATE                NOT NULL,
-    R_DETAIL            CHAR(1)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, 
+    R_DETAIL            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado
     SEASON_ID           INT                 NOT NULL, 
     TOTAL_VALUE         NUMERIC(10, 2)      NOT NULL,
 
@@ -356,6 +356,8 @@ CREATE TABLE IF NOT EXISTS faturaDetalhes (
 -- CREATE INDEX idx_room_hotelID ON ROOM(HOTEL_ID);
 -- CREATE INDEX idx_reservation_clientID ON RESERVATION(CLIENT_ID);
 -- CREATE INDEX idx_invoice_clientID ON INVOICE(CLIENT_ID);
+
+-- maybe index  ON RESERVES.ROOM_RESERVATION for ROOM_ID, BEGIN_DATE, and END_DATE to make RESERVES.trg_check_room_availability have less overhead for performance optimization
 
 DO $$
 BEGIN
