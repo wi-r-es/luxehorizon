@@ -322,19 +322,33 @@ CREATE table if not exists FINANCE.INVOICE (
     EMISSION_DATE               DATE                    NOT NULL,
     BILLING_DATE                DATE                    NOT NULL,
     INVOICE_STATUS              BOOLEAN                 NOT NULL, 
-    PAYMENT_METHOD_ID           INT                     NOT NULL,
+    PAYMENT_ID                  INT                     NOT NULL,
 
     CONSTRAINT      PK_INVOICE          PRIMARY KEY (ID),
     CONSTRAINT      FK_INV_RESERV       FOREIGN KEY (RESERVATION_ID)        REFERENCES MANAGEMENT.RESERVATION(ID),
     CONSTRAINT      FK_INV_CLIENT       FOREIGN KEY (CLIENT_ID)             REFERENCES HR.USERS(ID),
-    CONSTRAINT      FK_INV_PAY          FOREIGN KEY (PAYMENT_METHOD_ID)     REFERENCES FINANCE.PAYMENT_METHOD(ID)
+    CONSTRAINT      FK_INV_PAY          FOREIGN KEY (PAYMENT_ID)     REFERENCES FINANCE.PAYMENTS(ID)
 );
+
+CREATE TABLE IF NOT EXISTS FINANCE.PAYMENTS (
+    ID                          SERIAL,
+    INVOICE_ID                  INT                     NOT NULL,
+    PAYMENT_AMOUNT              NUMERIC(10, 2)          NOT NULL,
+    PAYMENT_DATE                DATE                    NOT NULL,
+    PAYMENT_METHOD_ID           INT                     NOT NULL,
+
+    CONSTRAINT      PK_PAY               PRIMARY KEY (ID),
+    CONSTRAINT      FK_PAY_INV           FOREIGN KEY (INVOICE_ID)            REFERENCES FINANCE.INVOICE(ID),
+    CONSTRAINT      FK_PAY_TYPE          FOREIGN KEY (PAYMENT_METHOD_ID)     REFERENCES FINANCE.PAYMENT_METHOD(ID)
+);
+
 
 CREATE table if not exists SEC.ERROR_LOG (
     ID                          SERIAL,
     ERROR_MESSAGE	            VARCHAR(4000),
 	ERROR_HINT                  VARCHAR(400),
 	ERROR_CONTEXT               VARCHAR(400),
+    ERROR_TIMESTAMP             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
 	CONSTRAINT      PK_ERRORS           PRIMARY KEY (ID)
 );
