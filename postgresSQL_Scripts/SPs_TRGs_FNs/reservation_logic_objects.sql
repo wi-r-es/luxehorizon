@@ -273,35 +273,7 @@ BEGIN
 END;
 $$;
 
-/*
- ██████  █████  ██       ██████ ██    ██ ██       █████  ████████ ███████         ██████  ██████  ██  ██████ ███████ 
-██      ██   ██ ██      ██      ██    ██ ██      ██   ██    ██    ██              ██   ██ ██   ██ ██ ██      ██      
-██      ███████ ██      ██      ██    ██ ██      ███████    ██    █████           ██████  ██████  ██ ██      █████   
-██      ██   ██ ██      ██      ██    ██ ██      ██   ██    ██    ██              ██      ██   ██ ██ ██      ██      
- ██████ ██   ██ ███████  ██████  ██████  ███████ ██   ██    ██    ███████ ███████ ██      ██   ██ ██  ██████ ███████                                                                                                                                                                                                                                                                                        
-*/
 
-/*
- * Returns the price of a given room to a given season, TO BE USED WITH THE FRONTEND MAINLY
- */
-CREATE OR REPLACE FUNCTION RESERVES.fn_calculate_price(
-    _room_id INT,
-    _season_id INT
-) RETURNS NUMERIC(10, 2) AS $$
-DECLARE
-    _base_price NUMERIC(10, 2);
-    _tax_rate FLOAT;
-    _total_price NUMERIC(10, 2);
-BEGIN
-    SELECT BASE_PRICE INTO _base_price FROM ROOM_MANAGEMENT.ROOM WHERE ID = _room_id;
-
-    SELECT TAX INTO _tax_rate FROM FINANCE.PRICE_PER_SEASON WHERE SEASON_ID = _season_id;
-
-    _total_price := _base_price + (_base_price * _tax_rate );
-
-    RETURN _total_price;
-END;
-$$ LANGUAGE plpgsql;
 
 /*
 ████████ ██████   ██████           ██████ ██   ██ ███████  ██████ ██   ██         ██████   ██████   ██████  ███    ███         

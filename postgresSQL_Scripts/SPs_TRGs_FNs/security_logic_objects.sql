@@ -1,3 +1,10 @@
+/*
+██       ██████   ██████  ███████ ██████  ██████   ██████  ██████  
+██      ██    ██ ██       ██      ██   ██ ██   ██ ██    ██ ██   ██ 
+██      ██    ██ ██   ███ █████   ██████  ██████  ██    ██ ██████  
+██      ██    ██ ██    ██ ██      ██   ██ ██   ██ ██    ██ ██   ██ 
+███████  ██████   ██████  ███████ ██   ██ ██   ██  ██████  ██   ██                                                                    
+*/
 CREATE OR REPLACE PROCEDURE SEC.LogError(
     _ErrorMessage VARCHAR(4000),
     _ErrorHint VARCHAR(400),
@@ -17,7 +24,20 @@ BEGIN
 END;
 $$;
 
+/*
+████████ ██████   ██████          ██ ███    ██ ███████ ███████ ██████  ████████         ██    ██ ███████ ███████ ██████          
+   ██    ██   ██ ██               ██ ████   ██ ██      ██      ██   ██    ██            ██    ██ ██      ██      ██   ██         
+   ██    ██████  ██   ███         ██ ██ ██  ██ ███████ █████   ██████     ██            ██    ██ ███████ █████   ██████          
+   ██    ██   ██ ██    ██         ██ ██  ██ ██      ██ ██      ██   ██    ██            ██    ██      ██ ██      ██   ██         
+   ██    ██   ██  ██████  ███████ ██ ██   ████ ███████ ███████ ██   ██    ██    ███████  ██████  ███████ ███████ ██   ██ ███████
 
+██████   █████  ███████ ███████ ██     ██  ██████  ██████  ██████          ██████  ██  ██████ ████████ ██  ██████  ███    ██  █████  ██████  ██    ██ 
+██   ██ ██   ██ ██      ██      ██     ██ ██    ██ ██   ██ ██   ██         ██   ██ ██ ██         ██    ██ ██    ██ ████   ██ ██   ██ ██   ██  ██  ██  
+██████  ███████ ███████ ███████ ██  █  ██ ██    ██ ██████  ██   ██         ██   ██ ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ ██████    ████   
+██      ██   ██      ██      ██ ██ ███ ██ ██    ██ ██   ██ ██   ██         ██   ██ ██ ██         ██    ██ ██    ██ ██  ██ ██ ██   ██ ██   ██    ██    
+██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  ███████ ██████  ██  ██████    ██    ██  ██████  ██   ████ ██   ██ ██   ██    ██    
+                                                                                                                                                         
+*/
 CREATE OR REPLACE FUNCTION SEC.trg_insert_user_password_dictionary()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -45,7 +65,14 @@ ON HR.USERS
 FOR EACH ROW
 EXECUTE FUNCTION SEC.trg_insert_user_password_dictionary();
 
-
+/*
+████████ ██████   ██████          ████████ ██████   █████   ██████ ██   ██         ██    ██ ███████ ███████ ██████          ██       ██████   ██████  ██ ███    ██ 
+   ██    ██   ██ ██                  ██    ██   ██ ██   ██ ██      ██  ██          ██    ██ ██      ██      ██   ██         ██      ██    ██ ██       ██ ████   ██ 
+   ██    ██████  ██   ███            ██    ██████  ███████ ██      █████           ██    ██ ███████ █████   ██████          ██      ██    ██ ██   ███ ██ ██ ██  ██ 
+   ██    ██   ██ ██    ██            ██    ██   ██ ██   ██ ██      ██  ██          ██    ██      ██ ██      ██   ██         ██      ██    ██ ██    ██ ██ ██  ██ ██ 
+   ██    ██   ██  ██████  ███████    ██    ██   ██ ██   ██  ██████ ██   ██ ███████  ██████  ███████ ███████ ██   ██ ███████ ███████  ██████   ██████  ██ ██   ████ 
+                                                                                                                                                                   
+*/
 -- Log user login
 CREATE OR REPLACE FUNCTION SEC.trg_track_user_login()
 RETURNS TRIGGER AS $$
@@ -64,7 +91,14 @@ FOR EACH ROW
 WHEN (NEW.UTP = 'F') -- Optional: for employees only
 EXECUTE FUNCTION SEC.trg_track_user_login();
 
-
+/*
+███████ ██████           ██████ ██   ██  █████  ███    ██  ██████  ███████         ██████   █████  ███████ ███████ ██     ██  ██████  ██████  ██████  
+██      ██   ██         ██      ██   ██ ██   ██ ████   ██ ██       ██              ██   ██ ██   ██ ██      ██      ██     ██ ██    ██ ██   ██ ██   ██ 
+███████ ██████          ██      ███████ ███████ ██ ██  ██ ██   ███ █████           ██████  ███████ ███████ ███████ ██  █  ██ ██    ██ ██████  ██   ██ 
+     ██ ██              ██      ██   ██ ██   ██ ██  ██ ██ ██    ██ ██              ██      ██   ██      ██      ██ ██ ███ ██ ██    ██ ██   ██ ██   ██ 
+███████ ██      ███████  ██████ ██   ██ ██   ██ ██   ████  ██████  ███████ ███████ ██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  
+                                                                                                                                                      
+*/
 -- IMPLEMENTATION OF HISTORY VERSIONING TABLE FROM MSSQL BUT FOR POSTEGRESQL 
 CREATE OR REPLACE PROCEDURE SEC.sp_change_password(
     _user_id INT,
@@ -74,6 +108,9 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     _is_password_reused BOOLEAN;
+    msg text;
+    hint text;
+    content text;
 BEGIN
     -- Check if the new password has already been used by the user
     SELECT EXISTS (
@@ -118,5 +155,63 @@ BEGIN
     END;    
 END;
 $$;
+
+/*
+████████ ██████   ██████          ██       ██████   ██████           ██████ ██   ██  █████  ███    ██  ██████  ███████ ███████ 
+   ██    ██   ██ ██               ██      ██    ██ ██               ██      ██   ██ ██   ██ ████   ██ ██       ██      ██      
+   ██    ██████  ██   ███         ██      ██    ██ ██   ███         ██      ███████ ███████ ██ ██  ██ ██   ███ █████   ███████ 
+   ██    ██   ██ ██    ██         ██      ██    ██ ██    ██         ██      ██   ██ ██   ██ ██  ██ ██ ██    ██ ██           ██ 
+   ██    ██   ██  ██████  ███████ ███████  ██████   ██████  ███████  ██████ ██   ██ ██   ██ ██   ████  ██████  ███████ ███████ 
+                                                                                                                               
+*/
+CREATE OR REPLACE FUNCTION SEC.trg_log_changes()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO SEC.CHANGE_LOG (TABLE_NAME, OPERATION_TYPE, ROW_ID, CHANGED_BY)
+    VALUES (
+        TG_TABLE_NAME,
+        TG_OP,
+        CASE WHEN TG_OP = 'DELETE' THEN OLD.ID ELSE NEW.ID END,
+        SESSION_USER
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+--Reservation Table Trigger
+CREATE TRIGGER trg_log_reservation_changes
+AFTER INSERT OR UPDATE OR DELETE ON RESERVES.RESERVATION
+FOR EACH ROW
+EXECUTE FUNCTION SEC.trg_log_changes();
+--Invoice Table Trigger
+CREATE TRIGGER trg_log_invoice_changes
+AFTER INSERT OR UPDATE OR DELETE ON FINANCE.INVOICE
+FOR EACH ROW
+EXECUTE FUNCTION SEC.trg_log_changes();
+
+/*
+███████ ██████          ██       ██████   ██████           █████  ██    ██ ██████  ██ ████████ 
+██      ██   ██         ██      ██    ██ ██               ██   ██ ██    ██ ██   ██ ██    ██    
+███████ ██████          ██      ██    ██ ██   ███         ███████ ██    ██ ██   ██ ██    ██    
+     ██ ██              ██      ██    ██ ██    ██         ██   ██ ██    ██ ██   ██ ██    ██    
+███████ ██      ███████ ███████  ██████   ██████  ███████ ██   ██  ██████  ██████  ██    ██    
+                                                                                               
+*/
+CREATE OR REPLACE PROCEDURE SEC.sp_log_audit(
+    _username TEXT,
+    _action_type TEXT,
+    _table_name TEXT DEFAULT NULL,
+    _row_id INT DEFAULT NULL
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO SEC.AUDIT_LOG (USERNAME, ACTION_TYPE, TABLE_NAME, ROW_ID)
+    VALUES (_username, _action_type, _table_name, _row_id);
+
+    RAISE NOTICE 'Action logged: User %, Action %', _username, _action_type;
+END;
+$$;
+
 
 
