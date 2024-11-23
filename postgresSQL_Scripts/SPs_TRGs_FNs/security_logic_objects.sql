@@ -59,7 +59,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER SEC.trg_after_user_insert_update
+CREATE TRIGGER trg_after_user_insert_update
 AFTER INSERT OR UPDATE OF HASHED_PASSWORD
 ON HR.USERS
 FOR EACH ROW
@@ -85,8 +85,8 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER SEC.trg_track_user_login
-AFTER INSERT OR UPDATE ON USERS
+CREATE TRIGGER trg_track_user_login
+AFTER INSERT OR UPDATE ON HR.USERS
 FOR EACH ROW
 WHEN (NEW.UTP = 'F') -- Optional: for employees only
 EXECUTE FUNCTION SEC.trg_track_user_login();
@@ -236,7 +236,7 @@ BEGIN
         u.LAST_NAME,
         u.EMAIL,
         CASE
-            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM HR.ACC_PERMISSIONS ap WHERE ap.ID = e.ROLE_ID)
+            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM hr.ACC_PERMISSIONS ap WHERE ap.ID = e.ROLE_ID)
             ELSE 'Client'
         END AS role_description,
         u.UTP AS user_type

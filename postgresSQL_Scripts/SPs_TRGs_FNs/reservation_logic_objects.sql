@@ -64,6 +64,7 @@ DECLARE
     _room_id INT;
     _room_available BOOLEAN;
     _season_id INT;
+    _season_tax INT;
     msg TEXT;
     content TEXT;
     hint TEXT;

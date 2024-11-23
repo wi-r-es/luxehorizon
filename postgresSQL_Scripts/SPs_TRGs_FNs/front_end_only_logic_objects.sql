@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION RESERVES.fn_get_available_rooms(
     ROOM_NUMBER INT,
     HOTEL_ID INT,
     BASE_PRICE NUMERIC(10, 2),
-    CAPACITY capacity_type
+    CAPACITY ROOM_MANAGEMENT.capacity_type
 ) AS $$
 BEGIN
     RETURN QUERY
