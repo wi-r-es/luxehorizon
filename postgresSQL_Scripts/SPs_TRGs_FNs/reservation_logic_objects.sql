@@ -274,19 +274,17 @@ END;
 $$;
 
 /*
-███████ ██████           ██████  █████  ██       ██████ ██    ██ ██       █████  ████████ ███████         ██████  ██████  ██  ██████ ███████ 
-██      ██   ██         ██      ██   ██ ██      ██      ██    ██ ██      ██   ██    ██    ██              ██   ██ ██   ██ ██ ██      ██      
-███████ ██████          ██      ███████ ██      ██      ██    ██ ██      ███████    ██    █████           ██████  ██████  ██ ██      █████   
-     ██ ██              ██      ██   ██ ██      ██      ██    ██ ██      ██   ██    ██    ██              ██      ██   ██ ██ ██      ██      
-███████ ██      ███████  ██████ ██   ██ ███████  ██████  ██████  ███████ ██   ██    ██    ███████ ███████ ██      ██   ██ ██  ██████ ███████ 
-                                                                                                                                             
-                                                                                                                                             
+ ██████  █████  ██       ██████ ██    ██ ██       █████  ████████ ███████         ██████  ██████  ██  ██████ ███████ 
+██      ██   ██ ██      ██      ██    ██ ██      ██   ██    ██    ██              ██   ██ ██   ██ ██ ██      ██      
+██      ███████ ██      ██      ██    ██ ██      ███████    ██    █████           ██████  ██████  ██ ██      █████   
+██      ██   ██ ██      ██      ██    ██ ██      ██   ██    ██    ██              ██      ██   ██ ██ ██      ██      
+ ██████ ██   ██ ███████  ██████  ██████  ███████ ██   ██    ██    ███████ ███████ ██      ██   ██ ██  ██████ ███████                                                                                                                                                                                                                                                                                        
 */
 
 /*
  * Returns the price of a given room to a given season, TO BE USED WITH THE FRONTEND MAINLY
  */
-CREATE OR REPLACE FUNCTION RESERVES.sp_calculate_price(
+CREATE OR REPLACE FUNCTION RESERVES.fn_calculate_price(
     _room_id INT,
     _season_id INT
 ) RETURNS NUMERIC(10, 2) AS $$
@@ -356,17 +354,17 @@ EXECUTE FUNCTION RESERVES.trg_check_room_availability();
    ██    ██   ██ ██    ██         ██    ██ ██      ██   ██ ██   ██    ██    ██              ██   ██ ██    ██ ██    ██ ██  ██  ██         
    ██    ██   ██  ██████  ███████  ██████  ██      ██████  ██   ██    ██    ███████ ███████ ██   ██  ██████   ██████  ██      ██ ███████ 
                                                                                                                                          
-███████ ████████  █████  ████████ ██    ██ ███████          ██████  ███    ██         ██████  ███████ ███████ ███████ ██████  ██    ██  █████  ████████ ██  ██████  ███    ██ 
-██         ██    ██   ██    ██    ██    ██ ██              ██    ██ ████   ██         ██   ██ ██      ██      ██      ██   ██ ██    ██ ██   ██    ██    ██ ██    ██ ████   ██ 
-███████    ██    ███████    ██    ██    ██ ███████         ██    ██ ██ ██  ██         ██████  █████   ███████ █████   ██████  ██    ██ ███████    ██    ██ ██    ██ ██ ██  ██ 
-     ██    ██    ██   ██    ██    ██    ██      ██         ██    ██ ██  ██ ██         ██   ██ ██           ██ ██      ██   ██  ██  ██  ██   ██    ██    ██ ██    ██ ██  ██ ██ 
-███████    ██    ██   ██    ██     ██████  ███████ ███████  ██████  ██   ████ ███████ ██   ██ ███████ ███████ ███████ ██   ██   ████   ██   ██    ██    ██  ██████  ██   ████ 
+███████ ████████  █████  ████████ ██    ██ ███████          
+██         ██    ██   ██    ██    ██    ██ ██               
+███████    ██    ███████    ██    ██    ██ ███████         
+     ██    ██    ██   ██    ██    ██    ██      ██          
+███████    ██    ██   ██    ██     ██████  ███████ ███████ 
                                                                                                                                                                                                                                                                                                                        
 */
 /*
  * Makes rooms related to a rejected or cancelled reservation available again
 */
-CREATE OR REPLACE FUNCTION RESERVES.trg_update_room_status_on_reservation()
+CREATE OR REPLACE FUNCTION RESERVES.trg_update_room_status_upon_cancelation()
 RETURNS TRIGGER AS $$
 BEGIN
     -- If the reservation is being rejected ('R') or cancelled ('CC'), mark the rooms as available
@@ -383,10 +381,10 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER trg_update_room_status_on_reservation
+CREATE TRIGGER trg_update_room_status_upon_cancelation
 AFTER UPDATE OF R_DETAIL ON RESERVES.RESERVATION
 FOR EACH ROW
-EXECUTE FUNCTION RESERVES.trg_update_room_status_on_reservation();
+EXECUTE FUNCTION RESERVES.trg_update_room_status_upon_cancelation();
 
 
 
