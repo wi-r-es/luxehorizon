@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS RESERVES.ROOM_RESERVATION (
     PRICE_RESERVATION       NUMERIC(10, 2)      NOT NULL,
 
     CONSTRAINT      PK_ROOM_RESERVATION         PRIMARY KEY (RESERVATION_ID, ROOM_ID),
-    CONSTRAINT      FK_RESERV                   FOREIGN KEY (RESERVATION_ID)                REFERENCES MANAGEMENT.RESERVATION(ID),
+    CONSTRAINT      FK_RESERV                   FOREIGN KEY (RESERVATION_ID)                REFERENCES RESERVES.RESERVATION(ID),
     CONSTRAINT      FK_ROOM_RESERV              FOREIGN KEY (ROOM_ID)                       REFERENCES ROOM_MANAGEMENT.ROOM(ID)
 );
 /*==============================================================*/
@@ -284,10 +284,10 @@ CREATE TABLE IF NOT EXISTS RESERVES.GUESTS (
     CITY                    VARCHAR(100)            NOT NULL,
 
     CONSTRAINT      PK_GUESTS               PRIMARY KEY (ID),
-    CONSTRAINT      FK_GUEST_RESERV         FOREIGN KEY (RESERVATION_ID)        REFERENCES MANAGEMENT.RESERVATION(ID)
+    CONSTRAINT      FK_GUEST_RESERV         FOREIGN KEY (RESERVATION_ID)        REFERENCES RESERVES.RESERVATION(ID)
 );
 /*==============================================================*/
-/* Table: COMMODITY                                             */
+/* Table: PAYMENT_METHOD                                        */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS FINANCE.PAYMENT_METHOD (
     ID                  SERIAL ,
@@ -295,24 +295,6 @@ CREATE TABLE IF NOT EXISTS FINANCE.PAYMENT_METHOD (
 
     CONSTRAINT      PK_PAYMENT_METHOD       PRIMARY KEY (ID),
     CONSTRAINT      UC_DESCRIP      UNIQUE (DESCRIPTIVE)
-);
-/*==============================================================*/
-/* Table: COMMODITY                                             */
-/*==============================================================*/
-CREATE table if not exists FINANCE.INVOICE (
-    ID                          SERIAL,
-    RESERVATION_ID              INT                     NOT NULL,
-    CLIENT_ID                   INT                     NOT NULL,
-    FINAL_VALUE                 NUMERIC(10, 2)          NOT NULL,
-    EMISSION_DATE               DATE                    NOT NULL,
-    BILLING_DATE                DATE                    NOT NULL,
-    INVOICE_STATUS              BOOLEAN                 NOT NULL, 
-    PAYMENT_ID                  INT                     NOT NULL,
-
-    CONSTRAINT      PK_INVOICE          PRIMARY KEY (ID),
-    CONSTRAINT      FK_INV_RESERV       FOREIGN KEY (RESERVATION_ID)        REFERENCES MANAGEMENT.RESERVATION(ID),
-    CONSTRAINT      FK_INV_CLIENT       FOREIGN KEY (CLIENT_ID)             REFERENCES HR.USERS(ID),
-    CONSTRAINT      FK_INV_PAY          FOREIGN KEY (PAYMENT_ID)     REFERENCES FINANCE.PAYMENTS(ID)
 );
 
 /*==============================================================*/
@@ -326,9 +308,34 @@ CREATE TABLE IF NOT EXISTS FINANCE.PAYMENTS (
     PAYMENT_METHOD_ID           INT                     NOT NULL,
 
     CONSTRAINT      PK_PAY               PRIMARY KEY (ID),
-    CONSTRAINT      FK_PAY_INV           FOREIGN KEY (INVOICE_ID)            REFERENCES FINANCE.INVOICE(ID),
+    --CONSTRAINT      FK_PAY_INV           FOREIGN KEY (INVOICE_ID)            REFERENCES FINANCE.INVOICE(ID),
     CONSTRAINT      FK_PAY_TYPE          FOREIGN KEY (PAYMENT_METHOD_ID)     REFERENCES FINANCE.PAYMENT_METHOD(ID)
 );
+/*==============================================================*/
+/* Table: INVOICE                                               */
+/*==============================================================*/
+CREATE table if not exists FINANCE.INVOICE (
+    ID                          SERIAL,
+    RESERVATION_ID              INT                     NOT NULL,
+    CLIENT_ID                   INT                     NOT NULL,
+    FINAL_VALUE                 NUMERIC(10, 2)          NOT NULL,
+    EMISSION_DATE               DATE                    NOT NULL,
+    BILLING_DATE                DATE                    NOT NULL,
+    INVOICE_STATUS              BOOLEAN                 NOT NULL, 
+    PAYMENT_ID                  INT                     NOT NULL,
+
+    CONSTRAINT      PK_INVOICE          PRIMARY KEY (ID),
+    CONSTRAINT      FK_INV_RESERV       FOREIGN KEY (RESERVATION_ID)        REFERENCES RESERVES.RESERVATION(ID),
+    --CONSTRAINT      FK_INV_CLIENT       FOREIGN KEY (CLIENT_ID)             REFERENCES HR.USERS(ID),
+    CONSTRAINT      FK_INV_PAY          FOREIGN KEY (PAYMENT_ID)     REFERENCES FINANCE.PAYMENTS(ID)
+);
+ALTER TABLE FINANCE.PAYMENTS DROP CONSTRAINT IF EXISTS FK_PAY_INV;
+ALTER TABLE FINANCE.INVOICE DROP CONSTRAINT IF EXISTS FK_INV_PAY;
+ALTER TABLE FINANCE.PAYMENTS
+ADD CONSTRAINT FK_PAY_INV FOREIGN KEY (INVOICE_ID) REFERENCES FINANCE.INVOICE(ID);
+ALTER TABLE FINANCE.INVOICE
+ADD CONSTRAINT FK_INV_PAY FOREIGN KEY (PAYMENT_ID) REFERENCES FINANCE.PAYMENTS(ID);
+
 
 
 
@@ -365,7 +372,7 @@ CREATE TABLE IF NOT EXISTS SEC.USER_LOGIN_AUDIT (
     USER_ID                 INT                     NOT NULL,
     LOGIN_TIMESTAMP         TIMESTAMP               NOT NULL,
 
-    CONSTRAINT  FK_USER_LOGIN       FOREIGN KEY(USER_ID) REFERENCES(ID)
+    CONSTRAINT  FK_USER_LOGIN       FOREIGN KEY(USER_ID) REFERENCES HR.USERS (ID)
 );
 /*==============================================================*/
 /* Table: ERROR_LOG                                             */
@@ -435,7 +442,7 @@ BEGIN
         WHERE schemaname = 'public' 
           AND indexname = 'idx_reservation_clientid'
     ) THEN
-        CREATE INDEX idx_reservation_clientid ON MANAGEMENT.RESERVATION(CLIENT_ID);
+        CREATE INDEX idx_reservation_clientid ON RESERVES.RESERVATION(CLIENT_ID);
     END IF;
 END $$;
 
