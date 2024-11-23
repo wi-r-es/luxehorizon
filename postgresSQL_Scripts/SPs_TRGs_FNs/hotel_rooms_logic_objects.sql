@@ -224,6 +224,46 @@ BEGIN
 END;
 $$;
 
+/*
+███████ ██████           ██████ ██████  ███████  █████  ████████ ███████          ██████  ██████  ███    ███ ███    ███  ██████  ██████  ██ ████████ ██    ██ 
+██      ██   ██         ██      ██   ██ ██      ██   ██    ██    ██              ██      ██    ██ ████  ████ ████  ████ ██    ██ ██   ██ ██    ██     ██  ██  
+███████ ██████          ██      ██████  █████   ███████    ██    █████           ██      ██    ██ ██ ████ ██ ██ ████ ██ ██    ██ ██   ██ ██    ██      ████   
+     ██ ██              ██      ██   ██ ██      ██   ██    ██    ██              ██      ██    ██ ██  ██  ██ ██  ██  ██ ██    ██ ██   ██ ██    ██       ██    
+███████ ██      ███████  ██████ ██   ██ ███████ ██   ██    ██    ███████ ███████  ██████  ██████  ██      ██ ██      ██  ██████  ██████  ██    ██       ██    
+*/
+CREATE OR REPLACE PROCEDURE ROOM_MANAGEMENT.sp_create_commodity(
+    _commodity_detail VARCHAR(100)
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    msg TEXT;
+    content TEXT;
+    hint TEXT;
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM ROOM_MANAGEMENT.COMMODITY
+        WHERE DETAILS = _commodity_detail
+    ) THEN
+        RAISE EXCEPTION 'Commodity % already exists.', _commodity_detail;
+    END IF;
+    BEGIN
+        INSERT INTO ROOM_MANAGEMENT.COMMODITY (DETAILS)
+        VALUES (_commodity_detail);
+
+        RAISE NOTICE 'Commodity % created successfully.', _commodity_detail;
+    EXCEPTION WHEN OTHERS THEN
+        msg = MESSAGE_TEXT,
+        content = PG_EXCEPTION_DETAIL,
+        hint = PG_EXCEPTION_HINT;
+            CALL SEC.LogError(msg, hint, content );
+            RAISE;
+    END;  
+END;
+$$;
+
+
 
 
 
