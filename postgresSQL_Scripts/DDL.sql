@@ -315,6 +315,9 @@ CREATE table if not exists FINANCE.INVOICE (
     CONSTRAINT      FK_INV_PAY          FOREIGN KEY (PAYMENT_ID)     REFERENCES FINANCE.PAYMENTS(ID)
 );
 
+/*==============================================================*/
+/* Table: PAYMENTS                                              */
+/*==============================================================*/
 CREATE TABLE IF NOT EXISTS FINANCE.PAYMENTS (
     ID                          SERIAL,
     INVOICE_ID                  INT                     NOT NULL,
@@ -342,6 +345,9 @@ CREATE TABLE IF NOT EXISTS faturaDetalhes (
 
 --TABLES FOR AUDITORING AND STATISTICS/PERFORMANCE/ MARKETING OPERATIONS ETC
 
+/*==============================================================*/
+/* Table: USER_PASSWORDS_DICTIONARY                             */
+/*==============================================================*/
 CREATE TABLE IF NOT EXISTS SEC.USER_PASSWORDS_DICTIONARY ( -- for employees ONLY
 	USER_ID                 INT				        NOT NULL,
 	HASHED_PASSWD			VARCHAR(255)	        NOT NULL,
@@ -351,13 +357,19 @@ CREATE TABLE IF NOT EXISTS SEC.USER_PASSWORDS_DICTIONARY ( -- for employees ONLY
 	--CONSTRAINT      PK_ACCOUNTS_ID      PRIMARY KEY(USER_ID),
 	CONSTRAINT      FK_USER_PASSWD      FOREIGN KEY(USER_ID)        REFERENCES HR.USERS(ID)
 );
+
+/*==============================================================*/
+/* Table: USER_LOGIN_AUDIT                                      */
+/*==============================================================*/
 CREATE TABLE IF NOT EXISTS SEC.USER_LOGIN_AUDIT (
     USER_ID                 INT                     NOT NULL,
     LOGIN_TIMESTAMP         TIMESTAMP               NOT NULL,
 
     CONSTRAINT  FK_USER_LOGIN       FOREIGN KEY(USER_ID) REFERENCES(ID)
 );
-
+/*==============================================================*/
+/* Table: ERROR_LOG                                             */
+/*==============================================================*/
 CREATE table if not exists SEC.ERROR_LOG (
     ID                          SERIAL,
     ERROR_MESSAGE	            VARCHAR(4000),
@@ -367,7 +379,9 @@ CREATE table if not exists SEC.ERROR_LOG (
 
 	CONSTRAINT      PK_ERRORS           PRIMARY KEY (ID)
 );
-
+/*==============================================================*/
+/* Table: CHANGE_LOG                                            */
+/*==============================================================*/
 CREATE TABLE IF NOT EXISTS SEC.CHANGE_LOG (
     ID SERIAL PRIMARY KEY,
     TABLE_NAME TEXT NOT NULL,
@@ -377,7 +391,9 @@ CREATE TABLE IF NOT EXISTS SEC.CHANGE_LOG (
     CHANGE_TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+/*==============================================================*/
+/* Table: AUDIT_LOG                                             */
+/*==============================================================*/
 CREATE TABLE IF NOT EXISTS SEC.AUDIT_LOG (
     ID SERIAL PRIMARY KEY,
     USERNAME TEXT NOT NULL,
