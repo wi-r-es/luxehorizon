@@ -215,3 +215,48 @@ $$;
 
 
 
+
+--IDFK WHETHER THIS WILL BE USED LIKE THIS OR NOT, TBD
+CREATE OR REPLACE FUNCTION SEC.fn_user_login(
+    _email VARCHAR(100),
+    _hashed_password TEXT
+) RETURNS TABLE (
+    user_id INT,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(100),
+    role_description VARCHAR(100),
+    user_type CHAR(1) 
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        u.ID AS user_id,
+        u.FIRST_NAME,
+        u.LAST_NAME,
+        u.EMAIL,
+        CASE
+            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM HR.ACC_PERMISSIONS ap WHERE ap.ID = e.ROLE_ID)
+            ELSE 'Client'
+        END AS role_description,
+        u.UTP AS user_type
+    FROM HR.USERS u
+    LEFT JOIN HR.U_EMPLOYEE e ON u.ID = e.ID
+    WHERE u.EMAIL = _email
+      AND u.HASHED_PASSWORD = _hashed_password
+      AND u.INACTIVE = FALSE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Invalid credentials or user is inactive.';
+    END IF;
+
+    -- Log the successful login in the audit log
+    CALL SEC.sp_log_audit(
+        _username := _email,
+        _action_type := 'LOGIN',
+        _table_name := 'HR.USERS',
+        _row_id := (SELECT ID FROM HR.USERS WHERE EMAIL = _email)
+    );
+END;
+$$ LANGUAGE plpgsql;
+
