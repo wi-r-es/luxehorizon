@@ -26,16 +26,24 @@ class CustomLoginView(LoginView):
     form_class = CustomLoginForm
     template_name = 'users/login.html'   
     redirect_authenticated_user = True
-    next_page = reverse_lazy('index')
+    next_page = reverse_lazy('index')  # Default redirection for other users
 
     def form_valid(self, form):
         user = form.cleaned_data.get('user')
+        password = form.cleaned_data.get('password')
         
-        # Check if the password is correct
-        if user and check_password(form.cleaned_data['password'], user.hashed_password):
+        # Validate password and user existence
+        if user and check_password(password, user.hashed_password):
             login(self.request, user)
+
+            # Redirect based on roles: Admin & Employee
+            if user.utp != User.CLIENT: 
+                return redirect('admin_dashboard') 
+            
+            # Redirect to default next page
             return redirect(self.get_success_url())
         else:
+            # Handle invalid credentials
             messages.error(self.request, "Invalid credentials")
             return redirect('login')
 

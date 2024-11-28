@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'hotel_management',
     'reservation',
     'users',
+    'dashboard',
 ]
 
 STATIC_URL = '/static/'

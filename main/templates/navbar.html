@@ -37,12 +37,12 @@
                 <!-- Logout Form -->
                 <form method="POST" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Logout</button>
+                    <button type="submit" class="btn btn-danger">Terminar Sess&atilde;</button>
                 </form>
             {% else %}
                 <!-- Register and Login Buttons for unauthenticated users -->
-                <a href="{% url 'register' %}" class="btn btn-outline-primary mr-2">Register</a>
-                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-outline-primary mr-2">Registo</a>
+                <a href="{% url 'login' %}" class="btn btn-primary">Iniciar Sess&atilde;o</a>
             {% endif %}
         </div>
         
