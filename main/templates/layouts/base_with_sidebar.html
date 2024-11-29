@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Lateral Navigation -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-dark text-light sidebar">
+      <div class="position-sticky">
+        <h4 class="sidebar-heading text-center py-3">Painel de Administra&ccedil;&atilde;o</h4>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-light" aria-current="page" href="{% url 'admin_dashboard' %}">
+              <i class="bi bi-pie-chart-fill"></i> Dashboard
+            </a>
+          </li>
+          <!-- Accordion Section 1 -->
+          <li class="nav-item">
+            <a class="nav-link text-light d-flex justify-content-between" data-bs-toggle="collapse" href="#menu1" role="button" aria-expanded="false" aria-controls="menu1">
+              <span><i class="bi bi-building-fill"></i> H&oacute;teis</span> <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="collapse ms-3" id="menu1">
+              <ul class="list-unstyled">
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 1.1</a></li>
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 1.2</a></li>
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 1.3</a></li>
+              </ul>
+            </div>
+          </li>
+          <!-- Accordion Section 2 -->
+          <li class="nav-item">
+            <a class="nav-link text-light d-flex justify-content-between" data-bs-toggle="collapse" href="#menu2" role="button" aria-expanded="false" aria-controls="menu2">
+              <span><i class="bi bi-folder"></i> Section 2</span> <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="collapse ms-3" id="menu2">
+              <ul class="list-unstyled">
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 2.1</a></li>
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 2.2</a></li>
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 2.3</a></li>
+              </ul>
+            </div>
+          </li>
+          <!-- Accordion Section 3 -->
+          <li class="nav-item">
+            <a class="nav-link text-light d-flex justify-content-between" data-bs-toggle="collapse" href="#menu3" role="button" aria-expanded="false" aria-controls="menu3">
+              <span><i class="bi bi-folder"></i> Section 3</span> <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="collapse ms-3" id="menu3">
+              <ul class="list-unstyled">
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.1</a></li>
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.2</a></li>
+                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.3</a></li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        {% block main_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
