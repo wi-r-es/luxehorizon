@@ -1,0 +1,51 @@
+{% extends "layouts/base_with_sidebar.html" %}
+
+{% block title %}{{ heading }}{% endblock %}
+
+{% block main_content %}
+<div class="container my-4">
+    <h1 class="mb-4">{{ heading }}</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.h_name.label_tag }}
+            {{ form.h_name }}
+            {% if form.h_name.errors %}
+                <div class="text-danger">{{ form.h_name.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.full_address.label_tag }}
+            {{ form.full_address }}
+        </div>
+        <div class="mb-3">
+            {{ form.postal_code.label_tag }}
+            {{ form.postal_code }}
+        </div>
+        <div class="mb-3">
+            {{ form.city.label_tag }}
+            {{ form.city }}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+        </div>
+        <div class="mb-3">
+            {{ form.telephone.label_tag }}
+            {{ form.telephone }}
+        </div>
+        <div class="mb-3">
+            {{ form.details.label_tag }}
+            {{ form.details }}
+        </div>
+        <div class="mb-3">
+            {{ form.stars.label_tag }}
+            {{ form.stars }}
+        </div>
+        <div class="d-flex justify-content-start">
+            <button type="submit" class="btn btn-primary me-2">Guardar</button>
+            <a href="{% url 'hotel_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
