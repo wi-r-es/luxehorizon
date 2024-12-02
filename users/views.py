@@ -7,6 +7,11 @@ from .forms import RegisterForm, CustomLoginForm
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import User, Client, Employee, AccPermission, UserPasswordsDictionary
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import User
+from django.db.models import Q, Count, Sum, OuterRef, Subquery
+from .forms import UserForm
+
 
 def register(request):
     if request.method == 'POST':
@@ -97,3 +102,58 @@ def update_profile(request):
         return redirect('profile')
 
     return render(request, 'users/profile.html', {'user': request.user})
+
+
+def users_list(request):
+    query = request.GET.get('q', '')
+    sort = request.GET.get('sort', 'first_name')  
+    order = request.GET.get('order', 'asc')  
+
+    # Campo de ordenação e ordem
+    sort_field = sort if order == 'asc' else f'-{sort}'
+
+    # Filtrar usuários
+    users = User.objects.filter(
+        Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query)
+    ).order_by(sort_field) if query else User.objects.all().order_by(sort_field)
+
+    return render(request, 'users/users_list.html', {
+        'users': users,
+        'query': query,
+        'sort': sort,
+        'order': order,
+    })
+
+# Adicionar ou editar usuário
+def user_form(request, hotel_id=None):
+    if hotel_id:
+        user = get_object_or_404(User, id=hotel_id)
+        heading = "Editar Usuário"
+    else:
+        user = User()
+        heading = "Adicionar Usuário"
+
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Usuário salvo com sucesso!")
+            return redirect('users_list')
+    else:
+        form = UserForm(instance=user)
+
+    return render(request, 'users/user_form.html', {
+        'form': form,
+        'heading': heading,
+    })
+
+# Apagar usuário
+def delete_user(request, hotel_id):
+    user = get_object_or_404(User, id=hotel_id)
+
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, "Usuário apagado com sucesso!")
+        return redirect('users_list')
+    else:
+        return render(request, 'users/confirm_delete.html', {'user': user})

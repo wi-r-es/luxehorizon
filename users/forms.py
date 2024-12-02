@@ -43,3 +43,28 @@ class CustomLoginForm(AuthenticationForm):
         cleaned_data['user'] = user
         return cleaned_data
 
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'first_name', 'last_name', 'email', 'phone',
+            'full_address', 'postal_code', 'city',
+        ]
+        labels = {
+            'first_name': 'Primeiro Nome',
+            'last_name': 'Último Nome',
+            'email': 'E-mail',
+            'phone': 'Telefone',
+            'full_address': 'Morada',
+            'postal_code': 'Código Postal',
+            'city': 'Cidade',
+        }
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primeiro Nome'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Último Nome'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'E-mail'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Telefone'}),
+            'full_address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Morada'}),
+            'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código Postal'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Cidade'}),
+        }

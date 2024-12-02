@@ -1,0 +1,76 @@
+{% extends "layouts/base_with_sidebar.html" %}
+
+{% block title %}Users List{% endblock %}
+
+{% block main_content %}
+<div class="container my-4">
+    <h1>Users List</h1>
+    
+    <!-- Barra de pesquisa -->
+    <form method="get" class="d-flex mb-3">
+        <input type="text" name="q" class="form-control me-2" placeholder="Buscar usuário" value="{{ query }}">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    <!-- Tabela de usuários -->
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                   <!-- Filtro no Nome -->
+                    <th>
+                        <a href="?q={{ request.GET.q }}&sort=first_name&order={% if sort == 'first_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                            Nome
+                            {% if sort == 'first_name' %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    
+                    <!-- Filtro no Sobrenome -->
+                    <th>
+                        <a href="?q={{ request.GET.q }}&sort=last_name&order={% if sort == 'last_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                            Sobrenome
+                            {% if sort == 'last_name' %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    
+                    <!-- Filtro no Email -->
+                    <th>
+                        <a href="?q={{ request.GET.q }}&sort=email&order={% if sort == 'email' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                            Email
+                            {% if sort == 'email' %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a href="{% url 'delete_user' user.id %}" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> Apagar
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Nenhum usuário encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
