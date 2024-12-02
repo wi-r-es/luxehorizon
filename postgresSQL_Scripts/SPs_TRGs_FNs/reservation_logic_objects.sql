@@ -361,3 +361,77 @@ EXECUTE FUNCTION RESERVES.trg_update_room_status_upon_cancelation();
 
 
 
+
+
+CREATE OR REPLACE FUNCTION RESERVES.sp_check_in(RESERVATION_ID INT)
+RETURNS VOID AS $$
+BEGIN
+    -- Ensure the reservation exists and is confirmed
+    IF NOT EXISTS (
+        SELECT 1 FROM RESERVES.RESERVATION
+        WHERE ID = RESERVATION_ID AND R_DETAIL = 'C'
+    ) THEN
+        RAISE EXCEPTION 'Reservation % is not confirmed or does not exist.', RESERVATION_ID;
+    END IF;
+
+    -- Ensure the current date is within the reservation period
+    IF NOT EXISTS (
+        SELECT 1 FROM RESERVES.RESERVATION
+        WHERE ID = RESERVATION_ID
+          AND CURRENT_DATE BETWEEN BEGIN_DATE AND END_DATE
+    ) THEN
+        RAISE EXCEPTION 'Current date is not within the reservation period for reservation %.', RESERVATION_ID;
+    END IF;
+
+    -- Set the check-in timestamp
+    UPDATE RESERVES.RESERVATION
+    SET CHECK_IN = CURRENT_TIMESTAMP
+    WHERE ID = RESERVATION_ID;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION RESERVES.sp_check_out(RESERVATION_ID INT)
+RETURNS VOID AS $$
+BEGIN
+    -- Ensure the reservation exists and check-in has occurred
+    IF NOT EXISTS (
+        SELECT 1 FROM RESERVES.RESERVATION
+        WHERE ID = RESERVATION_ID AND CHECK_IN IS NOT NULL
+    ) THEN
+        RAISE EXCEPTION 'Reservation % has not been checked in or does not exist.', RESERVATION_ID;
+    END IF;
+
+    -- Set the check-out timestamp
+    UPDATE RESERVES.RESERVATION
+    SET CHECK_OUT = CURRENT_TIMESTAMP
+    WHERE ID = RESERVATION_ID;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION RESERVES.update_room_condition()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Update the room condition to "2" (e.g., cleaning or "3" - maintenance required)
+    UPDATE ROOM
+    SET CONDITION = 2
+    WHERE ID IN (
+        SELECT ROOM_ID
+        FROM ROOM_RESERVATION
+        WHERE RESERVATION_ID = OLD.ID
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_update_room_condition
+AFTER UPDATE OF CHECK_OUT ON RESERVES.RESERVATION
+FOR EACH ROW
+WHEN (OLD.CHECK_OUT IS NULL AND NEW.CHECK_OUT IS NOT NULL) -- Only fire on the first check-out update
+EXECUTE FUNCTION RESERVES.update_room_condition();
+
+
+
+
+

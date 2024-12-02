@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS ROOM_MANAGEMENT.ROOM (
     HOTEL_ID            INT                 NOT NULL,
     ROOM_NUMBER         INT                 NOT NULL, 
     BASE_PRICE          NUMERIC(10, 2)      NOT NULL, -- changed from float for more appropriate data type
-    CONDITION           INT                 NOT NULL, -- 0 - livre, 1 - Sujo, 2 - manutenção
+    CONDITION           INT                 NOT NULL, -- 0 - livre, 1 - Sujo, 2 - Limpeza, 3 - manutenção
     CAPACITY            ROOM_MANAGEMENT.capacity_type,
 
     CONSTRAINT      PK_ROOM                     PRIMARY KEY (ID),
@@ -200,7 +200,7 @@ CREATE TABLE IF NOT EXISTS HR.USERS(
     FIRST_NAME              VARCHAR(100)            NOT NULL,
     LAST_NAME               VARCHAR(100)            NOT NULL,
     EMAIL                   VARCHAR(100)            NOT NULL,
-    HASHED_PASSWORD         VARCHAR(255)           NOT NULL,
+    HASHED_PASSWORD         VARCHAR(255)            NOT NULL,
     INACTIVE                BOOLEAN                 NOT NULL, 
     NIF                     VARCHAR(20)             NOT NULL,
     PHONE                   VARCHAR(20)             NOT NULL,
@@ -253,6 +253,8 @@ CREATE TABLE IF NOT EXISTS RESERVES.RESERVATION (
     R_DETAIL            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado
     SEASON_ID           INT                 NOT NULL, 
     TOTAL_VALUE         NUMERIC(10, 2)      NOT NULL,
+    CHECK_IN            TIMESTAMP           NULL,
+    CHECK_OUT           TIMESTAMP           NULL,
 
     CONSTRAINT      PK_RESERVATION          PRIMARY KEY (ID),
     CONSTRAINT      FK_RESERV_CLIENT        FOREIGN KEY(CLIENT_ID)          REFERENCES HR.USERS(ID),
