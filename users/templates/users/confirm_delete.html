@@ -1,0 +1,19 @@
+{% extends "layouts/base_with_sidebar.html" %}
+
+{% block title %}Confirmar Exclusão{% endblock %}
+
+{% block main_content %}
+<div class="container my-4">
+    <h3>Tem certeza que deseja Apagar o Utilizador? "{{ user.first_name }}"?</h3>
+    <p>Esta ac&ccedil;&atilde;o &eacute; irrevers&iacute;vel.</p>
+    
+    <div class="d-flex justify-content-start">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger me-2">Sim</button> <!-- Added margin-end -->
+        </form>
+        <a href="{% url 'users_list' %}" class="btn btn-secondary">N&atilde;o</a>
+    </div>
+    
+</div>
+{% endblock %}

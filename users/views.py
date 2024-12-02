@@ -124,32 +124,36 @@ def users_list(request):
         'order': order,
     })
 
-# Adicionar ou editar usuário
-def user_form(request, hotel_id=None):
-    if hotel_id:
-        user = get_object_or_404(User, id=hotel_id)
-        heading = "Editar Usuário"
+def users_form(request, user_id=None):
+    # Verifica se é para editar um utilizador existente
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+        operation = "editar"
     else:
-        user = User()
-        heading = "Adicionar Usuário"
+        user = None  # Define como None para diferenciar do modo de edição
+        operation = "adicionar"
 
     if request.method == 'POST':
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, "Usuário salvo com sucesso!")
+            messages.success(request, f"Usuário {operation} com sucesso!")
             return redirect('users_list')
+        else:
+            messages.error(request, "Corrija os erros abaixo.")
     else:
         form = UserForm(instance=user)
 
-    return render(request, 'users/user_form.html', {
+    return render(request, 'users/users_form.html', {
         'form': form,
-        'heading': heading,
+        'operation': operation,
+        'user': user or {},  # Garante um objeto vazio para "adicionar"
     })
 
-# Apagar usuário
-def delete_user(request, hotel_id):
-    user = get_object_or_404(User, id=hotel_id)
+
+# Apagar utilizador
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
         user.delete()
