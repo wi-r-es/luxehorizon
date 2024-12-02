@@ -47,13 +47,14 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = [
-            'first_name', 'last_name', 'email', 'phone',
+            'first_name', 'last_name', 'email', 'phone', 'nif',
             'full_address', 'postal_code', 'city',
         ]
         labels = {
             'first_name': 'Primeiro Nome',
             'last_name': 'Último Nome',
             'email': 'E-mail',
+            'nif': 'NIF',
             'phone': 'Telefone',
             'full_address': 'Morada',
             'postal_code': 'Código Postal',
@@ -63,6 +64,7 @@ class UserForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primeiro Nome'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Último Nome'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'E-mail'}),
+            'nif': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'NIF'}),
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Telefone'}),
             'full_address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Morada'}),
             'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código Postal'}),
