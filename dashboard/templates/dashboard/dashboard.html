@@ -3,6 +3,97 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block main_content %}
-<h1>Dashboard</h1>
-<p>This is the dashboard content.</p>
+<div class="dashboard-section">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <h2>{{ total_revenue|default:"0.00 €" }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Expected Guests</h5>
+                    <h2>{{ expected_guests|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <h5>Top Placements</h5>
+    <div class="row">
+        {% for place in top_placements %}
+        <div class="col-md-2 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="fw-bold">{{ place.city }}</h6>
+                    <p class="mb-0">{{ place.revenue|default:"0.00 €" }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted text-center">No data available for top placements.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <h5>Sales Over Time</h5>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <canvas id="salesChart" class="line-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dummy sales data
+    const salesData = {{ sales_over_time|safe }};
+    
+    // Extracting the labels (days) and data (revenues)
+    const salesLabels = salesData.map(item => item.day);
+    const revenueData = salesData.map(item => item.revenue);
+
+    // Render the chart
+    const ctx = document.getElementById('salesChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: salesLabels,  // Use day as the label
+            datasets: [{
+                label: 'Revenue (€)',
+                data: revenueData,  // Use revenue as the actual data
+                borderColor: 'rgba(255, 193, 7, 1)',
+                backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                fill: true,
+                tension: 0.4,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { 
+                    title: { display: true, text: 'Day' } 
+                },
+                y: { 
+                    title: { display: true, text: 'Revenue (€)' },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(2) + " €";  // Format y-axis labels as currency
+                        }
+                    }
+                },
+            },
+        },
+    });
+</script>
 {% endblock %}
