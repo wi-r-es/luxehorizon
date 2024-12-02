@@ -1,10 +1,12 @@
 {% extends "layouts/base_with_sidebar.html" %}
 
-{% block title %}hot&eacute;is{% endblock %}
+{% block title %}Hot&eacute;is{% endblock %}
 
 {% block main_content %}
 <div class="container my-4">
     <h1>Hot&eacute;is</h1>
+    
+    <!-- Search Bar and Add Button -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Add Button -->
         <a href="{% url 'hotel_add' %}" class="btn btn-primary">
@@ -13,7 +15,7 @@
         
         <!-- Search Bar -->
         <form class="d-flex" method="get" action="">
-            <input class="form-control me-2" type="search" name="q" placeholder="Pesquisar H&oacute;eis" aria-label="Search" value="{{ request.GET.q }}">
+            <input class="form-control me-2" type="search" name="q" placeholder="Pesquisar Hot&eacute;is" aria-label="Search" value="{{ request.GET.q }}">
             <button class="btn btn-outline-success" type="submit">Pesquisar</button>
         </form>
     </div>
@@ -23,6 +25,7 @@
         <table class="table table-striped table-bordered">
             <thead class="table-dark">
                 <tr>
+                    <!-- Sort by Name -->
                     <th>
                         <a href="?q={{ request.GET.q }}&sort=h_name&order={% if sort == 'h_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             Nome
@@ -35,6 +38,8 @@
                             {% endif %}
                         </a>
                     </th>
+                    
+                    <!-- Sort by Stars -->
                     <th>
                         <a href="?q={{ request.GET.q }}&sort=stars&order={% if sort == 'stars' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             Estrelas
@@ -47,6 +52,8 @@
                             {% endif %}
                         </a>
                     </th>
+
+                    <!-- Sort by City -->
                     <th>
                         <a href="?q={{ request.GET.q }}&sort=city&order={% if sort == 'city' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             Cidade
@@ -59,6 +66,8 @@
                             {% endif %}
                         </a>
                     </th>
+
+                    <!-- Sort by Room Count -->
                     <th>
                         <a href="?q={{ request.GET.q }}&sort=room_count&order={% if sort == 'room_count' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             N&#186; Quartos
@@ -71,6 +80,8 @@
                             {% endif %}
                         </a>
                     </th>
+
+                    <!-- Sort by Total Value -->
                     <th>
                         <a href="?q={{ request.GET.q }}&sort=total_value&order={% if sort == 'total_value' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             Total de Fatura&ccedil;&atilde;o &#40;&#8364;&#41;
@@ -83,7 +94,8 @@
                             {% endif %}
                         </a>
                     </th>
-                    <th>A&ccedil;&otilde;es</th>                
+
+                    <th>A&ccedil;&otilde;es</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,14 +107,14 @@
                     <td class="text-center">{{ hotel.room_count }}</td>
                     <td class="text-end">{{ hotel.total_value|default:0 }} &#8364;</td>
                     <td class="text-center">
-                        <a href="{% url 'room_list' hotel.id %}" class="btn btn-sm btn-primary"><i class="bi bi-list"></i> Quartos</a>
+                        <a href="{% url 'hotel_edit' hotel.id %}" class="btn btn-sm btn-primary"><i class="bi bi-list"></i> Quartos</a>
                         <a href="{% url 'hotel_edit' hotel.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar</a>
                         <a href="{% url 'delete_hotel' hotel.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Apagar</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">N&atilde;o h&aacute; hot&eacute;is para mostrar.</td>
+                    <td colspan="6" class="text-center">N&atilde;o h&aacute; hot&eacute;is para mostrar.</td>
                 </tr>
                 {% endfor %}
             </tbody>

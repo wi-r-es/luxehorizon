@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Hotel
+from .models import Hotel, Room
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
 from .forms import HotelForm
 from django.contrib import messages
@@ -86,3 +86,18 @@ def delete_hotel(request, hotel_id):
         else:
             # Mensagem de confirmação de apagar hotel
             return render(request, 'hotel_management/confirm_delete.html', {'hotel': hotel})
+        
+def room_list(request, hotel_id):
+    hotel = Hotel.objects.get(id=hotel_id)  # Get the hotel by ID
+    type_name = request.GET.get('type_name', '')  # Get filter parameter if provided
+
+    rooms = Room.objects.filter(hotel=hotel)  # Start by filtering rooms for this hotel
+
+    if type_name:   
+        rooms = rooms.filter(type__name__icontains=type_name)  # Apply filter on RoomType's name
+
+    return render(request, 'hotel_management/hotel_rooms.html', {
+        'hotel': hotel,
+        'rooms': rooms,
+    })
+
