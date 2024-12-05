@@ -1,5 +1,5 @@
 from django import forms
-from .models import Hotel
+from .models import Hotel, Room, RoomType
 
 class HotelForm(forms.ModelForm):
     class Meta:
@@ -25,3 +25,26 @@ class HotelForm(forms.ModelForm):
             'details': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalhes'}),
             'stars': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
         }
+
+class RoomForm(forms.ModelForm):
+    class Meta:
+        model = Room
+        fields = ['type', 'room_number', 'base_price', 'condition', 'capacity']
+        widgets = {
+            'condition': forms.Select(choices=[
+                (0, 'Disponível'),
+                (1, 'Sujo'),
+                (2, 'Em Manutenção'),
+            ])
+        }
+        labels = {
+            'type': 'Tipo',
+            'room_number': 'Nº do Quarto',
+            'base_price': 'Preço Base (€)',
+            'Estado': 'Condition',
+            'capacity': 'Capacidade',
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['type'].queryset = RoomType.objects.all()

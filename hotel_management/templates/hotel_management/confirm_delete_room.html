@@ -1,0 +1,16 @@
+{% extends "layouts/base_with_sidebar.html" %}
+
+{% block title %}Confirmar Apagar Quarto{% endblock %}
+
+{% block main_content %}
+<div class="container my-4">
+    <h1>Confirmar a exclusão do Quarto</h1>
+    <p>Tem certeza de que deseja apagar o <strong>Quarto {{ room.room_number }}</strong> do hotel <strong>{{ hotel.h_name }}</strong>?</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sim, Apagar</button>
+        <a href="{% url 'room_list' hotel.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

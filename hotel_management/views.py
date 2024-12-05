@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Hotel, Room
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
-from .forms import HotelForm
+from .forms import HotelForm, RoomForm
 from django.contrib import messages
 from reservation.models import RoomReservation, Reservation
 from django.http import Http404
@@ -88,16 +88,72 @@ def delete_hotel(request, hotel_id):
             return render(request, 'hotel_management/confirm_delete.html', {'hotel': hotel})
         
 def room_list(request, hotel_id):
-    hotel = Hotel.objects.get(id=hotel_id)  # Get the hotel by ID
-    type_name = request.GET.get('type_name', '')  # Get filter parameter if provided
+    hotel = Hotel.objects.get(id=hotel_id)   
+    type_name = request.GET.get('type_name', '')   
 
-    rooms = Room.objects.filter(hotel=hotel)  # Start by filtering rooms for this hotel
+    rooms = Room.objects.filter(hotel=hotel)   
 
     if type_name:   
-        rooms = rooms.filter(type__name__icontains=type_name)  # Apply filter on RoomType's name
+        rooms = rooms.filter(type__name__icontains=type_name)   
 
     return render(request, 'hotel_management/hotel_rooms.html', {
         'hotel': hotel,
         'rooms': rooms,
     })
+
+def create_room(request, hotel_id):
+    hotel = get_object_or_404(Hotel, id=hotel_id)  
+
+    if request.method == 'POST':
+        form = RoomForm(request.POST)
+        if form.is_valid():
+            new_room = form.save(commit=False)
+            new_room.hotel = hotel 
+            new_room.save()
+            return redirect('room_list', hotel_id=hotel.id)  
+    else:
+        form = RoomForm()
+
+    return render(request, 'hotel_management/room_form.html', {
+        'form': form,
+        'hotel': hotel,
+    })
+
+def edit_room(request, hotel_id, room_id):
+    room = get_object_or_404(Room, id=room_id, hotel_id=hotel_id)
+    if request.method == 'POST':
+        form = RoomForm(request.POST, instance=room)
+        if form.is_valid():
+            form.save()
+            return redirect('room_list', hotel_id=hotel_id)
+    else:
+        form = RoomForm(instance=room)
+
+    return render(request, 'hotel_management/room_form.html', {
+        'form': form,
+        'hotel': room.hotel,  
+        'room': room,
+    })
+
+def delete_room(request, hotel_id, room_id):
+    # Get the room or return a 404 error if it doesn't exist
+    room = get_object_or_404(Room, id=room_id, hotel_id=hotel_id)
+
+    # Check if there are any reservations associated with the room
+    reservations_exist = RoomReservation.objects.filter(room=room).exists()
+
+    if reservations_exist:
+        # If there are reservations, show an error message
+        messages.error(request, "Não é possível apagar este quarto, pois existem reservas associadas.")
+        return redirect('room_list', hotel_id=hotel_id)  # Redirect back to room list for the hotel
+    else:
+        # If there are no reservations, proceed with deletion
+        if request.method == 'POST':
+            room.delete()
+            messages.success(request, "Quarto apagado com sucesso!")
+            return redirect('room_list', hotel_id=hotel_id)  # Redirect to room list for the hotel
+        else:
+            # Render confirmation page
+            return render(request, 'hotel_management/confirm_delete_room.html', {'room': room, 'hotel': room.hotel})
+
 

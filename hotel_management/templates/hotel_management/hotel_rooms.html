@@ -1,120 +1,60 @@
 {% extends "layouts/base_with_sidebar.html" %}
 
-{% block title %}Hot&eacute;is{% endblock %}
+{% block title %}Quartos{% endblock %}
 
 {% block main_content %}
 <div class="container my-4">
-    <h1>Hot&eacute;is</h1>
-    
-    <!-- Search Bar and Add Button -->
+    <h1>Quartos do Hotel: {{ hotel.h_name }}</h1>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Add Button -->
-        <a href="{% url 'hotel_add' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Adicionar Hotel
+        <a href="{% url 'create_room' hotel.id %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Adicionar Quarto
         </a>
-        
-        <!-- Search Bar -->
         <form class="d-flex" method="get" action="">
-            <input class="form-control me-2" type="search" name="q" placeholder="Pesquisar Hot&eacute;is" aria-label="Search" value="{{ request.GET.q }}">
+            <input class="form-control me-2" type="search" name="type_name" placeholder="Pesquisar Tipo de Quarto" aria-label="Search" value="{{ request.GET.type_name }}">
             <button class="btn btn-outline-success" type="submit">Pesquisar</button>
         </form>
     </div>
 
-    <!-- Bootstrap Table -->
+    <!-- Room Table -->
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead class="table-dark">
                 <tr>
-                    <!-- Sort by Name -->
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=h_name&order={% if sort == 'h_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            Nome
-                            {% if sort == 'h_name' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-                    
-                    <!-- Sort by Stars -->
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=stars&order={% if sort == 'stars' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            Estrelas
-                            {% if sort == 'stars' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-
-                    <!-- Sort by City -->
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=city&order={% if sort == 'city' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            Cidade
-                            {% if sort == 'city' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-
-                    <!-- Sort by Room Count -->
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=room_count&order={% if sort == 'room_count' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            N&#186; Quartos
-                            {% if sort == 'room_count' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-
-                    <!-- Sort by Total Value -->
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=total_value&order={% if sort == 'total_value' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            Total de Fatura&ccedil;&atilde;o &#40;&#8364;&#41;
-                            {% if sort == 'total_value' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    </th>
-
+                    <th>Número</th>
+                    <th>Tipo</th>
+                    <th>Capacidade</th>
+                    <th>Preço Base (&#8364;)</th>
+                    <th>Condição</th>
                     <th>A&ccedil;&otilde;es</th>
                 </tr>
             </thead>
             <tbody>
-                {% for hotel in hotels %}
+                {% for room in rooms %}
                 <tr>
-                    <td>{{ hotel.h_name }}</td>
-                    <td class="text-center">{{ hotel.stars }}</td>
-                    <td>{{ hotel.city }}</td>
-                    <td class="text-center">{{ hotel.room_count }}</td>
-                    <td class="text-end">{{ hotel.total_value|default:0 }} &#8364;</td>
+                    <td class="text-center">{{ room.room_number }}</td>
+                    <td>{{ room.type.name }}</td>
+                    <td class="text-center">{{ room.get_capacity_display }}</td>
+                    <td class="text-end">{{ room.base_price }}</td>
                     <td class="text-center">
-                        <a href="{% url 'hotel_edit' hotel.id %}" class="btn btn-sm btn-primary"><i class="bi bi-list"></i> Quartos</a>
-                        <a href="{% url 'hotel_edit' hotel.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar</a>
-                        <a href="{% url 'delete_hotel' hotel.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Apagar</a>
+                        {% if room.condition == 0 %}
+                            Disponível
+                        {% elif room.condition == 1 %}
+                            Sujo
+                        {% elif room.condition == 2 %}
+                            Em Manutenção
+                        {% else %}
+                            Desconhecido
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'room_edit' hotel.id room.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar</a>
+                        <a href="{% url 'delete_room' hotel.id room.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Apagar</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center">N&atilde;o h&aacute; hot&eacute;is para mostrar.</td>
+                    <td colspan="6" class="text-center">N&atilde;o h&aacute; quartos para mostrar.</td>
                 </tr>
                 {% endfor %}
             </tbody>
