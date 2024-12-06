@@ -88,13 +88,13 @@ def delete_hotel(request, hotel_id):
             return render(request, 'hotel_management/confirm_delete.html', {'hotel': hotel})
         
 def room_list(request, hotel_id):
-    hotel = Hotel.objects.get(id=hotel_id)   
-    type_name = request.GET.get('type_name', '')   
+    hotel = get_object_or_404(Hotel, id=hotel_id)   
+    type_name = request.GET.get('type_initials', '')   
 
     rooms = Room.objects.filter(hotel=hotel)   
 
     if type_name:   
-        rooms = rooms.filter(type__name__icontains=type_name)   
+        rooms = rooms.filter(type__type_initials__icontains=type_name)   
 
     return render(request, 'hotel_management/hotel_rooms.html', {
         'hotel': hotel,

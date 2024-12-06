@@ -11,7 +11,7 @@
             <i class="bi bi-plus-circle"></i> Adicionar Quarto
         </a>
         <form class="d-flex" method="get" action="">
-            <input class="form-control me-2" type="search" name="type_name" placeholder="Pesquisar Tipo de Quarto" aria-label="Search" value="{{ request.GET.type_name }}">
+            <input class="form-control me-2" type="search" name="type_initials" placeholder="Pesquisar Tipo de Quarto" aria-label="Search" value="{{ request.GET.type_initials}}">
             <button class="btn btn-outline-success" type="submit">Pesquisar</button>
         </form>
     </div>
@@ -33,7 +33,7 @@
                 {% for room in rooms %}
                 <tr>
                     <td class="text-center">{{ room.room_number }}</td>
-                    <td>{{ room.type.name }}</td>
+                    <td>{{ room.type.type_initials }}</td>
                     <td class="text-center">{{ room.get_capacity_display }}</td>
                     <td class="text-end">{{ room.base_price }}</td>
                     <td class="text-center">
