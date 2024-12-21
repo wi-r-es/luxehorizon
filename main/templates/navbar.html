@@ -1,28 +1,28 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-lg navbar-light bg-dark">
-    <a class="navbar-brand ml-3" href="{% url 'index' %}">
-        <img src="{% static 'images/luxehorizon.png' %}" alt="Logo" style="height: 40px;">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="{% url 'index' %}">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 40px;">
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse bg-dark" id="navbarContent" >
-        <ul class="navbar-nav mx-auto ">
+    <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav ml-auto">
             <li class="nav-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                <a href="{% url 'index' %}" class="nav-link text-white ">Home</a>
+                <a href="{% url 'index' %}" class="nav-link">Home</a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'discover' %}active{% endif %}">
-                <a href="#" class="nav-link text-white">Discover</a>
+                <a href="#" class="nav-link">Discover</a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'hotels' %}active{% endif %}">
-                <a href="#" class="nav-link text-white">Hotels</a>
+                <a href="#" class="nav-link">Hotels</a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-                <a href="#" class="nav-link text-white">About</a>
+                <a href="#" class="nav-link">About</a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
-                <a href="#" class="nav-link text-white">Contact</a>
+                <a href="#" class="nav-link">Contact</a>
             </li>
         </ul>
 
@@ -30,17 +30,30 @@
         <div class="ml-3 d-flex align-items-center">
             {% if request.user.is_authenticated %}
                 <!-- Dropdown Menu for Authenticated Users -->
-                <div class="dropdown ">
-                    <a href="#" id="profileDropdown" class="dropdown-toggle d-flex align-items-center mr-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
-                        <img src="https://robohash.org/placeholder.png?size=200x200" alt="Profile Picture" class="rounded-circle bg-light" width="40" height="40" >
+                <div class="dropdown">
+                    <a href="#" id="profileDropdown" class="dropdown-toggle d-flex align-items-center" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="https://robohash.org/placeholder.png?size=200x200" alt="Profile Picture" class="rounded-circle" width="40" height="40">
                     </a>
-                    <div class="dropdown-menu dropdown-menu-right " aria-labelledby="profileDropdown">
-                        <a class="dropdown-item" href="{% url 'profile' %}">Perfil</a>
-                        <a class="dropdown-item" href="{% url 'admin_dashboard' %}">Dashboard</a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="profileDropdown">
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
+                            <i class="bi bi-person-circle mr-2"></i> Perfil
+                        </a>
+                        {% if request.user.is_staff == False %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'my_reservations' %}">
+                                <i class="bi bi-journal-text mr-2"></i> Minhas Reservas
+                            </a>
+                        {% endif %}
+                        {% if request.user.is_staff %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'admin_dashboard' %}">
+                                <i class="bi bi-speedometer2 mr-2"></i> Painel de Controlo
+                            </a>
+                        {% endif %}
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{% url 'logout' %}" class="dropdown-item m-0 p-0">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-link w-100 text-left p-10">Terminar Sess&atilde;o</button>
+                            <a type="submit" class="dropdown-item d-flex align-items-center">
+                                <i class="bi bi-box-arrow-right mr-2"></i> Terminar Sess&atilde;o
+                            </a>
                         </form>
                     </div>
                 </div>
