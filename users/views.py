@@ -137,7 +137,7 @@ def users_form(request, user_id=None):
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Usuário {operation} com sucesso!")
+            messages.success(request, f"Utilizador {operation} com sucesso!")
             return redirect('users_list')
         else:
             messages.error(request, "Corrija os erros abaixo.")
@@ -157,7 +157,7 @@ def delete_user(request, user_id):
 
     if request.method == 'POST':
         user.delete()
-        messages.success(request, "Usuário apagado com sucesso!")
+        messages.success(request, "Utilizador apagado com sucesso!")
         return redirect('users_list')
     else:
         return render(request, 'users/confirm_delete.html', {'user': user})
