@@ -3,6 +3,22 @@ from django import forms
 from .models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.password_validation import validate_password
+
+def clean(self):
+    cleaned_data = super().clean()
+    password = cleaned_data.get("password")
+    password_confirm = cleaned_data.get("password_confirm")
+    
+    if password and password_confirm and password != password_confirm:
+        self.add_error("password_confirm", "Passwords do not match")
+    
+    # Validações adicionais para senha
+    if password:
+        validate_password(password)
+    
+    return cleaned_data
+
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
@@ -43,12 +59,13 @@ class CustomLoginForm(AuthenticationForm):
         cleaned_data['user'] = user
         return cleaned_data
 
+
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = [
             'first_name', 'last_name', 'email', 'phone', 'nif',
-            'full_address', 'postal_code', 'city',
+            'full_address', 'postal_code', 'city','is_staff', 'is_active',
         ]
         labels = {
             'first_name': 'Primeiro Nome',

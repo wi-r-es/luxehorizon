@@ -93,6 +93,10 @@ def update_profile(request):
         user.postal_code = request.POST.get('postal_code')
         user.city = request.POST.get('city')
 
+        # Update switches (is_staff and is_active)
+        user.is_staff = 'flexSwitchCheckChecked' in request.POST  # Switch checked = True
+        user.is_active = 'flexSwitchCheckDefault' in request.POST  # Switch checked = True
+
         # If employee, update additional fields
         if hasattr(user, 'employee'):
             user.employee.social_security = request.POST.get('social_security')
@@ -102,7 +106,6 @@ def update_profile(request):
         return redirect('profile')
 
     return render(request, 'users/profile.html', {'user': request.user})
-
 
 def users_list(request):
     query = request.GET.get('q', '')
@@ -125,31 +128,35 @@ def users_list(request):
     })
 
 def users_form(request, user_id=None):
-    # Verifica se é para editar um utilizador existente
     if user_id:
         user = get_object_or_404(User, id=user_id)
         operation = "editar"
     else:
-        user = None  # Define como None para diferenciar do modo de edição
+        user = None
         operation = "adicionar"
 
     if request.method == 'POST':
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
-            form.save()
-            messages.success(request, f"Utilizador {operation} com sucesso!")
+            new_user = form.save(commit=False)
+
+            # Update is_staff and is_active from switches
+            new_user.is_staff = 'flexSwitchCheckDefault' in request.POST
+            new_user.is_active = 'flexSwitchCheckDefault' in request.POST
+
+            new_user.save()
+            messages.success(request, f"{'Utilizador adicionado' if user is None else 'Utilizador atualizado'} com sucesso!")
             return redirect('users_list')
         else:
-            messages.error(request, "Corrija os erros abaixo.")
+            messages.error(request, "Erro ao processar o formulário.")
     else:
         form = UserForm(instance=user)
 
     return render(request, 'users/users_form.html', {
         'form': form,
         'operation': operation,
-        'user': user or {},  # Garante um objeto vazio para "adicionar"
+        'user': user or {},
     })
-
 
 # Apagar utilizador
 def delete_user(request, user_id):
