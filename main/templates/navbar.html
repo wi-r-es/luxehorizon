@@ -29,16 +29,21 @@
         <!-- Right-aligned buttons for Register, Login, and Logout -->
         <div class="ml-3 d-flex align-items-center">
             {% if request.user.is_authenticated %}
-                <!-- Display the profile picture if available -->
-                <a href="{% url 'profile' %}" class="mr-2">
-                    <img src="https://robohash.org/placeholder.png?size=200x200" alt="Profile Picture" class="rounded-circle" width="40" height="40">
-                </a>
-                
-                <!-- Logout Form -->
-                <form method="POST" action="{% url 'logout' %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Terminar Sess&atilde;</button>
-                </form>
+                <!-- Dropdown Menu for Authenticated Users -->
+                <div class="dropdown">
+                    <a href="#" id="profileDropdown" class="dropdown-toggle d-flex align-items-center" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="https://robohash.org/placeholder.png?size=200x200" alt="Profile Picture" class="rounded-circle" width="40" height="40">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="profileDropdown">
+                        <a class="dropdown-item" href="{% url 'profile' %}">Perfil</a>
+                        <a class="dropdown-item" href="{% url 'admin_dashboard' %}">Dashboard</a>
+                        <div class="dropdown-divider"></div>
+                        <form method="POST" action="{% url 'logout' %}" class="dropdown-item m-0 p-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link w-100 text-left p-0">Terminar Sess&atilde;o</button>
+                        </form>
+                    </div>
+                </div>
             {% else %}
                 <!-- Register and Login Buttons for unauthenticated users -->
                 <a href="{% url 'register' %}" class="btn btn-outline-primary mr-2">Registo</a>
