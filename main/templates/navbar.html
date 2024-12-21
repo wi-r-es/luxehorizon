@@ -51,9 +51,9 @@
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{% url 'logout' %}" class="dropdown-item m-0 p-0">
                             {% csrf_token %}
-                            <a type="submit" class="dropdown-item d-flex align-items-center">
+                            <button type="submit" class="dropdown-item d-flex align-items-center">
                                 <i class="bi bi-box-arrow-right mr-2"></i> Terminar Sess&atilde;o
-                            </a>
+                            </button>
                         </form>
                     </div>
                 </div>
