@@ -140,9 +140,9 @@ def users_form(request, user_id=None):
         if form.is_valid():
             new_user = form.save(commit=False)
 
-            # Update is_staff and is_active from switches
-            new_user.is_staff = 'flexSwitchCheckDefault' in request.POST
-            new_user.is_active = 'flexSwitchCheckDefault' in request.POST
+            # Atualizar os campos is_staff e is_active
+            new_user.is_staff = 'is_staff_switch' in request.POST
+            new_user.is_active = 'is_active_switch' in request.POST
 
             new_user.save()
             messages.success(request, f"{'Utilizador adicionado' if user is None else 'Utilizador atualizado'} com sucesso!")
@@ -157,6 +157,7 @@ def users_form(request, user_id=None):
         'operation': operation,
         'user': user or {},
     })
+
 
 # Apagar utilizador
 def delete_user(request, user_id):

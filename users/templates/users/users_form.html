@@ -68,17 +68,17 @@
         <h5>Opções de Perfil</h5>
 
         <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" name="flexSwitchCheckDefault" 
+            <input class="form-check-input" type="checkbox" role="switch" id="is_staff_switch" name="is_staff_switch" 
                    {% if form.instance.is_staff %}checked{% endif %}>
-            <label class="form-check-label ms-2" for="flexSwitchCheckDefault">Staff</label>
+            <label class="form-check-label ms-2" for="is_staff_switch">Staff</label>
         </div>
-
+        
         <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" name="flexSwitchCheckDefault" 
+            <input class="form-check-input" type="checkbox" role="switch" id="is_active_switch" name="is_active_switch" 
                    {% if form.instance.is_active %}checked{% endif %}>
-            <label class="form-check-label ms-2" for="flexSwitchCheckDefault">Inativo</label>
+            <label class="form-check-label ms-2" for="is_active_switch">Inativo</label>
         </div>
-
+        
         <div class="mt-3">
             <button type="submit" class="btn btn-primary">
                 {% if operation == "adicionar" %}
