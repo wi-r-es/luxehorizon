@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <form class="form-inline justify-content-center mt-3" method="GET" action="">
+        
+        <!-- Data de Check-in -->
+        <div class="form-group mr-2">
+            <input type="date" name="checkin" class="form-control" placeholder="Check-in date" aria-label="Check-in date" value="{{ request.GET.checkin }}" required>
+        </div>
+
+        <!-- Data de Check-out -->
+        <div class="form-group mr-2">
+            <input type="date" name="checkout" class="form-control" placeholder="Check-out date" aria-label="Check-out date" value="{{ request.GET.checkout }}" required>
+        </div>
+
+        <!-- Número de Hóspedes -->
+        <div class="form-group mr-2">
+            <input type="number" name="guests" class="form-control" placeholder="Guests Number" aria-label="Number of guests" min="1" value="{{ request.GET.guests }}"  required>
+        </div>
+
+        <!-- Botão de Pesquisa -->
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <!-- Available Rooms Section -->
+    <h2 class="mb-4">Quartos Disponíveis</h2>
+
+    <!-- Verificar se há quartos disponíveis -->
+    {% if rooms %}
+        <div class="row">
+            {% for room in rooms %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                        <img src="https://placehold.co/250x150" class="img-fluid rounded-start" alt="Hotel Image">
+                    <div class="card-body">
+                        <h5 class="card-text mb-3">Quarto Nº {{ room.room_number }}</h5>
+                        <p class="card-text mb-2">
+                            <strong>Capacidade:</strong> 
+                            {% if room.capacity == "S" %}
+                                Single
+                            {% elif room.capacity == "D" %}
+                                Double
+                            {% elif room.capacity == "T" %}
+                                Triple
+                            {% elif room.capacity == "Q" %}
+                                Quad
+                            {% elif room.capacity == "K" %}
+                                King
+                            {% elif room.capacity == "F" %}
+                                Family
+                            {% else %}
+                                {{ room.capacity }} pessoas
+                            {% endif %}
+                        </p>
+                        <p class="card-text mb-2">
+                            <strong>Preço:</strong> 
+                            {% if room.discount_price %}
+                                <del>{{ room.base_price }}€</del>
+                                <strong class="text-danger">{{ room.discount_price }}€</strong>
+                            {% else %}
+                                <strong>{{ room.base_price }}€</strong>
+                            {% endif %}
+                        </p>
+                        <p>
+                            <strong>Disponibilidade:</strong> 
+                            <span class="{% if room.condition == 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if room.condition == 0 %}Disponível{% else %}Indisponível{% endif %}
+                            </span>
+                            {{ room.details }}
+                        </p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="#" class="btn btn-primary btn-sm">Reservar</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-muted">Nenhum quarto disponível para este hotel.</p>
+    {% endif %}
+</div>
+{% endblock %}
