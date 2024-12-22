@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Sidebar and Results -->
+    <div class="row mt-4">
+        <!-- Sidebar -->
+        <aside class="col-md-3">
+            <h5>Filter by</h5>
+            <div class="mb-3">
+                <label for="budget" class="form-label">Your budget per day</label>
+                <input type="range" class="form-range" min="50" max="5000" step="50" id="budget">
+            </div>
+
+            <h6>Room Capacity</h6>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="Single">
+                <label class="form-check-label" for="Single">Single</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="Double">
+                <label class="form-check-label" for="Double">Double</label>
+            </div>
+            
+            <p>
+            <h6>Ratings</h6>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="1star">
+                <label class="form-check-label" for="1star">1 Estrela</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="2star">
+                <label class="form-check-label" for="2star">2 Estrelas</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="3star">
+                <label class="form-check-label" for="3star">3 Estrelas</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="4star">
+                <label class="form-check-label" for="4star">4 Estrelas</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="5star">
+                <label class="form-check-label" for="5star">5 Estrelas</label>
+            </div>
+            <!-- Outros filtros -->
+        </aside>
+
+        <!-- Results -->
+        <section class="col-md-9">
+            <h5>{{ rooms|length }} search results found</h5>
+            {% for room in rooms %}
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="https://via.placeholder.com/300x200" class="img-fluid rounded-start" alt="Hotel Image">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ room.hotel_name }}</h5>
+                            <p class="card-text">Room: {{ room.room_number }} | Price: ${{ room.base_price }}</p>
+                            <p class="card-text"><small class="text-muted">Capacity: {{ room.capacity }}</small></p>
+                            <a href="#" class="btn btn-primary">See availability</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}

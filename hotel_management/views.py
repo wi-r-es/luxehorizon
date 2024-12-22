@@ -5,6 +5,7 @@ from .forms import HotelForm, RoomForm
 from django.contrib import messages
 from reservation.models import RoomReservation, Reservation
 from django.http import Http404
+from django.db import connection
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -156,4 +157,52 @@ def delete_room(request, hotel_id, room_id):
             # Render confirmation page
             return render(request, 'hotel_management/confirm_delete_room.html', {'room': room, 'hotel': room.hotel})
 
+def search_results(request):
+    # Obtendo o parâmetro de busca
+    city = request.GET.get('city', '').strip()
 
+    # Se o usuário não forneceu uma cidade, retornamos uma mensagem
+    if not city:
+        return render(request, 'hotel_management/list_hotels_rooms.html', {
+            'error': 'Please provide a city to search for available rooms.'
+        })
+
+    # Consulta SQL segura para obter os quartos disponíveis em hotéis da cidade fornecida
+    query = """
+        SELECT 
+            r.id AS room_id, r.room_number, r.base_price, r."condition", 
+            r.capacity, r.hotel_id, h.h_name AS hotel_name, r.type_id
+        FROM 
+            public."ROOM_MANAGEMENT.room" r
+        INNER JOIN 
+            public."MANAGEMENT.hotel" h ON r.hotel_id = h.id
+        WHERE 
+            h.city ILIKE %(city)s
+    """
+    params = {'city': f"%{city}%"}
+
+    # Executando a consulta no banco de dados
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)
+        rooms = cursor.fetchall()
+
+    # Preparando os dados para exibição no template
+    rooms_list = [
+        {
+            'room_id': room[0],
+            'room_number': room[1],
+            'base_price': room[2],
+            'condition': room[3],
+            'capacity': room[4],
+            'hotel_id': room[5],
+            'hotel_name': room[6],
+            'type_id': room[7],
+        }
+        for room in rooms
+    ]
+
+    # Renderizando o template com os resultados
+    return render(request, 'hotel_management/list_hotels_rooms.html', {
+        'rooms': rooms_list,
+        'city': city,
+    })
