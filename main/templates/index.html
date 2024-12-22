@@ -9,18 +9,24 @@
         <h1 class="display-4">Enjoy Your Dream Vacation</h1>
         <p class="lead">Plan and book your perfect trip with expert advice, travel tips, destination information, and inspiration from us.</p>
         <form class="form-inline justify-content-center mt-4" method="GET" action="{% url 'search_results' %}">
-            <input type="text" class="form-control mr-2" placeholder="Where are you going?">
-            <input type="date" class="form-control mr-2" placeholder="Check-in date">
-            <input type="date" class="form-control mr-2" placeholder="Check-out date">
-            <input type="number" class="form-control mr-2" placeholder="Guests">
-            <div class="form-row">
-                <div class="col-md-8 mb-2">
-                    <input type="text" name="city" class="form-control" placeholder="Where are you going?" required>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <button type="submit" class="btn btn-primary btn-block">Search</button>
-                </div>
+            <!-- Destino -->
+            <div class="form-group mr-2">
+                <input type="text" name="city" class="form-control" placeholder="Where are you going?" aria-label="Destination" required>
             </div>
+            <!-- Data de Check-in -->
+            <div class="form-group mr-2">
+                <input type="date" name="checkin" class="form-control" placeholder="Check-in date" aria-label="Check-in date" required>
+            </div>
+            <!-- Data de Check-out -->
+            <div class="form-group mr-2">
+                <input type="date" name="checkout" class="form-control" placeholder="Check-out date" aria-label="Check-out date" required>
+            </div>
+            <!-- Número de Hóspedes -->
+            <div class="form-group mr-2">
+                <input type="number" name="guests"  class="form-control" placeholder="Guests" aria-label="Number of guests" min="1" required>
+            </div>
+            <!-- Botão de Pesquisa -->
+            <button type="submit" class="btn btn-primary">Search</button>
         </form>
     </div>
 </section>
