@@ -86,31 +86,22 @@
                 <button type="submit" class="btn btn-primary mt-3">Apply</button>
             </form>
         </aside>
+
+        <!-- Results -->
         <section class="col-md-9">
             <h5>{{ rooms|length }} search results found</h5>
             {% for room in rooms %}
             <div class="card mb-3">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="https://placehold.co/300x230" class="img-fluid rounded-start" alt="Hotel Image">
+                        <img src="https://via.placeholder.com/300x200" class="img-fluid rounded-start" alt="Hotel Image">
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
-                            <h5 class="card-title">Titulo Aqui</h5>
                             <h5 class="card-title">{{ room.hotel_name }}</h5>
-                            <p class="card-text">
-                                ⭐⭐⭐⭐☆ 4.5 (1200 Reviews)
-                            </p>
-                            <p class="card-text">Live a little and celebrate with champagne</p>
-                            <p class="card-text"><small class="text-muted">Includes gym, parking, and flexible cancellation</small></p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="text-danger text-decoration-line-through">1,200€</span>
-                                    <span class="fw-bold ms-2">{{ room.base_price }}€</span>
-                                    <div class="text-success">15% off</div>
-                                </div>
-                                <a href="#" class="btn btn-primary">See availability</a>
-                            </div>
+                            <p class="card-text">Room: {{ room.room_number }} | Price: {{ room.base_price }}€</p>
+                            <p class="card-text"><small class="text-muted">Capacity: {{ room.capacity }}</small></p>
+                            <a href="#" class="btn btn-primary">See availability</a>
                         </div>
                     </div>
                 </div>
