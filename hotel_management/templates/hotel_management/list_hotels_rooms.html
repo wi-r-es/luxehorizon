@@ -7,44 +7,84 @@
         <!-- Sidebar -->
         <aside class="col-md-3">
             <h5>Filter by</h5>
-            <div class="mb-3">
-                <label for="budget" class="form-label">Your budget per day</label>
-                <input type="range" class="form-range" min="50" max="5000" step="50" id="budget">
-            </div>
+            <form id="budget-form" method="GET" action="{% url 'search_results' %}">
+                <!-- Campo oculto para preservar a cidade -->
+                <input type="hidden" name="city" value="{{ request.GET.city }}">
 
-            <h6>Room Capacity</h6>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="Single">
-                <label class="form-check-label" for="Single">Single</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="Double">
-                <label class="form-check-label" for="Double">Double</label>
-            </div>
-            
-            <p>
-            <h6>Ratings</h6>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="1star">
-                <label class="form-check-label" for="1star">1 Estrela</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="2star">
-                <label class="form-check-label" for="2star">2 Estrelas</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="3star">
-                <label class="form-check-label" for="3star">3 Estrelas</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="4star">
-                <label class="form-check-label" for="4star">4 Estrelas</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="5star">
-                <label class="form-check-label" for="5star">5 Estrelas</label>
-            </div>
-            <!-- Outros filtros -->
+                <!-- budget_range -->
+                <p>
+                <h6>Your budget per day</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="budget_range" value="0-200" id="budget-0-200" {% if '0-200' in request.GET.budget_range %}checked{% endif %}>
+                    <label class="form-check-label" for="budget-0-200">0€ - 200€</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="budget_range" value="200-500" id="budget-200-500" {% if '200-500' in request.GET.budget_range %}checked{% endif %}>
+                    <label class="form-check-label" for="budget-200-500">200€ - 500€</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="budget_range" value="500-1000" id="budget-500-1000" {% if '500-1000' in request.GET.budget_range %}checked{% endif %}>
+                    <label class="form-check-label" for="budget-500-1000">500€ - 1,000€</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="budget_range" value="1000-2000" id="budget-1000-2000" {% if '1000-2000' in request.GET.budget_range %}checked{% endif %}>
+                    <label class="form-check-label" for="budget-1000-2000">1,000€ - 2,000€</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="budget_range" value="2000-5000" id="budget-2000-5000" {% if '2000-5000' in request.GET.budget_range %}checked{% endif %}>
+                    <label class="form-check-label" for="budget-2000-5000">2,000€ - 5,000€</label>
+                </div>
+
+                <!-- Custom Budget -->
+                 <p>
+                <h6>Set your own budget</h6>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <input type="number" name="min_budget" class="form-control" placeholder="Min €" value="{{ request.GET.min_budget }}">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="max_budget" class="form-control" placeholder="Max €" value="{{ request.GET.max_budget }}">
+                    </div>
+                </div>
+
+                <!-- Room Capacity -->
+                <p>
+                <h6>Room Capacity</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="capacity" value="S" id="Single" {% if 'S' in request.GET.capacity %}checked{% endif %}>
+                    <label class="form-check-label" for="Single">Single</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="capacity" value="D" id="Double" {% if 'D' in request.GET.capacity %}checked{% endif %}>
+                    <label class="form-check-label" for="Double">Double</label>
+                </div>
+
+                <!-- Ratings -->
+                <p>
+                <h6>Ratings</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="1" id="1star" {% if '1' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="1star">1 Estrela</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="2" id="2star" {% if '2' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="2star">2 Estrelas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="3" id="3star" {% if '3' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="3star">3 Estrelas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="4" id="4star" {% if '4' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="4star">4 Estrelas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="5" id="5star" {% if '5' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="5star">5 Estrelas</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Apply</button>
+            </form>
         </aside>
 
         <!-- Results -->
@@ -59,7 +99,7 @@
                     <div class="col-md-8">
                         <div class="card-body">
                             <h5 class="card-title">{{ room.hotel_name }}</h5>
-                            <p class="card-text">Room: {{ room.room_number }} | Price: ${{ room.base_price }}</p>
+                            <p class="card-text">Room: {{ room.room_number }} | Price: {{ room.base_price }}€</p>
                             <p class="card-text"><small class="text-muted">Capacity: {{ room.capacity }}</small></p>
                             <a href="#" class="btn btn-primary">See availability</a>
                         </div>

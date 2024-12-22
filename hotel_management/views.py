@@ -158,51 +158,64 @@ def delete_room(request, hotel_id, room_id):
             return render(request, 'hotel_management/confirm_delete_room.html', {'room': room, 'hotel': room.hotel})
 
 def search_results(request):
-    # Obtendo o parâmetro de busca
-    city = request.GET.get('city', '').strip()
+    print("GET:", request.GET)
 
-    # Se o usuário não forneceu uma cidade, retornamos uma mensagem
+    # Parâmetros do filtro
+    city = request.GET.get('city', '').strip()
+    budget_ranges = request.GET.getlist('budget_range')
+    min_budget = request.GET.get('min_budget', '').strip()
+    max_budget = request.GET.get('max_budget', '').strip()
+    capacities = request.GET.getlist('capacity')
+    ratings = request.GET.getlist('ratings')
+
     if not city:
         return render(request, 'hotel_management/list_hotels_rooms.html', {
             'error': 'Please provide a city to search for available rooms.'
         })
 
-    # Consulta SQL segura para obter os quartos disponíveis em hotéis da cidade fornecida
-    query = """
-        SELECT 
-            r.id AS room_id, r.room_number, r.base_price, r."condition", 
-            r.capacity, r.hotel_id, h.h_name AS hotel_name, r.type_id
-        FROM 
-            public."ROOM_MANAGEMENT.room" r
-        INNER JOIN 
-            public."MANAGEMENT.hotel" h ON r.hotel_id = h.id
-        WHERE 
-            h.city ILIKE %(city)s
-    """
-    params = {'city': f"%{city}%"}
+    # Filtro inicial para a cidade
+    filters = Q(hotel__city__icontains=city)
 
-    # Executando a consulta no banco de dados
-    with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        rooms = cursor.fetchall()
+    # Filtros para orçamento
+    budget_queries = Q()
+    if budget_ranges:
+        for range_ in budget_ranges:
+            try:
+                min_b, max_b = map(int, range_.split('-'))
+                print("Range:", min_b, max_b)
+                budget_queries |= Q(base_price__gte=min_b, base_price__lte=max_b)
+            except ValueError:
+                continue  # Ignorar ranges inválidos
 
-    # Preparando os dados para exibição no template
-    rooms_list = [
-        {
-            'room_id': room[0],
-            'room_number': room[1],
-            'base_price': room[2],
-            'condition': room[3],
-            'capacity': room[4],
-            'hotel_id': room[5],
-            'hotel_name': room[6],
-            'type_id': room[7],
-        }
-        for room in rooms
-    ]
+    if min_budget:
+        try:
+            budget_queries &= Q(base_price__gte=int(min_budget))
+        except ValueError:
+            pass
 
-    # Renderizando o template com os resultados
+    if max_budget:
+        try:
+            budget_queries &= Q(base_price__lte=int(max_budget))
+        except ValueError:
+            pass
+
+    filters &= budget_queries
+
+    # Filtros para capacidade
+    if capacities:
+        filters &= Q(capacity__in=capacities)
+
+    # Filtros para avaliações
+    if ratings:
+        filters &= Q(hotel__stars__in=[int(rating) for rating in ratings])
+
+    # Consultar usando os filtros acumulados
+    rooms = Room.objects.filter(filters).select_related('hotel')
+
+    # Debugging
+    print("Query ORM:", rooms.query)
+
     return render(request, 'hotel_management/list_hotels_rooms.html', {
-        'rooms': rooms_list,
+        'rooms': rooms,
         'city': city,
     })
