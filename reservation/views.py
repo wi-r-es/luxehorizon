@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from .models import Reservation, RoomReservation
+from hotel_management.models import Room
+
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -22,3 +24,23 @@ def my_reservations(request):
         })
 
     return render(request, 'reservations/my_reservations.html', {'reservations': reservation_list})
+
+def reservation_page(request, room_id):
+    print("Room ID: ", room_id)
+    hotel_id = request.GET.get('hotel_id')
+    checkin = request.GET.get('checkin')
+    checkout = request.GET.get('checkout')
+    guests = request.GET.get('guests')
+    
+    # Aqui você pode buscar os dados do quarto pelo room_id e outras informações do hotel
+    room = Room.objects.get(id=room_id)
+    
+    context = {
+        'room': room,
+        'hotel_id': hotel_id,
+        'checkin': checkin,
+        'checkout': checkout,
+        'guests': guests,
+    }
+    
+    return render(request, 'reservations/reservation_page.html', context)

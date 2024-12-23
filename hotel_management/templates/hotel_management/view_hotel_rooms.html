@@ -74,8 +74,10 @@
                             {{ room.details }}
                         </p>
                     </div>
+                    <!-- Room id-->
                     <div class="card-footer text-center">
-                        <a href="{% url 'search_rooms' %}?hotel_id={{ hotel.id }}&checkin={{ request.GET.checkin }}&checkout={{ request.GET.checkout }}&guests={{ request.GET.guests }}" class="btn btn-primary">Reservar</a>                    </div>
+                        <a href="{% url 'reservation_page' room_id=room.id %}?hotel_id={{ request.GET.hotel_id }}&checkin={{ request.GET.checkin }}&checkout={{ request.GET.checkout }}&guests={{ request.GET.guests }}" class="btn btn-primary">Reservar</a>
+                    </div>
                 </div>
             </div>
             {% endfor %}
