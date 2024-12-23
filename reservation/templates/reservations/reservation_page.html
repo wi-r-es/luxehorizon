@@ -3,15 +3,25 @@
 {% block content %}
 <div class="container my-5">
     <h2>Confirmar Reserva</h2>
-    <p><strong>Hotel:</strong> {{ hotel_id }}</p>
+
+    <h5 class="mb-3">Dados Cliente:</h5>
+    <p><strong>Nome:</strong> {{ user_name }} {{ user_last_name }}</p>
+    <p><strong>Email:</strong> {{ user_email }}</p>
+    <p><strong>Telefone:</strong> {{ user_phone }}</p>
+    <p><strong>Morada:</strong> {{ user_address }}</p>
+    <p><strong>Código Postal:</strong> {{ user_postal_code }}</p>
+    <p><strong>Cidade:</strong> {{ user_city }}</p>
+
+    <h5 class="mb-3">Dados Hotel e Quarto:</h5>
+    <p><strong>Hotel:</strong> {{ hotel_name }}</p>
     <p><strong>Quarto:</strong> {{ room.room_number }}</p>
     <p><strong>Check-in:</strong> {{ checkin }}</p>
     <p><strong>Check-out:</strong> {{ checkout }}</p>
     <p><strong>Número de Hóspedes:</strong> {{ guests }}</p>
-    
-    
-    <form method="POST" action="">
+
+    <form method="POST" action="{% url 'confirm_reservation' %}">
         {% csrf_token %}
+        <input type="hidden" name="user_id" value="{{ user_id }}">
         <input type="hidden" name="room_id" value="{{ room.id }}">
         <input type="hidden" name="hotel_id" value="{{ hotel_id }}">
         <input type="hidden" name="checkin" value="{{ checkin }}">
