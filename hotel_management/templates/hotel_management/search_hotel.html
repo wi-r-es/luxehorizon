@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Sidebar and Results -->
+    <div class="row mt-4">
+        <!-- Sidebar -->
+        <aside class="col-md-3">
+            <h5>Filter by</h5>
+            <form id="budget-form" method="GET" action="{% url 'search_results' %}">
+                <!-- Campo oculto para preservar a cidade -->
+                <input type="hidden" name="city" value="{{ request.GET.city }}">
+
+                <!-- budget_range -->
+                <p>
+                    <h6>Your budget per day</h6>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="budget_range" value="0-200" id="budget-0-200" {% if '0-200' in request.GET.budget_range %}checked{% endif %}>
+                        <label class="form-check-label" for="budget-0-200">0€ - 200€</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="budget_range" value="200-500" id="budget-200-500" {% if '200-500' in request.GET.budget_range %}checked{% endif %}>
+                        <label class="form-check-label" for="budget-200-500">200€ - 500€</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="budget_range" value="500-1000" id="budget-500-1000" {% if '500-1000' in request.GET.budget_range %}checked{% endif %}>
+                        <label class="form-check-label" for="budget-500-1000">500€ - 1,000€</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="budget_range" value="1000-2000" id="budget-1000-2000" {% if '1000-2000' in request.GET.budget_range %}checked{% endif %}>
+                        <label class="form-check-label" for="budget-1000-2000">1,000€ - 2,000€</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="budget_range" value="2000-5000" id="budget-2000-5000" {% if '2000-5000' in request.GET.budget_range %}checked{% endif %}>
+                        <label class="form-check-label" for="budget-2000-5000">2,000€ - 5,000€</label>
+                    </div>
+    
+                    <!-- Custom Budget -->
+                     <p>
+                    <h6>Set your own budget</h6>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <input type="number" name="min_budget" class="form-control" placeholder="Min €" value="{{ request.GET.min_budget }}">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" name="max_budget" class="form-control" placeholder="Max €" value="{{ request.GET.max_budget }}">
+                        </div>
+                    </div>
+
+                <p>
+                <h6>Ratings</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="1" id="1star" {% if '1' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="1star">1 Estrela</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="2" id="2star" {% if '2' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="2star">2 Estrelas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="3" id="3star" {% if '3' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="3star">3 Estrelas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="4" id="4star" {% if '4' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="4star">4 Estrelas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ratings" value="5" id="5star" {% if '5' in request.GET.ratings %}checked{% endif %}>
+                    <label class="form-check-label" for="5star">5 Estrelas</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Apply</button>
+            </form>
+        </aside>
+        <section class="col-md-9">
+            <h5>{{ hotels|length }} hotels found</h5>
+            {% for hotel in hotels %}
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="https://placehold.co/300x230" class="img-fluid rounded-start" alt="Hotel Image">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h4 class="card-text">{{ hotel.h_name }}</h4>
+                            <p class="card-text mb-2">Cidade: {{ hotel.city }}
+                            <p class="card-text mb-2">Morada: {{ hotel.full_address }}, {{ hotel.city }}</p>
+                            <p class="card-text">
+                                {% for _ in "x"|rjust:hotel.stars %}⭐{% endfor %} 
+                                ( {{ hotel.stars }} estrelas )
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="card-text">A partir de: <strong>{{ hotel.min_price }}€</strong></p>
+                                </div>
+                                <a href="{% url 'search_rooms' %}?hotel_id={{ hotel.id }}&checkin={{ request.GET.checkin }}&checkout={{ request.GET.checkout }}&guests={{ request.GET.guests }}" class="btn btn-primary">Reservar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}

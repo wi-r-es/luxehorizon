@@ -3,17 +3,29 @@
 {% block title %}Home - Dream Vacation{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <div class="container text-center">
-        <h1>Welcome to Your Dream Vacation</h1>
-        <p>Plan your ideal getaway with ease and excitement.</p>
-        <form class="form-inline justify-content-center">
-            <input type="text" class="form-control mr-sm-2" placeholder="Enter Destination">
-            <select class="form-control mr-sm-2">
-                <option>Hotels</option>
-                <option>Flights</option>
-                <option>Car rentals</option>
-            </select>
+<!-- Hero Section -->
+<section class="hero bg-dark text-white text-center rounded py-5 my-4 mx-auto" style="max-width: 1300px;">
+    <div class="container">
+        <h1 class="display-4">Enjoy Your Dream Vacation</h1>
+        <p class="lead">Plan and book your perfect trip with expert advice, travel tips, destination information, and inspiration from us.</p>
+        <form class="form-inline justify-content-center mt-4" method="GET" action="{% url 'search_results' %}">
+            <!-- Destino -->
+            <div class="form-group mr-2">
+                <input type="text" name="city" class="form-control" placeholder="Where are you going?" aria-label="Destination" required>
+            </div>
+            <!-- Data de Check-in -->
+            <div class="form-group mr-2">
+                <input type="date" name="checkin" class="form-control" placeholder="Check-in date" aria-label="Check-in date" required>
+            </div>
+            <!-- Data de Check-out -->
+            <div class="form-group mr-2">
+                <input type="date" name="checkout" class="form-control" placeholder="Check-out date" aria-label="Check-out date" required>
+            </div>
+            <!-- Número de Hóspedes -->
+            <div class="form-group mr-2">
+                <input type="number" name="guests"  class="form-control" placeholder="Guests" aria-label="Number of guests" min="1" required>
+            </div>
+            <!-- Botão de Pesquisa -->
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
     </div>
