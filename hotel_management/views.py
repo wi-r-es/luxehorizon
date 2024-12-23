@@ -5,6 +5,9 @@ from .forms import HotelForm, RoomForm
 from django.contrib import messages
 from reservation.models import RoomReservation, Reservation
 from django.http import Http404
+import json
+from django.db import connection
+
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -155,5 +158,31 @@ def delete_room(request, hotel_id, room_id):
         else:
             # Render confirmation page
             return render(request, 'hotel_management/confirm_delete_room.html', {'room': room, 'hotel': room.hotel})
+        
+def import_rooms(request, hotel_id):
+    hotel = get_object_or_404(Hotel, id=hotel_id)
 
+    if request.method == 'POST':
+        rooms_file = request.FILES.get('rooms_file')
+        if rooms_file:
+            try:
+                # Load JSON from uploaded file
+                rooms_json = json.load(rooms_file)
+                rooms_json_str = json.dumps(rooms_json)
+
+                # Call the stored procedure
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "CALL ROOM_MANAGEMENT.import_rooms(%s, %s::jsonb);",
+                        [hotel_id, rooms_json_str]
+                    )
+
+                messages.success(request, f"Rooms imported successfully for hotel {hotel.h_name}!")
+                return redirect('room_list', hotel_id=hotel_id)
+            except Exception as e:
+                messages.error(request, f"Error importing rooms: {e}")
+        else:
+            messages.error(request, "No file uploaded. Please upload a valid JSON file.")
+    
+    return render(request, 'hotel_management/import_rooms.html', {'hotel': hotel})
 
