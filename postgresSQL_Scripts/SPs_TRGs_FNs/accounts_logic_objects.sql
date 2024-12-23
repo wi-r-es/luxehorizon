@@ -39,18 +39,18 @@ BEGIN
         
         INSERT INTO HR.USERS (
             FIRST_NAME, LAST_NAME, EMAIL, HASHED_PASSWORD, NIF, PHONE, 
-            FULL_ADDRESS, POSTAL_CODE, CITY, UTP
+            FULL_ADDRESS, POSTAL_CODE, CITY, UTP, inactive
         ) VALUES (
             _first_name, _last_name, _email, _hashed_password, _nif, _phone, 
-            _full_address, _postal_code, _city, _utp
+            _full_address, _postal_code, _city, _utp, false
         );
         RAISE NOTICE 'User % registered successfully', _email;
-     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
+    EXCEPTION WHEN OTHERS THEN
+        msg := SQLERRM; 
+        content := 'Detalhes do erro não disponíveis'; 
+        hint := 'Sem sugestões';
             -- Log the error into the error table
-            CALL SEC.LogError(msg, hint, content );
+            CALL SEC.LogError(msg, hint );
 
             RAISE;
     END;    
