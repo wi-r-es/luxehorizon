@@ -2,26 +2,30 @@
 
 {% block content %}
 <div class="container my-5">
-    <form class="form-inline justify-content-center mt-3" method="GET" action="">
-        
+    <p>Hotel ID: {{ hotel.id }}</p>
+    <form class="form-inline justify-content-center mt-3" method="GET" action="{% url 'filter_rooms_guests' %}">
+        <!-- mostrar id do hotel-->
+            <input type="text" name="hotel_id" value="{{ request.GET.hotel_id }}" hidden>
+
         <!-- Data de Check-in -->
         <div class="form-group mr-2">
             <input type="date" name="checkin" class="form-control" placeholder="Check-in date" aria-label="Check-in date" value="{{ request.GET.checkin }}" required>
         </div>
-
+    
         <!-- Data de Check-out -->
         <div class="form-group mr-2">
             <input type="date" name="checkout" class="form-control" placeholder="Check-out date" aria-label="Check-out date" value="{{ request.GET.checkout }}" required>
         </div>
-
+    
         <!-- Número de Hóspedes -->
         <div class="form-group mr-2">
-            <input type="number" name="guests" class="form-control" placeholder="Guests Number" aria-label="Number of guests" min="1" value="{{ request.GET.guests }}"  required>
+            <input type="number" name="guests" class="form-control" placeholder="Guests Number" aria-label="Number of guests" min="1" value="{{ request.GET.guests }}" required>
         </div>
-
+    
         <!-- Botão de Pesquisa -->
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
+    
 
     <!-- Available Rooms Section -->
     <h2 class="mb-4">Quartos Disponíveis</h2>

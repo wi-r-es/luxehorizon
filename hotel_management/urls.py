@@ -12,4 +12,5 @@ urlpatterns = [
     path('hotel/<int:hotel_id>/room/<int:room_id>/delete/', views.delete_room, name='delete_room'),
     path('search/', views.search_results, name='search_results'),
     path('search/rooms/', views.search_rooms, name='search_rooms'),
+    path('search/rooms/results/', views.filter_rooms_guests, name='filter_rooms_guests'),
 ]
