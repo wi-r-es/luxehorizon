@@ -2,7 +2,6 @@
 
 {% block content %}
 <div class="container my-5">
-    <p>Hotel ID: {{ hotel.id }}</p>
     <form class="form-inline justify-content-center mt-3" method="GET" action="{% url 'filter_rooms_guests' %}">
         <!-- mostrar id do hotel-->
             <input type="text" name="hotel_id" value="{{ request.GET.hotel_id }}" hidden>
@@ -38,6 +37,7 @@
                 <div class="card h-100 shadow-sm">
                         <img src="https://placehold.co/250x150" class="img-fluid rounded-start" alt="Hotel Image">
                     <div class="card-body">
+                        <p class="card-text mb-2">Room ID: {{ room.id }}</p>
                         <h5 class="card-text mb-3">Quarto Nº {{ room.room_number }}</h5>
                         <p class="card-text mb-2">
                             <strong>Capacidade:</strong> 
@@ -75,8 +75,7 @@
                         </p>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="#" class="btn btn-primary btn-sm">Reservar</a>
-                    </div>
+                        <a href="{% url 'search_rooms' %}?hotel_id={{ hotel.id }}&checkin={{ request.GET.checkin }}&checkout={{ request.GET.checkout }}&guests={{ request.GET.guests }}" class="btn btn-primary">Reservar</a>                    </div>
                 </div>
             </div>
             {% endfor %}
