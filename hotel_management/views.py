@@ -7,6 +7,8 @@ from reservation.models import RoomReservation, Reservation
 from django.http import Http404
 import json
 from django.db import connection
+from django.http import Http404
+from django.db.models import Min
 
 
 def hotel_list(request):
@@ -187,47 +189,139 @@ def import_rooms(request, hotel_id):
     return render(request, 'hotel_management/import_rooms.html', {'hotel': hotel})
 
 def search_results(request):
-    # Obtendo o parâmetro de busca
+    print("Query Params search:", request.GET)
+    # Parâmetros do filtro
     city = request.GET.get('city', '').strip()
-    # Se o usuário não forneceu uma cidade, retornamos uma mensagem
+    budget_ranges = request.GET.getlist('budget_range')
+    min_budget = request.GET.get('min_budget', '').strip()
+    max_budget = request.GET.get('max_budget', '').strip()
+    ratings = request.GET.getlist('ratings')
+
     if not city:
         return render(request, 'hotel_management/list_hotels_rooms.html', {
-            'error': 'Please provide a city to search for available rooms.'
+            'error': 'Please provide a city to search for available hotels.'
         })
-    # Consulta SQL segura para obter os quartos disponíveis em hotéis da cidade fornecida
-    query = """
-        SELECT 
-            r.id AS room_id, r.room_number, r.base_price, r."condition", 
-            r.capacity, r.hotel_id, h.h_name AS hotel_name, r.type_id
-        FROM 
-            public."ROOM_MANAGEMENT.room" r
-        INNER JOIN 
-            public."MANAGEMENT.hotel" h ON r.hotel_id = h.id
-        WHERE 
-            h.city ILIKE %(city)s
-    """
-    params = {'city': f"%{city}%"}
-    # Executando a consulta no banco de dados
-    with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        rooms = cursor.fetchall()
-    # Preparando os dados para exibição no template
-    rooms_list = [
-        {
-            'room_id': room[0],
-            'room_number': room[1],
-            'base_price': room[2],
-            'condition': room[3],
-            'capacity': room[4],
-            'hotel_id': room[5],
-            'hotel_name': room[6],
-            'type_id': room[7],
-        }
-        for room in rooms
-    ]
-    # Renderizando o template com os resultados
-    return render(request, 'hotel_management/list_hotels_rooms.html', {
-        'rooms': rooms_list,
+
+    # Filtro inicial para a cidade
+    filters = Q(city__icontains=city)
+
+    # Filtros para orçamento
+    budget_queries = Q()
+    if budget_ranges:
+        for range_ in budget_ranges:
+            try:
+                min_b, max_b = map(int, range_.split('-'))
+                print("Range:", min_b, max_b)
+                budget_queries |= Q(hotelroom__base_price__gte=min_b, hotelroom__base_price__lte=max_b)
+            except ValueError:
+                continue  # Ignorar ranges inválidos
+
+    if min_budget:
+        try:
+            budget_queries &= Q(hotelroom__base_price__gte=int(min_budget))
+        except ValueError:
+            pass
+
+    if max_budget:
+        try:
+            budget_queries &= Q(hotelroom__base_price__lte=int(max_budget))
+        except ValueError:
+            pass
+
+    filters &= budget_queries
+
+    # Filtros para avaliações
+    if ratings:
+        filters &= Q(stars__in=[int(rating) for rating in ratings])
+
+    # Consultar usando os filtros acumulados
+    hotels = Hotel.objects.filter(filters).distinct().annotate(min_price=Min('room__base_price'))
+
+    # Debugging
+    print("Query ORM:", hotels.query)
+
+    return render(request, 'hotel_management/search_hotel.html', {
+        'hotels': hotels,
         'city': city,
     })
 
+def search_rooms(request):
+    print("Query Params:", request.GET)
+    hotel_id = request.GET.get('hotel_id')  # Obtém o ID do hotel passado na URL
+    checkin = request.GET.get('checkin')
+    checkout = request.GET.get('checkout')
+    guests = request.GET.get('guests')
+    
+    if not hotel_id:
+        return render(request, 'hotel_management/view_hotel_rooms.html', {
+            'error': 'ID do hotel não fornecido.',
+        })
+
+    # Filtra os quartos disponíveis para o hotel especificado
+    rooms = Room.objects.filter(hotel_id=hotel_id, condition=0).select_related('hotel')
+
+    # Debugging opcional
+    print("Query ORM:", rooms.query)
+    print(f"Checkin: {checkin}, Checkout: {checkout}, Guests: {guests}")
+
+    # Renderiza a página com os quartos encontrados
+    return render(request, 'hotel_management/view_hotel_rooms.html', {
+        'hotel_id': hotel_id,
+        'rooms': rooms,
+        'checkin': checkin,
+        'checkout': checkout,
+        'guests': guests,
+    })
+
+def filter_rooms_guests(request):
+    hotel_id = request.GET.get('hotel_id')
+    checkin = request.GET.get('checkin')
+    checkout = request.GET.get('checkout')
+    guests = request.GET.get('guests')
+
+    print("Query Params:", request.GET)  # Verifique todos os parâmetros recebidos
+    print("Hotel ID recebido:", hotel_id)
+
+    if not hotel_id:
+        return render(request, 'hotel_management/view_hotel_rooms.html', {
+            'error': 'ID do hotel não fornecido.',
+        })
+
+    try:
+        guests = int(guests)  # Certifica-se de que o número de hóspedes é um inteiro
+    except (ValueError, TypeError):
+        return render(request, 'hotel_management/view_hotel_rooms.html', {
+            'error': 'Número de hóspedes inválido.',
+        })
+
+    print("Número de hóspedes:", guests)
+
+    # Definir os tipos de capacidade permitidos com base no número de hóspedes
+    capacity_mapping = {
+        1: ['S', 'D'],  # Permitir Single e Double para 1 hóspede
+        2: ['S', 'D'],  # Single e Double para 2 hóspedes
+        3: ['S', 'D', 'T'],  # Single, Double e Triple para 3 hóspedes
+        4: ['S', 'D', 'T', 'Q'],  # Single, Double, Triple e Quad para 4 hóspedes
+        5: ['S', 'D', 'T', 'Q', 'K'],  # Single, Double, Triple, Quad e King para 5 hóspedes
+        6: ['S', 'D', 'T', 'Q', 'K', 'F'],  # Single, Double, Triple, Quad, King e Family para 6 hóspedes
+    }
+
+    # Obter os tipos permitidos para o número de hóspedes ou considerar todos os tipos para valores acima de 6
+    allowed_capacities = capacity_mapping.get(guests, ['S', 'D', 'T', 'Q', 'K', 'F'])
+
+    # Filtrar os quartos disponíveis para o hotel especificado e os tipos permitidos
+    rooms = Room.objects.filter(
+        hotel_id=hotel_id,
+        condition=0,  # Disponível
+        capacity__in=allowed_capacities
+    ).select_related('hotel')
+
+    print("capacidades permitidas:", allowed_capacities)
+
+    # Renderiza a página com os quartos encontrados
+    return render(request, 'hotel_management/view_hotel_rooms.html', {
+        'rooms': rooms,
+        'checkin': checkin,
+        'checkout': checkout,
+        'guests': guests,
+    })
