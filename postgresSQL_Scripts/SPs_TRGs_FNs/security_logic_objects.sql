@@ -7,22 +7,22 @@
 */
 CREATE OR REPLACE PROCEDURE SEC.LogError(
     _ErrorMessage VARCHAR(4000),
-    _ErrorHint VARCHAR(400)
+    _ErrorHint VARCHAR(400),
+    _ErrorContent VARCHAR(400)
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Log apenas os detalhes disponíveis
-    INSERT INTO SEC.ERROR_LOG (ERROR_MESSAGE, ERROR_HINT)
-    VALUES (_ErrorMessage, _ErrorHint);
+    -- Log the error details into the error log table
+    INSERT INTO SEC.ERROR_LOG (ERROR_MESSAGE, ERROR_HINT, ERROR_CONTENT)
+    VALUES (_ErrorMessage, _ErrorHint, _ErrorContent);
 
-    -- Raise o erro para o chamador
+    -- Raise the error to the caller
     RAISE EXCEPTION '%', _ErrorMessage
-        USING ERRCODE = 'P0001', -- Código de erro definido pelo usuário
-              DETAIL = 'Error Hint: ' || _ErrorHint;
+        USING ERRCODE = 'P0001', -- PostgreSQL user-defined exception code
+              DETAIL = 'Error Hint: ' || _ErrorHint || ', Error Content: ' || _ErrorContent;
 END;
 $$;
-
 
 /*
 ████████ ██████   ██████          ██ ███    ██ ███████ ███████ ██████  ████████         ██    ██ ███████ ███████ ██████          

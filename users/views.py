@@ -4,72 +4,34 @@ from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import RegisterForm, CustomLoginForm
-from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from .models import User, Client, Employee, AccPermission, UserPasswordsDictionary
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import User
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
 from .forms import UserForm
-from django.db import connection
+
 
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            try:
-                # Extrair os dados do formulário
-                first_name = form.cleaned_data['first_name']
-                last_name = form.cleaned_data['last_name']
-                email = form.cleaned_data['email']
-                password = form.cleaned_data['password']
-                nif = form.cleaned_data.get('nif', '')
-                phone = form.cleaned_data.get('phone', '')
-                full_address = form.cleaned_data.get('full_address', '')
-                postal_code = form.cleaned_data.get('postal_code', '')
-                city = form.cleaned_data.get('city', '')
-                utp = 'C'
-
-                # Gerar o hash da senha
-                hashed_password = make_password(password)
-
-                # Chamar o procedimento armazenado
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        CALL MANAGEMENT.sp_register_user(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, [
-                        first_name,
-                        last_name,
-                        email,
-                        hashed_password,
-                        nif,
-                        phone,
-                        full_address,
-                        postal_code,
-                        city,
-                        utp
-                    ])
-
-                # Mensagem de sucesso
-                messages.success(request, "Registo concluído com sucesso!")
-                return redirect('login')
-
-            except Exception as e:
-                # Tratamento de erros
-                messages.error(request, f"Erro durante o registo: {str(e)}")
+            user = form.save()  # Save the user
+            messages.success(request, "Registration successful!")
+            return redirect('login')
         else:
-            # Mensagem de erro de validação
-            messages.error(request, "Por favor corrija os erros.")
+            messages.error(request, "Please correct the errors below.")
     else:
         form = RegisterForm()
-
     return render(request, 'users/register.html', {'form': form})
+
 
 class CustomLoginView(LoginView):
     form_class = CustomLoginForm
     template_name = 'users/login.html'   
     redirect_authenticated_user = True
-    next_page = reverse_lazy('index') 
+    next_page = reverse_lazy('index')  # Default redirection for other users
 
     def form_valid(self, form):
         user = form.cleaned_data.get('user')
