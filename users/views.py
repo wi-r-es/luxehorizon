@@ -103,7 +103,7 @@ def update_profile(request):
 
         user.save()  # Save changes
         messages.success(request, "Profile updated successfully.")
-        return redirect('profile')
+        return redirect('/')
 
     return render(request, 'users/profile.html', {'user': request.user})
 

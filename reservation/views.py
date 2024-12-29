@@ -91,7 +91,7 @@ def confirm_reservation(request):
                     CALL create_reservation(%s, %s, %s, %s, %s);
                 """, [user_id, room_id, checkin, checkout, guests])
 
-            return render(request, 'reservations/my_reservations.html', {"success": True})
+            return redirect('my_reservations')
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
