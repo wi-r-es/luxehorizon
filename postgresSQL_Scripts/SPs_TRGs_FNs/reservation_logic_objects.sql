@@ -62,6 +62,7 @@ DECLARE
     nights INTEGER;
     season_id INTEGER;
     room_base_price NUMERIC;
+	season_rate NUMERIC;
 BEGIN
     -- Verificar se o quarto existe
     IF NOT EXISTS (SELECT 1 FROM "ROOM_MANAGEMENT.room" WHERE id = room_id) THEN
@@ -76,7 +77,7 @@ BEGIN
     END IF;
 
     -- Buscar temporada válida
-    SELECT id INTO season_id
+    SELECT id, rate INTO season_id, season_rate
     FROM "FINANCE.season"
     WHERE begin_date <= checkin AND end_date >= checkout;
 
@@ -94,7 +95,7 @@ BEGIN
     END IF;
 
     -- Calcular preço total
-    total_price := nights * room_base_price * 1.23; -- 23% de imposto
+    total_price := nights * room_base_price * season_rate;
 
     -- Inserir a reserva
     INSERT INTO "RESERVES.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
@@ -109,17 +110,6 @@ BEGIN
     RAISE NOTICE 'Reserva criada com sucesso. ID da reserva: %', reservation_id;
 END;
 $$ LANGUAGE plpgsql;
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -20,24 +20,18 @@ class Season(models.Model):
     )
     begin_date = models.DateField()
     end_date = models.DateField()
+    rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Season Rate"
+    )
 
     class Meta:
         db_table = 'FINANCE.season'
-        unique_together = ('descriptive', 'begin_date', 'end_date')
+        unique_together = ('descriptive', 'begin_date', 'end_date', 'rate')
 
     def __str__(self):
         return f"Season {self.get_descriptive_display()} ({self.begin_date} to {self.end_date})"
-
-
-class PricePerSeason(models.Model):
-    season = models.ForeignKey(Season, on_delete=models.CASCADE, related_name="season_prices")
-    tax = models.FloatField()
-
-    class Meta:
-        db_table = 'FINANCE.price_per_season'
-
-    def __str__(self):
-        return f"Price per Season {self.season.descriptive} - Tax: {self.tax}"
 
 
 class Reservation(models.Model):
