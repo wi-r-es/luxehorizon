@@ -38,113 +38,89 @@ $$ LANGUAGE plpgsql;
 
 
 
-
 /*
 ███████ ██████           ██████ ██████  ███████  █████  ████████ ███████         ██████  ███████ ███████ ███████ ██████  ██    ██  █████  ████████ ██  ██████  ███    ██ 
 ██      ██   ██         ██      ██   ██ ██      ██   ██    ██    ██              ██   ██ ██      ██      ██      ██   ██ ██    ██ ██   ██    ██    ██ ██    ██ ████   ██ 
 ███████ ██████          ██      ██████  █████   ███████    ██    █████           ██████  █████   ███████ █████   ██████  ██    ██ ███████    ██    ██ ██    ██ ██ ██  ██ 
      ██ ██              ██      ██   ██ ██      ██   ██    ██    ██              ██   ██ ██           ██ ██      ██   ██  ██  ██  ██   ██    ██    ██ ██    ██ ██  ██ ██ 
 ███████ ██      ███████  ██████ ██   ██ ███████ ██   ██    ██    ███████ ███████ ██   ██ ███████ ███████ ███████ ██   ██   ████   ██   ██    ██    ██  ██████  ██   ████ 
-                                                                                                                                                                         
-                                                                                                                                                                         
 */
 
-CREATE OR REPLACE PROCEDURE RESERVES.sp_create_reservation(
-    _client_id INT,
-    _room_ids INT[],
-    _begin_date DATE,
-    _end_date DATE,
-    OUT _reservation_id INT
+/* A FUNCIONAR  A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR A FUNCIONAR*/
+
+CREATE OR REPLACE PROCEDURE create_reservation(
+    user_id INTEGER,
+    room_id INTEGER,
+    checkin DATE,
+    checkout DATE,
+    guests INTEGER
 )
-LANGUAGE plpgsql
 AS $$
 DECLARE
-    _total_price NUMERIC(10, 2) := 0;
-    _room_price NUMERIC(10, 2);
-    _room_id INT;
-    _room_available BOOLEAN;
-    _season_id INT;
-    _season_tax INT;
-    msg TEXT;
-    content TEXT;
-    hint TEXT;
+    reservation_id INTEGER;
+    total_price NUMERIC;
+    nights INTEGER;
+    season_id INTEGER;
+    room_base_price NUMERIC;
 BEGIN
-    -- Validate reservation dates
-    IF _begin_date >= _end_date THEN
-        RAISE EXCEPTION 'Begin date must be earlier than end date.';
+    -- Verificar se o quarto existe
+    IF NOT EXISTS (SELECT 1 FROM "ROOM_MANAGEMENT.room" WHERE id = room_id) THEN
+        RAISE EXCEPTION 'Quarto não encontrado.';
     END IF;
 
-    -- Calls function to get the season ID according to reservation dates 
-    SELECT FINANCE.fn_get_season(_begin_date, _end_date)
-    INTO _season_id;
+    -- Calcular número de noites
+    nights := checkout - checkin;
 
-    IF _season_id IS NULL THEN
-        RAISE EXCEPTION 'No season found for the given dates.';
+    IF nights <= 0 THEN
+        RAISE EXCEPTION 'As datas de check-in e check-out são inválidas.';
     END IF;
 
-    -- Get the tax rate for the determined season
-    SELECT TAX
-    INTO _season_tax
-    FROM FINANCE.PRICE_PER_SEASON
-    WHERE SEASON_ID = _season_id;
+    -- Buscar temporada válida
+    SELECT id INTO season_id
+    FROM "FINANCE.season"
+    WHERE begin_date <= checkin AND end_date >= checkout;
 
-    -- Check room availability and calculate total price
-    FOR _room_id IN SELECT UNNEST(_room_ids) LOOP -- Expands an array into a set of rows
-        SELECT BASE_PRICE 
-        INTO _room_price
-        FROM ROOM_MANAGEMENT.ROOM 
-        WHERE ID = _room_id;
+    IF season_id IS NULL THEN
+        RAISE EXCEPTION 'Sem temporada válida para as datas selecionadas.';
+    END IF;
 
-        IF NOT FOUND THEN
-            RAISE EXCEPTION 'Room ID % does not exist.', _room_id;
-        END IF;
+    -- Obter preço base do quarto
+    SELECT base_price INTO room_base_price
+    FROM "ROOM_MANAGEMENT.room"
+    WHERE id = room_id;
 
-        -- Check if the room is already reserved
-        SELECT NOT EXISTS (
-            SELECT 1 
-            FROM RESERVES.ROOM_RESERVATION rr
-            INNER JOIN RESERVES.RESERVATION r ON rr.RESERVATION_ID = r.ID
-            WHERE rr.ROOM_ID = _room_id
-              AND r.BEGIN_DATE < _end_date
-              AND r.END_DATE > _begin_date
-        ) INTO _room_available;
+    IF room_base_price IS NULL THEN
+        RAISE EXCEPTION 'O quarto não possui preço definido.';
+    END IF;
 
-        IF NOT _room_available THEN
-            RAISE EXCEPTION 'Room ID % is not available for the selected dates.', _room_id;
-        END IF;
+    -- Calcular preço total
+    total_price := nights * room_base_price * 1.23; -- 23% de imposto
 
-         -- Calculate price with tax and add to total
-        _room_price := _room_price + (_room_price * _season_tax); -- Season tax is already a float so its already 0.tax
-        _total_price := _total_price + _room_price;
-    END LOOP;
-    BEGIN 
+    -- Inserir a reserva
+    INSERT INTO "RESERVES.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
+    VALUES (user_id, checkin, checkout, 'P', season_id, total_price)
+    RETURNING id INTO reservation_id;
 
-        INSERT INTO RESERVES.RESERVATION (
-            CLIENT_ID, BEGIN_DATE, END_DATE, R_DETAIL, SEASON_ID, TOTAL_VALUE
-        ) VALUES (
-            _client_id, _begin_date, _end_date, 'P', _season_id, _total_price
-        )
-        RETURNING ID INTO _reservation_id;
+    -- Relacionar o quarto à reserva
+    INSERT INTO "RESERVES.room_reservation" (reservation_id, room_id, price_reservation)
+    VALUES (reservation_id, room_id, total_price);
 
-        
-        FOR _room_id IN SELECT UNNEST(_room_ids) LOOP
-            INSERT INTO RESERVES.ROOM_RESERVATION (
-                RESERVATION_ID, ROOM_ID, PRICE_RESERVATION
-            ) VALUES (
-                _reservation_id, _room_id, _room_price
-            );
-        END LOOP;
-
-        RAISE NOTICE 'Reservation ID % created successfully for Client ID %', _reservation_id, _client_id;
-    EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
-            RAISE;
-    END;    
+    -- Confirmação de sucesso
+    RAISE NOTICE 'Reserva criada com sucesso. ID da reserva: %', reservation_id;
 END;
-$$;
+$$ LANGUAGE plpgsql;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*

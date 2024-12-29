@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
+from django.db import connection
+from django.http import JsonResponse
 from .models import Reservation, RoomReservation, Guest, Season
 from hotel_management.models import Room
-from datetime import datetime
-from decimal import Decimal
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -79,104 +78,21 @@ def reservation_page(request, room_id):
 def confirm_reservation(request):
     if request.method == "POST":
         try:
-            # Coletar dados do formulário
-            user_id = request.POST.get('user_id')
-            room_id = request.POST.get('room_id')
-            checkin_str = request.POST.get('checkin')
-            checkout_str = request.POST.get('checkout')
-            guests = request.POST.get('guests')
+            # Receber os parâmetros do corpo da requisição
+            user_id = int(request.POST.get("user_id"))
+            room_id = int(request.POST.get("room_id"))
+            checkin = request.POST.get("checkin")  # Formato: YYYY-MM-DD
+            checkout = request.POST.get("checkout")  # Formato: YYYY-MM-DD
+            guests = int(request.POST.get("guests"))
 
-            print("Início da validação")
+            # Chamar o procedimento no banco de dados
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    CALL create_reservation(%s, %s, %s, %s, %s);
+                """, [user_id, room_id, checkin, checkout, guests])
 
-            # Validar campos obrigatórios
-            if not all([user_id, room_id, checkin_str, checkout_str, guests]):
-                messages.error(request, "Todos os campos são obrigatórios.")
-                return redirect('reservation_page', room_id=room_id)
-
-            # Conversão de datas
-            try:
-                checkin = datetime.strptime(checkin_str, '%Y-%m-%d').date()
-                checkout = datetime.strptime(checkout_str, '%Y-%m-%d').date()
-            except ValueError:
-                messages.error(request, "Formato de data inválido. Use AAAA-MM-DD.")
-                return redirect('reservation_page', room_id=room_id)
-
-            # Validar datas
-            if checkin >= checkout:
-                messages.error(request, "A data de check-in deve ser antes da data de check-out.")
-                return redirect('reservation_page', room_id=room_id)
-
-            print("Datas validadas com sucesso")
-
-            # Buscar o quarto
-            room = get_object_or_404(Room, id=room_id)
-
-            print(f"Quarto encontrado: {room}")
-
-            # Determinar a temporada
-            season = Season.objects.filter(
-                begin_date__lte=checkin,
-                end_date__gte=checkout
-            ).first()
-
-            if not season:
-                messages.error(request, "Não há temporada válida para as datas selecionadas.")
-                return redirect('reservation_page', room_id=room_id)
-
-            print(f"Temporada encontrada: {season}")
-
-            # Calcular valor total da reserva
-            difference = checkout - checkin
-            nights = difference.days
-
-            if nights <= 0:
-                messages.error(request, "A reserva precisa ter pelo menos uma noite.")
-                return redirect('reservation_page', room_id=room_id)
-
-            print(f"Número de noites: {nights}")
-
-            # Validar o preço do quarto
-            if not hasattr(room, 'base_price') or room.base_price is None:
-                messages.error(request, "O quarto selecionado não tem um preço base definido.")
-                return redirect('reservation_page', room_id=room_id)
-
-            print(f"Preço base do quarto: {room.base_price}")
-
-            # Calcular total com impostos (exemplo de 23%)
-            room_price = room.base_price
-            tax_rate = Decimal('1.23')
-            total_value = room_price * nights * tax_rate
-
-            print(f"Valor total calculado: {total_value}")
-
-            # Criar a reserva
-            reservation = Reservation.objects.create(
-                client_id=user_id,
-                begin_date=checkin,
-                end_date=checkout,
-                status=Reservation.PENDING,
-                season=season,
-                total_value=total_value
-            )
-
-            print("Reserva criada com sucesso")
-
-            # Relacionar o quarto com a reserva
-            RoomReservation.objects.create(
-                reservation=reservation,
-                room=room,
-                price_reservation=total_value
-            )
-
-            print("Reserva do quarto criada com sucesso")
-
-            # Mensagem de sucesso
-            messages.success(request, "Reserva criada com sucesso!")
-            return redirect('my_reservations')
-
+            return render(request, 'reservations/my_reservations.html', {"success": True})
         except Exception as e:
-            print(f"Erro: {str(e)}")
-            messages.error(request, f"Ocorreu um erro ao criar a reserva: {str(e)}")
-            return redirect('reservation_page', room_id=request.POST.get('room_id'))
-    else:
-        return redirect('home')
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
