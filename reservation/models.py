@@ -23,6 +23,7 @@ class Season(models.Model):
     rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        default=0.00, 
         verbose_name="Season Rate"
     )
 
