@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.db import connection
 from django.http import JsonResponse
 from .models import Reservation, RoomReservation, Guest, Season
 from hotel_management.models import Room
+from .forms import SeasonForm
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -96,3 +98,59 @@ def confirm_reservation(request):
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
+
+def season_list(request):
+    # Get the query parameter for searching
+    query = request.GET.get('q', '')
+
+    # Filter seasons based on the query
+    seasons = Season.objects.all()
+    if query:
+        seasons = seasons.filter(descriptive__icontains=query)
+
+    # Sorting
+    sort = request.GET.get('sort', 'descriptive')
+    order = request.GET.get('order', 'asc')
+    
+    if order == 'desc':
+        sort = '-' + sort
+
+    # Sort seasons based on the sort parameter
+    seasons = seasons.order_by(sort)
+
+    # Passing context to the template
+    context = {
+        'seasons': seasons,
+        'query': query,
+        'sort': sort.lstrip('-'),  
+        'order': order,
+
+    }
+    return render(request, 'seasons/seasons_list.html', context)
+
+def season_form(request, season_id=None):
+    if season_id:
+        season = get_object_or_404(Season, id=season_id)
+        operation = "editar"
+    else:
+        season = None
+        operation = "adicionar"
+
+    if request.method == 'POST':
+        form = SeasonForm(request.POST, instance=season)
+        if form.is_valid():
+            new_season = form.save(commit=False)
+
+            new_season.save()
+            messages.success(request, f"{'Temporada adicionada' if season is None else 'Temporada atualizada'} com sucesso!")
+            return redirect('seasons_list')
+        else:
+            messages.error(request, "Erro ao processar o formulário.")
+    else:
+        form = SeasonForm(instance=season)
+
+    return render(request, 'seasons/seasons_form.html', {
+        'form': form,
+        'operation': operation,
+        'season': season or {},
+    })

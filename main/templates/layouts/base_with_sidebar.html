@@ -23,7 +23,12 @@
               <i class="bi bi-building-fill"></i> Users
             </a>
           </li>
-          <!-- Accordion Section 2 -->
+          <li class="nav-item">
+            <a class="nav-link text-light" aria-current="page" href="{% url 'seasons_list' %}">
+              <i class="bi bi-building-fill"></i> Seasons
+            </a>
+          </li>
+          {% comment %} <!-- Accordion Section 2 -->
           <li class="nav-item">
             <a class="nav-link text-light d-flex justify-content-between" data-bs-toggle="collapse" href="#menu2" role="button" aria-expanded="false" aria-controls="menu2">
               <span><i class="bi bi-folder"></i> Section 2</span> <i class="bi bi-chevron-down"></i>
@@ -48,7 +53,7 @@
                 <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.3</a></li>
               </ul>
             </div>
-          </li>
+          </li> {% endcomment %}
         </ul>
       </div>
     </nav>

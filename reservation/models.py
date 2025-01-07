@@ -13,11 +13,7 @@ class Season(models.Model):
         (FESTIVAL, 'Festival')
     ]
 
-    descriptive = models.CharField(
-        max_length=1,
-        choices=SEASON_DESCRIPTIVE_CHOICES,
-        verbose_name="Season Type"
-    )
+    descriptive = models.TextField()
     begin_date = models.DateField()
     end_date = models.DateField()
     rate = models.DecimalField(

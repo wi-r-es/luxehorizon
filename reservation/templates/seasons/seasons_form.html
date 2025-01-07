@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>
+        {% if operation == "adicionar" %}
+            Adicionar Nova Temporada
+        {% else %}
+            Editar Temporada de {{ season.description }}
+        {% endif %}
+    </h1>
+    <hr>
+
+    <form method="post" action="{% if operation == 'editar' %}{% url 'seasons_edit' season.id %}{% else %}{% url 'seasons_add' %}{% endif %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label for="id_description">Descrição</label>
+                    {{ form.descriptive }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="id_begin_date">Data de Início</label>
+                    {{ form.begin_date }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="id_end_date">Data de Fim</label>
+                    {{ form.end_date }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="id_rate">Variação</label>
+                    {{ form.rate }}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">
+                {% if operation == "adicionar" %}
+                    Adicionar
+                {% else %}
+                    Alterar Dados
+                {% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
