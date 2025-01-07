@@ -200,46 +200,40 @@ $$;
      ██ ██              ██      ██   ██ ██  ██ ██ ██      ██      ██              ██   ██ ██           ██ ██      ██   ██  ██  ██  ██   ██    ██    ██ ██    ██ ██  ██ ██ 
 ███████ ██      ███████  ██████ ██   ██ ██   ████  ██████ ███████ ███████ ███████ ██   ██ ███████ ███████ ███████ ██   ██   ████   ██   ██    ██    ██  ██████  ██   ████ 
 */
+
+/*
+ * Cancel a reservation
+ */
+ 
 CREATE OR REPLACE PROCEDURE RESERVES.sp_cancel_reservation(
     _reservation_id INT
 )
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    msg TEXT;
-    content TEXT;
-    hint TEXT;
 BEGIN
+    -- Verificar se a reserva existe
     IF NOT EXISTS (
         SELECT 1 
-        FROM RESERVES.RESERVATION 
-        WHERE ID = _reservation_id
+        FROM "RESERVES.reservation" 
+        WHERE id = _reservation_id
     ) THEN
         RAISE EXCEPTION 'Reservation ID % does not exist.', _reservation_id;
     END IF;
-    BEGIN 
-        -- Delete room reservations
-        DELETE FROM RESERVES.ROOM_RESERVATION
-        WHERE RESERVATION_ID = _reservation_id;
 
-        -- Update reservation status to "Cancelled"
-        UPDATE RESERVES.RESERVATION
-        SET R_DETAIL = 'CC' 
-        WHERE ID = _reservation_id;
+    -- Deletar associações com quartos
+    DELETE FROM "RESERVES.room_reservation"
+    WHERE reservation_id = _reservation_id;
 
-        RAISE NOTICE 'Reservation ID % cancelled successfully.', _reservation_id;
+    -- Atualizar o status da reserva para "Cancelado"
+    UPDATE "RESERVES.reservation"
+    SET status = 'CC'  -- Substituir 'CC' pelo código adequado se necessário
+    WHERE id = _reservation_id;
 
-    RAISE NOTICE 'Reservation ID % created successfully for Client ID %', _reservation_id, _client_id;
-    EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
-            RAISE;
-    END;   
+    -- Mensagem de sucesso
+    RAISE NOTICE 'Reservation ID % cancelled successfully.', _reservation_id;
+
 END;
 $$;
-
 
 
 /*

@@ -8,32 +8,43 @@ def my_reservations(request):
     # Fetch reservations for the logged-in user
     reservations = Reservation.objects.filter(client=request.user).prefetch_related('room_reservations__room__hotel')
     reservation_list = []
-    for reservation in reservations:
-        refundable = False #reservation.is_refundable()   Check if the reservation is refundable
-        room_details = ", ".join(
-            [f"Room {rr.room.room_number} at {rr.room.hotel.h_name}" for rr in reservation.room_reservations.all()]
-        )
 
-        # Buscar o hotel associado ao quarto
-        hotel = reservation.room_reservations.first().room.hotel
-        
-        # Obter o rating do hotel (campo `stars`)
-        hotel_rating = hotel.stars
+    for reservation in reservations:
+        refundable = False  # Substituir por `reservation.is_refundable()` se a lógica for implementada
+
+        # Verificar se existem associações com quartos
+        if reservation.room_reservations.exists():
+            # Obter detalhes do(s) quarto(s)
+            room_details = ", ".join(
+                [f"Room {rr.room.room_number} at {rr.room.hotel.h_name}" for rr in reservation.room_reservations.all()]
+            )
+
+            # Buscar o hotel associado ao primeiro quarto
+            hotel = reservation.room_reservations.first().room.hotel
+            hotel_rating = hotel.stars
+        else:
+            # Configuração padrão para reservas sem quartos
+            room_details = "No rooms associated"
+            hotel_rating = 0
+
         # Calcular o número de noites
-        night = reservation.end_date - reservation.begin_date
+        nights = (reservation.end_date - reservation.begin_date).days
 
         reservation_list.append({
+            'id': reservation.id,
             'title': room_details,
             'check_in': reservation.begin_date,
             'check_out': reservation.end_date,
-            'nights': night.days,
+            'nights': nights,
             'price': reservation.total_value,
             'tax_inclusive': True,  # Assuming tax inclusion for all reservations
             'non_refundable': not refundable,
-            'hotel_rating': hotel_rating, 
+            'hotel_rating': hotel_rating,
+            'status': reservation.status,
         })
 
     return render(request, 'reservations/my_reservations.html', {'reservations': reservation_list})
+
 
 def reservation_page(request, room_id):
 
@@ -93,6 +104,26 @@ def confirm_reservation(request):
 
             return redirect('my_reservations')
         except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
+
+def cancel_reservation(request):
+    if request.method == "POST":
+        try:
+            # Extrair o ID da reserva do formulário
+            reservation_id = int(request.POST.get("reservation_id"))
+
+            # Chamar o procedimento armazenado no banco de dados
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    CALL RESERVES.sp_cancel_reservation(%s);
+                """, [reservation_id])
+
+            # Redirecionar para a página de reservas com uma mensagem de sucesso
+            return redirect('my_reservations')
+        except Exception as e:
+            # Caso ocorra um erro, renderizar a página com uma mensagem de erro
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)

@@ -5,14 +5,17 @@
     <!-- My Reservations Section -->
     <h2 class="mb-4">My Reservations</h2>
     <div class="row">
+        {% with 0 as active_count %}
         {% for reservation in reservations %}
+        {% if reservation.status != 'CC' %}
+        {% with active_count|add:1 as active_count %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="text">{{ reservation.title }}</h5>
                     <p class="card-text mb-1">
                         ( {{ reservation.hotel_rating }} estrelas )
-                        {% for _ in "x"|rjust:reservation.hotel_rating %}⭐{% endfor %} 
+                        {% for _ in "x"|rjust:reservation.hotel_rating %}⭐{% endfor %}
                     </p>
                     {% if reservation.non_refundable %}
                     <p class="badge badge-danger">Non-refundable</p>
@@ -30,9 +33,25 @@
                 <div class="card-footer text-center">
                     <a href="#" class="btn btn-primary btn-sm">View Room Details</a>
                 </div>
+                <div class="card-footer text-center">
+                    <form method="POST" action="{% url 'cancel_reservation' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                    </form>
+                </div>
             </div>
         </div>
+        {% endwith %}
+        {% endif %}
         {% endfor %}
+        {% endwith %}
+
+        {% if active_count == 0 %}
+        <div class="col-12 text-center">
+            <p class="text-muted">Sem reservas para mostrar</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

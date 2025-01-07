@@ -14,7 +14,7 @@ class Season(models.Model):
     ]
 
     descriptive = models.CharField(
-        max_length=1,
+        max_length=255,
         choices=SEASON_DESCRIPTIVE_CHOICES,
         verbose_name="Season Type"
     )
