@@ -24,7 +24,7 @@ class Season(models.Model):
     )
 
     class Meta:
-        db_table = 'FINANCE.season'
+        db_table = 'finance.season'
         unique_together = ('descriptive', 'begin_date', 'end_date', 'rate')
 
     def __str__(self):
@@ -55,7 +55,7 @@ class Reservation(models.Model):
     total_value = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
-        db_table = 'RESERVES.reservation'
+        db_table = 'reserves.reservation'
 
     def __str__(self):
         return f"Reservation {self.id} for {self.client} ({self.get_status_display()})"
@@ -67,7 +67,7 @@ class RoomReservation(models.Model):
     price_reservation = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
-        db_table = 'RESERVES.room_reservation'
+        db_table = 'reserves.room_reservation'
         unique_together = ('reservation', 'room')
 
     def __str__(self):
@@ -83,7 +83,7 @@ class Guest(models.Model):
     city = models.CharField(max_length=100)
 
     class Meta:
-        db_table = 'RESERVES.guest'
+        db_table = 'reserves.guest'
 
     def __str__(self):
         return f"Guest {self.full_name} for Reservation {self.reservation.id}"

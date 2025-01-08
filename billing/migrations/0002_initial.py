@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('billing', '0001_initial'),
+        ('users', '0002_initial'),
     ]
 
     operations = [

@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:14
+    container_name: luxe_horizon_postgres
+    restart: always
+    volumes:
+      - data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5431:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: luxe_horizon_backend
+    command: >
+      sh -c "
+      mkdir -p /app/staticfiles &&
+      chmod -R 755 /app/staticfiles &&
+      python manage.py makemigrations &&
+      python manage.py migrate users &&
+      python3 manage.py migrate --noinput && 
+      python3 manage.py collectstatic --noinput 
+      && python manage.py runserver 0.0.0.0:8000"
+    restart: always
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  static_volume:
+  data:

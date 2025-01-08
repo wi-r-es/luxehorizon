@@ -14,7 +14,7 @@ class AccPermission(models.Model):
     perm_level = models.IntegerField(choices=PERMISSION_LEVELS)
 
     class Meta:
-        db_table = "SEC.acc_permission"
+        db_table = "sec.acc_permission"
 
     def __str__(self):
         return f"{self.perm_description} (Level {self.perm_level})"
@@ -68,7 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['first_name', 'last_name']  
 
     class Meta:
-        db_table = "HR.u_user" 
+        db_table = "hr.u_user" 
 
     def __str__(self):
         return self.email
@@ -84,14 +84,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Client(User):
     class Meta:
-        db_table = "HR.u_client"
+        db_table = "hr.u_client"
 
 class Employee(User):
     role = models.ForeignKey(AccPermission, on_delete=models.CASCADE)
     social_security = models.IntegerField()
 
     class Meta:
-        db_table = "HR.u_employee"
+        db_table = "hr.u_employee"
 
 class UserPasswordsDictionary(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name="password_history")
@@ -100,7 +100,7 @@ class UserPasswordsDictionary(models.Model):
     valid_to = models.DateTimeField()
 
     class Meta:
-        db_table = "SEC.u_user_passwords_dictionary"
+        db_table = "sec.u_user_passwords_dictionary"
 
     def __str__(self):
         return f"Password history for {self.user.email}"
@@ -118,7 +118,7 @@ class UserLoginAudit(models.Model):
     login_timestamp = models.DateTimeField(default=now)
 
     class Meta:
-        db_table = "SEC.user_login_audit"
+        db_table = "sec.user_login_audit"
 
     def __str__(self):
         return f"User {self.user_id} logged in at {self.login_timestamp}"
@@ -134,7 +134,7 @@ class ErrorLog(models.Model):
     error_timestamp = models.DateTimeField(default=now)  # Timestamp of the error occurrence
 
     class Meta:
-        db_table = "SEC.error_log"
+        db_table = "sec.error_log"
 
     def __str__(self):
         return f"Error {self.id} at {self.error_timestamp}"
@@ -157,7 +157,7 @@ class ChangeLog(models.Model):
     change_timestamp = models.DateTimeField(default=now)  # Timestamp of the change
 
     class Meta:
-        db_table = "SEC.change_log"
+        db_table = "sec.change_log"
 
     def __str__(self):
         return f"{self.operation_type} on {self.table_name} (Row ID {self.row_id}) by {self.changed_by}"
@@ -186,7 +186,7 @@ class AuditLog(models.Model):
     action_timestamp = models.DateTimeField(default=now)  # Timestamp of the action
 
     class Meta:
-        db_table = "SEC.audit_log"
+        db_table = "sec.audit_log"
 
     def __str__(self):
         return f"{self.action_type} action by {self.username} on {self.table_name} at {self.action_timestamp}"

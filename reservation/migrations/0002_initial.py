@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('reservation', '0001_initial'),
+        ('users', '0002_initial'),
     ]
 
     operations = [

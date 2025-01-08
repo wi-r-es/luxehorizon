@@ -43,10 +43,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='payment',
-            constraint=models.CheckConstraint(condition=models.Q(('payment_amount__gt', 0)), name='ck_payment_amount_positive'),
+            constraint=models.CheckConstraint(check=models.Q(payment_amount__gt=0), name='ck_payment_amount_positive'),
         ),
         migrations.AddConstraint(
             model_name='invoice',
-            constraint=models.CheckConstraint(condition=models.Q(('invoice_status__in', [True, False])), name='ck_invoice_status'),
+            constraint=models.CheckConstraint(check=models.Q(invoice_status__in=[True, False]), name='ck_invoice_status'),
         ),
     ]

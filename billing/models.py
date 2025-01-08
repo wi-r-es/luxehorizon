@@ -8,7 +8,7 @@ class PaymentMethod(models.Model):
     descriptive = models.CharField(max_length=100, unique=True)
 
     class Meta:
-        db_table = 'FINANCE.payment_method'
+        db_table = 'finance.payment_method'
 
     def __str__(self):
         return self.descriptive
@@ -16,7 +16,7 @@ class PaymentMethod(models.Model):
 
 class Invoice(models.Model):
     reservation = models.ForeignKey('reservation.Reservation', on_delete=models.CASCADE, related_name='invoices')
-    client = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='invoices')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices')
     final_value = models.DecimalField(max_digits=10, decimal_places=2)
     emission_date = models.DateField(default=timezone.now)
     billing_date = models.DateField()
@@ -24,7 +24,7 @@ class Invoice(models.Model):
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, related_name='invoices')
 
     class Meta:
-        db_table = 'FINANCE.invoice'
+        db_table = 'finance.invoice'
         constraints = [
             models.CheckConstraint(
                 check=models.Q(invoice_status__in=[True, False]),
@@ -52,7 +52,7 @@ class Payment(models.Model):
     )
 
     class Meta:
-        db_table = 'FINANCE.payments'
+        db_table = 'finance.payments'
         constraints = [
             models.CheckConstraint(
                 check=models.Q(payment_amount__gt=0),

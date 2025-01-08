@@ -29,7 +29,7 @@ class Hotel(models.Model):
     stars = models.IntegerField()
 
     class Meta:
-        db_table = 'MANAGEMENT.hotel'
+        db_table = 'management.hotel'
 
     def __str__(self):
         return self.h_name
@@ -40,7 +40,7 @@ class RoomType(models.Model):
     room_quality = models.CharField(max_length=1, choices=RoomQualityType.choices)
 
     class Meta:
-        db_table = 'ROOM_MANAGEMENT.room_type'
+        db_table = 'room_management.room_type'
 
     def __str__(self):
         return f"{self.type_initials} - {self.get_room_view_display()} - {self.get_room_quality_display()}"
@@ -49,7 +49,7 @@ class Commodity(models.Model):
     details = models.CharField(max_length=100)
 
     class Meta:
-        db_table = 'ROOM_MANAGEMENT.commodity'
+        db_table = 'room_management.commodity'
 
     def __str__(self):
         return self.details
@@ -63,7 +63,7 @@ class Room(models.Model):
     capacity = models.CharField(max_length=1, choices=CapacityType.choices)
 
     class Meta:
-        db_table = 'ROOM_MANAGEMENT.room'
+        db_table = 'room_management.room'
         unique_together = ('hotel', 'room_number')
 
     def __str__(self):
@@ -74,7 +74,7 @@ class RoomCommodity(models.Model):
     commodity = models.ForeignKey(Commodity, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'ROOM_MANAGEMENT.room_commodity'
+        db_table = 'room_management.room_commodity'
         unique_together = ('room', 'commodity')
 
     def __str__(self):

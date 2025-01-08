@@ -47,7 +47,15 @@ INSTALLED_APPS = [
     'dashboard',
 ]
 
-STATIC_URL = '/static/'
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+STATIC_URL = 'static/'
+
+# This tells Django where to store collected static files
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# This is used for static files during development (optional)
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MIDDLEWARE = [
@@ -88,11 +96,14 @@ WSGI_APPLICATION = 'luxehorizon.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': config('DB_HOST', 'db'),  # Use 'db' as default from .env
+        'PORT': config('DB_PORT','5432'),
+        'OPTIONS': {
+            'options': '-c search_path=management,room_management,hr,finance,sec,reserves,public'
+        },
     }
 }
 
