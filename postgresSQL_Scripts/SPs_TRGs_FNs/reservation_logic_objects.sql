@@ -12,7 +12,7 @@
  * Returns the highest grpossing season ID in the given period
  */
 
-CREATE OR REPLACE FUNCTION FINANCE.fn_get_season(
+CREATE OR REPLACE FUNCTION fn_get_season(
     _begin_date DATE,
     _end_date DATE
 ) RETURNS INT AS $$
@@ -21,8 +21,8 @@ DECLARE
 BEGIN
     SELECT s.ID
     INTO _season_id
-    FROM FINANCE.SEASON s
-    INNER JOIN FINANCE.PRICE_PER_SEASON pps ON s.ID = pps.SEASON_ID
+    FROM "FINANCE.SEASON" s
+    INNER JOIN "FINANCE.PRICE_PER_SEASON" pps ON s.ID = pps.SEASON_ID
     WHERE s.BEGIN_DATE <= _end_date
       AND s.END_DATE >= _begin_date
     ORDER BY pps.TAX DESC
@@ -126,7 +126,7 @@ $$ LANGUAGE plpgsql;
  *  All data sent is the data that is going to stay. 
  *  So if a room is added but none is deleted then all rooms must be sent either way otherwise only the new one will stay in the system
  */
-CREATE OR REPLACE PROCEDURE RESERVES.sp_update_reservation(
+CREATE OR REPLACE PROCEDURE sp_update_reservation(
     _reservation_id INT,
     _new_begin_date DATE,
     _new_end_date DATE,
@@ -150,8 +150,8 @@ BEGIN
     FOR _room_id IN SELECT UNNEST(_new_room_ids) LOOP -- Expands an array into a set of rows
         SELECT NOT EXISTS (
             SELECT 1 
-            FROM RESERVES.ROOM_RESERVATION rr
-            INNER JOIN RESERVES.RESERVATION r ON rr.RESERVATION_ID = r.ID
+            FROM "RESERVES.ROOM_RESERVATION" rr
+            INNER JOIN "RESERVES.RESERVATION" r ON rr.RESERVATION_ID = r.ID
             WHERE rr.ROOM_ID = _room_id
               AND r.BEGIN_DATE < _new_end_date
               AND r.END_DATE > _new_begin_date
@@ -163,17 +163,17 @@ BEGIN
         END IF;
     END LOOP;
     BEGIN
-        UPDATE RESERVES.RESERVATION
+        UPDATE "RESERVES.RESERVATION"
         SET BEGIN_DATE = _new_begin_date,
             END_DATE = _new_end_date
         WHERE ID = _reservation_id;
         
         --All existing room assignments for the reservation are removed
-        DELETE FROM RESERVES.ROOM_RESERVATION WHERE RESERVATION_ID = _reservation_id;
+        DELETE FROM "RESERVES.ROOM_RESERVATION" WHERE RESERVATION_ID = _reservation_id;
 
         --Insert New Room Reservations
         FOR _room_id IN SELECT UNNEST(_new_room_ids) LOOP
-            INSERT INTO ROOM_RESERVATION (
+            INSERT INTO "RESERVES.ROOM_RESERVATION" (
                 RESERVATION_ID, ROOM_ID, PRICE_RESERVATION
             ) VALUES (
                 _reservation_id, _room_id, (SELECT BASE_PRICE FROM ROOM WHERE ID = _room_id)
@@ -187,7 +187,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
             RAISE;
     END;   
 END;
@@ -205,7 +205,7 @@ $$;
  * Cancel a reservation
  */
  
-CREATE OR REPLACE PROCEDURE RESERVES.sp_cancel_reservation(
+CREATE OR REPLACE PROCEDURE sp_cancel_reservation(
     _reservation_id INT
 )
 LANGUAGE plpgsql
@@ -252,15 +252,15 @@ $$;
 /*
  * Reassuring that a room wasnt really already reserved and the checks above in the other logical objects arent with bugs/flaws
  */
-CREATE OR REPLACE FUNCTION RESERVES.trg_check_room_availability()
+CREATE OR REPLACE FUNCTION fn_trg_check_room_availability()
 RETURNS TRIGGER AS $$
 DECLARE
     _room_available BOOLEAN;
 BEGIN
     SELECT NOT EXISTS (
         SELECT 1 
-        FROM RESERVES.ROOM_RESERVATION rr
-        INNER JOIN RESERVES.RESERVATION r ON rr.RESERVATION_ID = r.ID
+        FROM "RESERVES.ROOM_RESERVATION" rr
+        INNER JOIN "RESERVES.RESERVATION" r ON rr.RESERVATION_ID = r.ID
         WHERE rr.ROOM_ID = NEW.ROOM_ID
           AND r.BEGIN_DATE < NEW.END_DATE
           AND r.END_DATE > NEW.BEGIN_DATE
@@ -273,11 +273,11 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
+DROP TRIGGER IF EXISTS trg_check_room_availability ON "RESERVES.ROOM_RESERVATION";
 CREATE TRIGGER trg_check_room_availability
-BEFORE INSERT OR UPDATE ON RESERVES.ROOM_RESERVATION
+BEFORE INSERT OR UPDATE ON "RESERVES.ROOM_RESERVATION"
 FOR EACH ROW
-EXECUTE FUNCTION RESERVES.trg_check_room_availability();
+EXECUTE FUNCTION fn_trg_check_room_availability();
 
 
 /*
@@ -297,16 +297,16 @@ EXECUTE FUNCTION RESERVES.trg_check_room_availability();
 /*
  * Makes rooms related to a rejected or cancelled reservation available again
 */
-CREATE OR REPLACE FUNCTION RESERVES.trg_update_room_status_upon_cancelation()
+CREATE OR REPLACE FUNCTION fn_trg_update_room_status_upon_cancelation()
 RETURNS TRIGGER AS $$
 BEGIN
     -- If the reservation is being rejected ('R') or cancelled ('CC'), mark the rooms as available
     IF NEW.R_DETAIL IN ('R', 'CC') THEN
-        UPDATE ROOM_MANAGEMENT.ROOM
+        UPDATE "ROOM_MANAGEMENT.ROOM"
         SET CONDITION = 0 -- 0 indicates available
         WHERE ID IN (
             SELECT ROOM_ID -- Associated rooms are updated in one operation within the trigger
-            FROM RESERVES.ROOM_RESERVATION
+            FROM "RESERVES.ROOM_RESERVATION"
             WHERE RESERVATION_ID = NEW.ID
         );
     END IF;
@@ -314,21 +314,22 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_update_room_status_upon_cancelation ON "RESERVES.RESERVATION";
 CREATE TRIGGER trg_update_room_status_upon_cancelation
-AFTER UPDATE OF R_DETAIL ON RESERVES.RESERVATION
+AFTER UPDATE OF R_DETAIL ON "RESERVES.RESERVATION"
 FOR EACH ROW
-EXECUTE FUNCTION RESERVES.trg_update_room_status_upon_cancelation();
+EXECUTE FUNCTION fn_trg_update_room_status_upon_cancelation();
 
 
 
 
 
-CREATE OR REPLACE FUNCTION RESERVES.sp_check_in(RESERVATION_ID INT)
+CREATE OR REPLACE FUNCTION sp_check_in(RESERVATION_ID INT)
 RETURNS VOID AS $$
 BEGIN
     -- Ensure the reservation exists and is confirmed
     IF NOT EXISTS (
-        SELECT 1 FROM RESERVES.RESERVATION
+        SELECT 1 FROM "RESERVES.RESERVATION"
         WHERE ID = RESERVATION_ID AND R_DETAIL = 'C'
     ) THEN
         RAISE EXCEPTION 'Reservation % is not confirmed or does not exist.', RESERVATION_ID;
@@ -336,7 +337,7 @@ BEGIN
 
     -- Ensure the current date is within the reservation period
     IF NOT EXISTS (
-        SELECT 1 FROM RESERVES.RESERVATION
+        SELECT 1 FROM "RESERVES.RESERVATION"
         WHERE ID = RESERVATION_ID
           AND CURRENT_DATE BETWEEN BEGIN_DATE AND END_DATE
     ) THEN
@@ -344,26 +345,26 @@ BEGIN
     END IF;
 
     -- Set the check-in timestamp
-    UPDATE RESERVES.RESERVATION
+    UPDATE "RESERVES.RESERVATION"
     SET CHECK_IN = CURRENT_TIMESTAMP
     WHERE ID = RESERVATION_ID;
 END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION RESERVES.sp_check_out(RESERVATION_ID INT)
+CREATE OR REPLACE FUNCTION sp_check_out(RESERVATION_ID INT)
 RETURNS VOID AS $$
 BEGIN
     -- Ensure the reservation exists and check-in has occurred
     IF NOT EXISTS (
-        SELECT 1 FROM RESERVES.RESERVATION
+        SELECT 1 FROM "RESERVES.RESERVATION"
         WHERE ID = RESERVATION_ID AND CHECK_IN IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Reservation % has not been checked in or does not exist.', RESERVATION_ID;
     END IF;
 
     -- Set the check-out timestamp
-    UPDATE RESERVES.RESERVATION
+    UPDATE "RESERVES.RESERVATION"
     SET CHECK_OUT = CURRENT_TIMESTAMP
     WHERE ID = RESERVATION_ID;
 END;
@@ -371,25 +372,26 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE FUNCTION RESERVES.update_room_condition()
+CREATE OR REPLACE FUNCTION fn_update_room_condition()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Update the room condition to "2" (e.g., cleaning or "3" - maintenance required)
-    UPDATE ROOM
+    UPDATE "ROOM_MANAGEMENT.ROOM"
     SET CONDITION = 2
     WHERE ID IN (
         SELECT ROOM_ID
-        FROM ROOM_RESERVATION
+        FROM "RESERVES.ROOM_RESERVATION"
         WHERE RESERVATION_ID = OLD.ID
     );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_update_room_condition ON "RESERVES.RESERVATION";
 CREATE TRIGGER trg_update_room_condition
-AFTER UPDATE OF CHECK_OUT ON RESERVES.RESERVATION
+AFTER UPDATE OF CHECK_OUT ON "RESERVES.RESERVATION"
 FOR EACH ROW
 WHEN (OLD.CHECK_OUT IS NULL AND NEW.CHECK_OUT IS NOT NULL) -- Only fire on the first check-out update
-EXECUTE FUNCTION RESERVES.update_room_condition();
+EXECUTE FUNCTION fn_update_room_condition();
 
 
 

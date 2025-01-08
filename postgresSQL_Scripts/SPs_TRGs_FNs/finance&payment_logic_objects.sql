@@ -7,7 +7,7 @@
  */
 
 
-CREATE OR REPLACE PROCEDURE FINANCE.sp_generate_invoice(
+CREATE OR REPLACE PROCEDURE sp_generate_invoice(
     _reservation_id INT,
     _payment_method_id INT,
     OUT _invoice_id INT
@@ -24,7 +24,7 @@ DECLARE
 BEGIN
     SELECT CLIENT_ID, TOTAL_VALUE
     INTO _client_id, _total_value
-    FROM RESERVES.RESERVATION
+    FROM "RESERVES.RESERVATION"
     WHERE ID = _reservation_id;
 
     IF NOT FOUND THEN
@@ -32,7 +32,7 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO FINANCE.INVOICE (
+        INSERT INTO "FINANCE.INVOICE" (
             RESERVATION_ID, CLIENT_ID, FINAL_VALUE, EMISSION_DATE, BILLING_DATE,
             INVOICE_STATUS, PAYMENT_METHOD_ID
         ) VALUES (
@@ -46,7 +46,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
 
             RAISE;
     END;    
@@ -62,7 +62,7 @@ $$;
 ███████ ██      ███████ ██   ██ ██████  ██████  ███████ ██      ██   ██    ██    ██      ██ ███████ ██   ████    ██    
                                                                                                                                                                                                                                                                         
 */
-CREATE OR REPLACE PROCEDURE FINANCE.sp_add_payment(
+CREATE OR REPLACE PROCEDURE sp_add_payment(
     _invoice_id INT,
     _payment_amount NUMERIC(10, 2),
     _payment_method_id INT
@@ -79,7 +79,7 @@ DECLARE
 BEGIN
     SELECT FINAL_VALUE, COALESCE(SUM(p.PAYMENT_AMOUNT), 0)
     INTO _final_value, _current_paid
-    FROM FINANCE.INVOICE i
+    FROM "FINANCE.INVOICE" i
     LEFT JOIN FINANCE.PAYMENTS p ON i.ID = p.INVOICE_ID
     WHERE i.ID = _invoice_id
     GROUP BY i.FINAL_VALUE;
@@ -97,7 +97,7 @@ BEGIN
 
         -- Update the INVOICE table if fully paid. 
         IF _current_paid + _payment_amount >= _final_value THEN
-            UPDATE FINANCE.INVOICE
+            UPDATE "FINANCE.INVOICE"
             SET PAYMENT_ID = _payment_id,
                 BILLING_DATE = CURRENT_TIMESTAMP,
                 INVOICE_STATUS = TRUE
@@ -112,7 +112,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
 
             RAISE;
     END;    
@@ -140,11 +140,11 @@ $$;
 ███████    ██    ██   ██    ██     ██████  ███████ ███████  ██████  ██   ████ ███████ ██      ██   ██    ██    ██      ██ ███████ ██   ████    ██    
                                                                                                                                                      
 */
-CREATE OR REPLACE FUNCTION FINANCE.trg_update_reservation_status_on_payment()
+CREATE OR REPLACE FUNCTION trg_update_reservation_status_on_payment()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.INVOICE_STATUS = TRUE THEN
-        UPDATE RESERVES.RESERVATION
+        UPDATE "RESERVES.RESERVATION"
         SET R_DETAIL = 'C' -- confirmada
         WHERE ID = NEW.RESERVATION_ID;
 
@@ -154,11 +154,11 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
+DROP TRIGGER IF EXISTS trg_update_reservation_status_on_payment ON "FINANCE.INVOICE";
 CREATE TRIGGER trg_update_reservation_status_on_payment
-AFTER UPDATE OF INVOICE_STATUS ON FINANCE.INVOICE
+AFTER UPDATE OF INVOICE_STATUS ON "FINANCE.INVOICE"
 FOR EACH ROW
-EXECUTE FUNCTION FINANCE.trg_update_reservation_status_on_payment();
+EXECUTE FUNCTION trg_update_reservation_status_on_payment();
 
 
 
@@ -171,7 +171,7 @@ EXECUTE FUNCTION FINANCE.trg_update_reservation_status_on_payment();
 ███████ ██      ███████  ██████  ██      ██████  ██   ██    ██    ███████ ███████    ██    ██   ██ ██   ██ 
                                                                                                            
 */
-CREATE OR REPLACE PROCEDURE FINANCE.sp_update_tax(
+CREATE OR REPLACE PROCEDURE sp_update_tax(
     _season_id INT,
     _new_tax FLOAT
 )
@@ -185,7 +185,7 @@ DECLARE
 BEGIN
     SELECT TAX
     INTO _existing_tax
-    FROM FINANCE.PRICE_PER_SEASON
+    FROM "FINANCE.PRICE_PER_SEASON"
     WHERE SEASON_ID = _season_id;
 
     IF NOT FOUND THEN
@@ -197,7 +197,7 @@ BEGIN
     END IF;
 
     BEGIN
-        UPDATE FINANCE.PRICE_PER_SEASON
+        UPDATE "FINANCE.PRICE_PER_SEASON"
         SET TAX = _new_tax
         WHERE SEASON_ID = _season_id;
 
@@ -206,7 +206,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
 
             RAISE;
     END;    

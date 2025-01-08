@@ -7,7 +7,7 @@
                                                                                                                               
 */
 -- SP TO REGISTER A NEW USER (CLIENT OR EMPLOYEE)
-CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_register_user(
+CREATE OR REPLACE PROCEDURE sp_register_user(
     _first_name VARCHAR(100),
     _last_name VARCHAR(100),
     _email VARCHAR(100),
@@ -29,7 +29,7 @@ BEGIN
     -- Validate input for email uniqueness | can also be done via django instead 
     IF EXISTS (
         SELECT 1 
-        FROM HR.USERS 
+        FROM "HR.USERS" 
         WHERE EMAIL = _email
     ) THEN
         RAISE EXCEPTION 'Email % is already registered', _email;
@@ -37,7 +37,7 @@ BEGIN
 
     BEGIN -- PostgreSQL automatically wraps the BEGIN block in a transaction, so there’s no need for explicit BEGIN TRAN or COMMIT TRAN
         
-        INSERT INTO HR.USERS (
+        INSERT INTO "HR.USERS" (
             FIRST_NAME, LAST_NAME, EMAIL, HASHED_PASSWORD, NIF, PHONE, 
             FULL_ADDRESS, POSTAL_CODE, CITY, UTP
         ) VALUES (
@@ -50,7 +50,7 @@ BEGIN
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
             -- Log the error into the error table
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
 
             RAISE;
     END;    
@@ -74,7 +74,7 @@ $$;
                                                                                                                                                                                                                                                    
 */
 -- Assign default role for employee
-CREATE OR REPLACE FUNCTION MANAGEMENT.trg_default_role_for_employee()
+CREATE OR REPLACE FUNCTION trg_default_role_for_employee()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Check if the user type is 'F' (employee)
@@ -85,10 +85,11 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_default_role_for_employee ON "HR.U_EMPLOYEE";
 CREATE TRIGGER trg_default_role_for_employee
-BEFORE INSERT ON HR.U_EMPLOYEE
+BEFORE INSERT ON "HR.U_EMPLOYEE"
 FOR EACH ROW
-EXECUTE FUNCTION MANAGEMENT.trg_default_role_for_employee();
+EXECUTE FUNCTION trg_default_role_for_employee();
 
 /*
 ███████ ██████          ██    ██ ██████  ██████   █████  ████████ ███████         
@@ -106,7 +107,7 @@ EXECUTE FUNCTION MANAGEMENT.trg_default_role_for_employee();
                                                                                                                                                                                                 
 */
 -- SP TO ASSING A new ROLE TO A EMPLOYEE, VIA ITS ID
-CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_update_employee_role(
+CREATE OR REPLACE PROCEDURE sp_update_employee_role(
     _user_id INT,
     _new_role_id INT
 )
@@ -121,7 +122,7 @@ BEGIN
     -- Validate if the user is an employee
     SELECT EXISTS (
         SELECT 1
-        FROM HR.U_EMPLOYEE
+        FROM "HR.U_EMPLOYEE"
         WHERE ID = _user_id
     ) INTO _is_employee;
 
@@ -133,7 +134,7 @@ BEGIN
         RAISE EXCEPTION 'Invalid role ID %. Only 1 (Admin), 2 (Manager) or 3 (Employee) are allowed', _new_role_id;
     END IF;
     BEGIN
-        UPDATE HR.U_EMPLOYEE
+        UPDATE "HR.U_EMPLOYEE"
         SET ROLE_ID = _new_role_id
         WHERE ID = _user_id;
 
@@ -142,7 +143,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
 
             RAISE;
     END;    
@@ -167,7 +168,7 @@ $$;
                                                                                             
                                                                                                                                                                                                                                                                                                                                                      
 */
-CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_update_user_status(
+CREATE OR REPLACE PROCEDURE sp_update_user_status(
     _user_id INT,
     _inactive BOOLEAN
 )
@@ -181,7 +182,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM HR.USERS
+        FROM "HR.USERS"
         WHERE ID = _user_id
     ) INTO _user_exists;
 
@@ -190,7 +191,7 @@ BEGIN
     END IF;
 
     BEGIN 
-        UPDATE HR.SERS
+        UPDATE "HR.USERS"
         SET INACTIVE = _inactive
         WHERE ID = _user_id;
 
@@ -199,7 +200,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
 
             RAISE;
     END;    

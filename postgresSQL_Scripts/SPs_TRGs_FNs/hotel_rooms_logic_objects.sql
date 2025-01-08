@@ -7,7 +7,7 @@
                                                                                                   
 */
 -- Procedure to add hotel
-CREATE OR REPLACE PROCEDURE MANAGEMENT.sp_add_hotel(
+CREATE OR REPLACE PROCEDURE sp_add_hotel(
     _name VARCHAR(100),
     _address VARCHAR(160),
     _postal_code VARCHAR(8),
@@ -25,7 +25,7 @@ DECLARE
     hint TEXT;
 BEGIN
     BEGIN
-        INSERT INTO MANAGEMENT.HOTEL (
+        INSERT INTO "MANAGEMENT.HOTEL" (
             H_NAME, FULL_ADDRESS, POSTAL_CODE, CITY, EMAIL, TELEPHONE, DETAILS, STARS
         ) VALUES (
             _name, _address, _postal_code, _city, _email, _telephone, _details, _stars
@@ -36,7 +36,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
             RAISE;
     END;    
 END;
@@ -51,13 +51,13 @@ $$;
                                                                                              
 */
 -- Procedure to add room
-CREATE OR REPLACE PROCEDURE ROOM_MANAGEMENT.sp_add_room(
+CREATE OR REPLACE PROCEDURE sp_add_room(
     _hotel_id INT,
     _type_id INT,
     _room_number INT,
     _base_price NUMERIC(10, 2),
     _condition INT DEFAULT 0, -- Available = 0
-    _capacity ROOM_MANAGEMENT.capacity_type DEFAULT 'S'
+    _capacity "ROOM_MANAGEMENT.capacity_type" DEFAULT 'S'
 )
 LANGUAGE plpgsql
 AS $$
@@ -70,7 +70,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM MANAGEMENT.HOTEL 
+        FROM "MANAGEMENT.HOTEL"
         WHERE ID = _hotel_id
     ) INTO _hotel_exists;
 
@@ -80,7 +80,7 @@ BEGIN
 
     SELECT EXISTS (
         SELECT 1 
-        FROM ROOM_MANAGEMENT.ROOM_TYPES 
+        FROM "ROOM_MANAGEMENT.ROOM_TYPES" 
         WHERE ID = _type_id
     ) INTO _type_exists;
 
@@ -89,7 +89,7 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO ROOM_MANAGEMENT.ROOM (
+        INSERT INTO "ROOM_MANAGEMENT.ROOM" (
             TYPE_ID, HOTEL_ID, ROOM_NUMBER, BASE_PRICE, CONDITION, CAPACITY
         ) VALUES (
             _type_id, _hotel_id, _room_number, _base_price, _condition, _capacity
@@ -100,7 +100,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
             RAISE;
     END;    
 END;
@@ -122,7 +122,7 @@ $$;
                                                                                                 
                                                                                                                                                                                 
 */
-CREATE OR REPLACE PROCEDURE ROOM_MANAGEMENT.sp_update_room_status(
+CREATE OR REPLACE PROCEDURE sp_update_room_status(
     _room_id INT,
     _new_status INT
 )
@@ -136,7 +136,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM ROOM_MANAGEMENT.ROOM 
+        FROM "ROOM_MANAGEMENT.ROOM" 
         WHERE ID = _room_id
     ) INTO _room_exists;
 
@@ -145,7 +145,7 @@ BEGIN
     END IF;
 
     BEGIN
-        UPDATE ROOM_MANAGEMENT.ROOM
+        UPDATE "ROOM_MANAGEMENT.ROOM"
         SET CONDITION = _new_status
         WHERE ID = _room_id;
 
@@ -154,7 +154,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
             RAISE;
     END;    
 END;
@@ -176,7 +176,7 @@ $$;
                                                                     
 */
 
-CREATE OR REPLACE PROCEDURE ROOM_MANAGEMENT.sp_link_commodity_to_room(
+CREATE OR REPLACE PROCEDURE sp_link_commodity_to_room(
     _room_id INT,
     _commodity_id INT
 )
@@ -191,7 +191,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM ROOM_MANAGEMENT.ROOM 
+        FROM "ROOM_MANAGEMENT.ROOM" 
         WHERE ID = _room_id
     ) INTO _room_exists;
 
@@ -201,7 +201,7 @@ BEGIN
 
     SELECT EXISTS (
         SELECT 1 
-        FROM ROOM_MANAGEMENT.COMMODITY 
+        FROM "ROOM_MANAGEMENT.COMMODITY" 
         WHERE ID = _commodity_id
     ) INTO _commodity_exists;
 
@@ -210,7 +210,7 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO ROOM_MANAGEMENT.ROOM_COMMODITY (ROOM_ID, COMMODITY_ID)
+        INSERT INTO "ROOM_MANAGEMENT.ROOM_COMMODITY" (ROOM_ID, COMMODITY_ID)
         VALUES (_room_id, _commodity_id);
 
         RAISE NOTICE 'Room ID % linked to Commodity ID %', _room_id, _commodity_id;
@@ -218,7 +218,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
             RAISE;
     END;  
 END;
@@ -231,7 +231,7 @@ $$;
      ██ ██              ██      ██   ██ ██      ██   ██    ██    ██              ██      ██    ██ ██  ██  ██ ██  ██  ██ ██    ██ ██   ██ ██    ██       ██    
 ███████ ██      ███████  ██████ ██   ██ ███████ ██   ██    ██    ███████ ███████  ██████  ██████  ██      ██ ██      ██  ██████  ██████  ██    ██       ██    
 */
-CREATE OR REPLACE PROCEDURE ROOM_MANAGEMENT.sp_create_commodity(
+CREATE OR REPLACE PROCEDURE sp_create_commodity(
     _commodity_detail VARCHAR(100)
 )
 LANGUAGE plpgsql
@@ -243,13 +243,13 @@ DECLARE
 BEGIN
     IF EXISTS (
         SELECT 1
-        FROM ROOM_MANAGEMENT.COMMODITY
+        FROM "ROOM_MANAGEMENT.COMMODITY"
         WHERE DETAILS = _commodity_detail
     ) THEN
         RAISE EXCEPTION 'Commodity % already exists.', _commodity_detail;
     END IF;
     BEGIN
-        INSERT INTO ROOM_MANAGEMENT.COMMODITY (DETAILS)
+        INSERT INTO "ROOM_MANAGEMENT.COMMODITY" (DETAILS)
         VALUES (_commodity_detail);
 
         RAISE NOTICE 'Commodity % created successfully.', _commodity_detail;
@@ -257,7 +257,7 @@ BEGIN
         msg = MESSAGE_TEXT,
         content = PG_EXCEPTION_DETAIL,
         hint = PG_EXCEPTION_HINT;
-            CALL SEC.LogError(msg, hint, content );
+            CALL "SEC.LogError"(msg, hint, content );
             RAISE;
     END;  
 END;
