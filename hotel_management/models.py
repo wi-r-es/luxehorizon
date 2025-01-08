@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Func
+from hotel_management.fields import PostgreSQLEnumField
 
 class RoomViewType(models.TextChoices):
     POOL = 'P', 'Piscina'
@@ -33,17 +35,28 @@ class Hotel(models.Model):
 
     def __str__(self):
         return self.h_name
-
+    
 class RoomType(models.Model):
     type_initials = models.CharField(max_length=100)
-    room_view = models.CharField(max_length=1, choices=RoomViewType.choices)
-    room_quality = models.CharField(max_length=1, choices=RoomQualityType.choices)
+    room_view = PostgreSQLEnumField("room_view_type")
+    room_quality = PostgreSQLEnumField("room_quality_type")
 
     class Meta:
-        db_table = 'room_management.room_type'
+        db_table = 'room_management_room_types'
 
     def __str__(self):
-        return f"{self.type_initials} - {self.get_room_view_display()} - {self.get_room_quality_display()}"
+        return f"{self.type_initials} - {self.room_view} - {self.room_quality}"
+
+# class RoomType(models.Model):
+#     type_initials = models.CharField(max_length=100)
+#     room_view = models.CharField(max_length=1, choices=RoomViewType.choices)
+#     room_quality = models.CharField(max_length=1, choices=RoomQualityType.choices)
+
+#     class Meta:
+#         db_table = 'room_management.room_type'
+
+#     def __str__(self):
+#         return f"{self.type_initials} - {self.get_room_view_display()} - {self.get_room_quality_display()}"
 
 class Commodity(models.Model):
     details = models.CharField(max_length=100)
