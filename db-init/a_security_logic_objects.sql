@@ -1,3 +1,10 @@
+
+INSERT INTO "sec.acc_permissions" (id, perm_description, perm_level)
+VALUES (1, 'Admin', 1),
+       (2, 'Manager', 2),
+       (3, 'Funcionário', 3)
+ON CONFLICT (ID) DO NOTHING;
+
 /*
 ██       ██████   ██████  ███████ ██████  ██████   ██████  ██████  
 ██      ██    ██ ██       ██      ██   ██ ██   ██ ██    ██ ██   ██ 
