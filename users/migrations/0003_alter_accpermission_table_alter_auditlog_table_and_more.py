@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelTable(
             name='user',
-            table='hr.u_user',
+            table='hr.user',
         ),
         migrations.AlterModelTable(
             name='userloginaudit',

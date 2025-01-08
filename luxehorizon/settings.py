@@ -102,7 +102,7 @@ DATABASES = {
         'HOST': config('DB_HOST', 'db'),  # Use 'db' as default from .env
         'PORT': config('DB_PORT','5432'),
         'OPTIONS': {
-            'options': '-c search_path=management,room_management,hr,finance,sec,reserves,public'
+            'options': '-c search_path=public'
         },
     }
 }
