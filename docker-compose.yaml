@@ -5,7 +5,7 @@ services:
     restart: always
     volumes:
       - data:/var/lib/postgresql/data
-      #- ./db-init:/docker-entrypoint-initdb.d:ro
+      #- ./db-init:/docker-entrypoint-initdb.d/
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -31,8 +31,9 @@ services:
       python manage.py migrate users &&
       python3 manage.py migrate --noinput && 
       python3 manage.py collectstatic --noinput &&
-      python manage.py generate_default_roomtypes
-      && python manage.py runserver 0.0.0.0:8000"
+      python manage.py generate_default_roomtypes &&
+      python manage.py init_db && 
+      python manage.py runserver 0.0.0.0:8000"
     restart: always
     volumes:
       - .:/app
