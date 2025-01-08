@@ -14,7 +14,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Log the error details into the error log table
-    INSERT INTO "SEC.ERROR_LOG" (ERROR_MESSAGE, ERROR_HINT, ERROR_CONTENT)
+    INSERT INTO "sec.error_log" (ERROR_MESSAGE, ERROR_HINT, ERROR_CONTENT)
     VALUES (_ErrorMessage, _ErrorHint, _ErrorContent);
 
     -- Raise the error to the caller
@@ -41,7 +41,7 @@ $$;
 CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO "SEC.USER_PASSWORDS_DICTIONARY" (
+    INSERT INTO "sec.user_passwords_dictionary" (
         USER_ID, 
         HASHED_PASSWD, 
         ValidFrom, 
@@ -59,10 +59,10 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_after_user_insert_update ON "HR.USERS";
+DROP TRIGGER IF EXISTS trg_after_user_insert_update ON "hr.users";
 CREATE TRIGGER trg_after_user_insert_update
 AFTER INSERT OR UPDATE OF HASHED_PASSWORD
-ON "HR.USERS"
+ON "hr.users"
 FOR EACH ROW
 EXECUTE FUNCTION trg_insert_user_password_dictionary();
 
@@ -78,7 +78,7 @@ EXECUTE FUNCTION trg_insert_user_password_dictionary();
 CREATE OR REPLACE FUNCTION fn_track_user_login()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO "SEC.USER_LOGIN_AUDIT" (
+    INSERT INTO "sec.user_login_audit" (
         USER_ID, LOGIN_TIMESTAMP
     ) VALUES (
         NEW.ID, CURRENT_TIMESTAMP
@@ -86,9 +86,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_track_user_login ON "HR.USERS";
+DROP TRIGGER IF EXISTS trg_track_user_login ON "hr.users";
 CREATE TRIGGER trg_track_user_login
-AFTER INSERT OR UPDATE ON "HR.USERS"
+AFTER INSERT OR UPDATE ON "hr.users"
 FOR EACH ROW
 WHEN (NEW.UTP = 'F') -- Optional: for employees only
 EXECUTE FUNCTION fn_track_user_login();
@@ -117,7 +117,7 @@ BEGIN
     -- Check if the new password has already been used by the user
     SELECT EXISTS (
         SELECT 1
-        FROM "SEC.USER_PASSWORDS_DICTIONARY"
+        FROM "sec.user_passwords_dictionary"
         WHERE USER_ID = _user_id
           AND HASHED_PASSWD = _new_hashed_password
     ) INTO _is_password_reused;
@@ -128,19 +128,19 @@ BEGIN
     END IF;
 
     BEGIN 
-        UPDATE "HR.USERS"
+        UPDATE "hr.users"
         SET HASHED_PASSWORD = _new_hashed_password
         WHERE ID = _user_id;
 
         -- Insert the new password into the password history table
-        INSERT INTO "SEC.USER_PASSWORDS_DICTIONARY" (
+        INSERT INTO "sec.user_passwords_dictionary" (
             USER_ID, HASHED_PASSWD, ValidFrom, ValidTo
         ) VALUES (
             _user_id, 
             _new_hashed_password, 
             CURRENT_TIMESTAMP, 
             CASE 
-                WHEN (SELECT UTP FROM HR.USERS WHERE ID = _user_id) = 'F' 
+                WHEN (SELECT UTP FROM hr.users WHERE ID = _user_id) = 'F' 
                 THEN CURRENT_TIMESTAMP + INTERVAL '6 months' 
                 ELSE CURRENT_TIMESTAMP + INTERVAL '100 years'
             END
@@ -169,7 +169,7 @@ $$;
 CREATE OR REPLACE FUNCTION trg_log_changes()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO "SEC.CHANGE_LOG" (TABLE_NAME, OPERATION_TYPE, ROW_ID, CHANGED_BY)
+    INSERT INTO "sec.change_log" (TABLE_NAME, OPERATION_TYPE, ROW_ID, CHANGED_BY)
     VALUES (
         TG_TABLE_NAME,
         TG_OP,
@@ -181,15 +181,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 --Reservation Table Trigger
-DROP TRIGGER IF EXISTS trg_log_reservation_changes ON "RESERVES.RESERVATION";
+DROP TRIGGER IF EXISTS trg_log_reservation_changes ON "reserves.reservation";
 CREATE TRIGGER trg_log_reservation_changes
-AFTER INSERT OR UPDATE OR DELETE ON "RESERVES.RESERVATION"
+AFTER INSERT OR UPDATE OR DELETE ON "reserves.reservation"
 FOR EACH ROW
 EXECUTE FUNCTION trg_log_changes();
 --Invoice Table Trigger
-DROP TRIGGER IF EXISTS trg_log_invoice_changes ON "FINANCE.INVOICE";
+DROP TRIGGER IF EXISTS trg_log_invoice_changes ON "finance.invoice";
 CREATE TRIGGER trg_log_invoice_changes
-AFTER INSERT OR UPDATE OR DELETE ON "FINANCE.INVOICE"
+AFTER INSERT OR UPDATE OR DELETE ON "finance.invoice"
 FOR EACH ROW
 EXECUTE FUNCTION trg_log_changes();
 
@@ -210,7 +210,7 @@ CREATE OR REPLACE PROCEDURE sp_log_audit(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    INSERT INTO "SEC.AUDIT_LOG" (USERNAME, ACTION_TYPE, TABLE_NAME, ROW_ID)
+    INSERT INTO "sec.audit_log" (USERNAME, ACTION_TYPE, TABLE_NAME, ROW_ID)
     VALUES (_username, _action_type, _table_name, _row_id);
 
     RAISE NOTICE 'Action logged: User %, Action %', _username, _action_type;
@@ -240,12 +240,12 @@ BEGIN
         u.LAST_NAME,
         u.EMAIL,
         CASE
-            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM "SEC.ACC_PERMISSIONS" ap WHERE ap.ID = e.ROLE_ID)
+            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM "sec.acc_permissions" ap WHERE ap.ID = e.ROLE_ID)
             ELSE 'Client'
         END AS role_description,
         u.UTP AS user_type
-    FROM "HR.USERS" u
-    LEFT JOIN "HR.U_EMPLOYEE" e ON u.ID = e.ID
+    FROM "hr.users" u
+    LEFT JOIN "hr.u_employee" e ON u.ID = e.ID
     WHERE u.EMAIL = _email
       AND u.HASHED_PASSWORD = _hashed_password
       AND u.INACTIVE = FALSE;
@@ -258,8 +258,8 @@ BEGIN
     CALL sp_log_audit(
         _username := _email,
         _action_type := 'LOGIN',
-        _table_name := 'HR.USERS',
-        _row_id := (SELECT ID FROM HR.USERS WHERE EMAIL = _email)
+        _table_name := 'hr.users',
+        _row_id := (SELECT ID FROM hr.users WHERE EMAIL = _email)
     );
 END;
 $$ LANGUAGE plpgsql;

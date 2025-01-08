@@ -21,8 +21,8 @@ DECLARE
 BEGIN
     SELECT s.ID
     INTO _season_id
-    FROM "FINANCE.SEASON" s
-    INNER JOIN "FINANCE.PRICE_PER_SEASON" pps ON s.ID = pps.SEASON_ID
+    FROM "finance.season" s
+    INNER JOIN "finance.price_per_season" pps ON s.ID = pps.SEASON_ID
     WHERE s.BEGIN_DATE <= _end_date
       AND s.END_DATE >= _begin_date
     ORDER BY pps.TAX DESC
@@ -65,7 +65,7 @@ DECLARE
 	season_rate NUMERIC;
 BEGIN
     -- Verificar se o quarto existe
-    IF NOT EXISTS (SELECT 1 FROM "ROOM_MANAGEMENT.room" WHERE id = room_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM "room_management.room" WHERE id = room_id) THEN
         RAISE EXCEPTION 'Quarto não encontrado.';
     END IF;
 
@@ -78,7 +78,7 @@ BEGIN
 
     -- Buscar temporada válida
     SELECT id, rate INTO season_id, season_rate
-    FROM "FINANCE.season"
+    FROM "finance.season"
     WHERE begin_date <= checkin AND end_date >= checkout;
 
     IF season_id IS NULL THEN
@@ -87,7 +87,7 @@ BEGIN
 
     -- Obter preço base do quarto
     SELECT base_price INTO room_base_price
-    FROM "ROOM_MANAGEMENT.room"
+    FROM "room_management.room"
     WHERE id = room_id;
 
     IF room_base_price IS NULL THEN
@@ -98,12 +98,12 @@ BEGIN
     total_price := nights * room_base_price * season_rate;
 
     -- Inserir a reserva
-    INSERT INTO "RESERVES.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
+    INSERT INTO "reserves.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
     VALUES (user_id, checkin, checkout, 'P', season_id, total_price)
     RETURNING id INTO reservation_id;
 
     -- Relacionar o quarto à reserva
-    INSERT INTO "RESERVES.room_reservation" (reservation_id, room_id, price_reservation)
+    INSERT INTO "reserves.room_reservation" (reservation_id, room_id, price_reservation)
     VALUES (reservation_id, room_id, total_price);
 
     -- Confirmação de sucesso
@@ -150,8 +150,8 @@ BEGIN
     FOR _room_id IN SELECT UNNEST(_new_room_ids) LOOP -- Expands an array into a set of rows
         SELECT NOT EXISTS (
             SELECT 1 
-            FROM "RESERVES.ROOM_RESERVATION" rr
-            INNER JOIN "RESERVES.RESERVATION" r ON rr.RESERVATION_ID = r.ID
+            FROM "reserves.room_reservation" rr
+            INNER JOIN "reserves.reservation" r ON rr.RESERVATION_ID = r.ID
             WHERE rr.ROOM_ID = _room_id
               AND r.BEGIN_DATE < _new_end_date
               AND r.END_DATE > _new_begin_date
@@ -163,17 +163,17 @@ BEGIN
         END IF;
     END LOOP;
     BEGIN
-        UPDATE "RESERVES.RESERVATION"
+        UPDATE "reserves.reservation"
         SET BEGIN_DATE = _new_begin_date,
             END_DATE = _new_end_date
         WHERE ID = _reservation_id;
         
         --All existing room assignments for the reservation are removed
-        DELETE FROM "RESERVES.ROOM_RESERVATION" WHERE RESERVATION_ID = _reservation_id;
+        DELETE FROM "reserves.room_reservation" WHERE RESERVATION_ID = _reservation_id;
 
         --Insert New Room Reservations
         FOR _room_id IN SELECT UNNEST(_new_room_ids) LOOP
-            INSERT INTO "RESERVES.ROOM_RESERVATION" (
+            INSERT INTO "reserves.room_reservation" (
                 RESERVATION_ID, ROOM_ID, PRICE_RESERVATION
             ) VALUES (
                 _reservation_id, _room_id, (SELECT BASE_PRICE FROM ROOM WHERE ID = _room_id)
@@ -214,18 +214,18 @@ BEGIN
     -- Verificar se a reserva existe
     IF NOT EXISTS (
         SELECT 1 
-        FROM "RESERVES.reservation" 
+        FROM "reserves.reservation" 
         WHERE id = _reservation_id
     ) THEN
         RAISE EXCEPTION 'Reservation ID % does not exist.', _reservation_id;
     END IF;
 
     -- Deletar associações com quartos
-    DELETE FROM "RESERVES.room_reservation"
+    DELETE FROM "reserves.room_reservation"
     WHERE reservation_id = _reservation_id;
 
     -- Atualizar o status da reserva para "Cancelado"
-    UPDATE "RESERVES.reservation"
+    UPDATE "reserves.reservation"
     SET status = 'CC'  -- Substituir 'CC' pelo código adequado se necessário
     WHERE id = _reservation_id;
 
@@ -259,8 +259,8 @@ DECLARE
 BEGIN
     SELECT NOT EXISTS (
         SELECT 1 
-        FROM "RESERVES.ROOM_RESERVATION" rr
-        INNER JOIN "RESERVES.RESERVATION" r ON rr.RESERVATION_ID = r.ID
+        FROM "reserves.room_reservation" rr
+        INNER JOIN "reserves.reservation" r ON rr.RESERVATION_ID = r.ID
         WHERE rr.ROOM_ID = NEW.ROOM_ID
           AND r.BEGIN_DATE < NEW.END_DATE
           AND r.END_DATE > NEW.BEGIN_DATE
@@ -273,9 +273,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_check_room_availability ON "RESERVES.ROOM_RESERVATION";
+DROP TRIGGER IF EXISTS trg_check_room_availability ON "reserves.room_reservation";
 CREATE TRIGGER trg_check_room_availability
-BEFORE INSERT OR UPDATE ON "RESERVES.ROOM_RESERVATION"
+BEFORE INSERT OR UPDATE ON "reserves.room_reservation"
 FOR EACH ROW
 EXECUTE FUNCTION fn_trg_check_room_availability();
 
@@ -302,11 +302,11 @@ RETURNS TRIGGER AS $$
 BEGIN
     -- If the reservation is being rejected ('R') or cancelled ('CC'), mark the rooms as available
     IF NEW.R_DETAIL IN ('R', 'CC') THEN
-        UPDATE "ROOM_MANAGEMENT.ROOM"
+        UPDATE "room_management.room"
         SET CONDITION = 0 -- 0 indicates available
         WHERE ID IN (
             SELECT ROOM_ID -- Associated rooms are updated in one operation within the trigger
-            FROM "RESERVES.ROOM_RESERVATION"
+            FROM "reserves.room_reservation"
             WHERE RESERVATION_ID = NEW.ID
         );
     END IF;
@@ -314,9 +314,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_update_room_status_upon_cancelation ON "RESERVES.RESERVATION";
+DROP TRIGGER IF EXISTS trg_update_room_status_upon_cancelation ON "reserves.reservation";
 CREATE TRIGGER trg_update_room_status_upon_cancelation
-AFTER UPDATE OF R_DETAIL ON "RESERVES.RESERVATION"
+AFTER UPDATE OF R_DETAIL ON "reserves.reservation"
 FOR EACH ROW
 EXECUTE FUNCTION fn_trg_update_room_status_upon_cancelation();
 
@@ -329,7 +329,7 @@ RETURNS VOID AS $$
 BEGIN
     -- Ensure the reservation exists and is confirmed
     IF NOT EXISTS (
-        SELECT 1 FROM "RESERVES.RESERVATION"
+        SELECT 1 FROM "reserves.reservation"
         WHERE ID = RESERVATION_ID AND R_DETAIL = 'C'
     ) THEN
         RAISE EXCEPTION 'Reservation % is not confirmed or does not exist.', RESERVATION_ID;
@@ -337,7 +337,7 @@ BEGIN
 
     -- Ensure the current date is within the reservation period
     IF NOT EXISTS (
-        SELECT 1 FROM "RESERVES.RESERVATION"
+        SELECT 1 FROM "reserves.reservation"
         WHERE ID = RESERVATION_ID
           AND CURRENT_DATE BETWEEN BEGIN_DATE AND END_DATE
     ) THEN
@@ -345,7 +345,7 @@ BEGIN
     END IF;
 
     -- Set the check-in timestamp
-    UPDATE "RESERVES.RESERVATION"
+    UPDATE "reserves.reservation"
     SET CHECK_IN = CURRENT_TIMESTAMP
     WHERE ID = RESERVATION_ID;
 END;
@@ -357,14 +357,14 @@ RETURNS VOID AS $$
 BEGIN
     -- Ensure the reservation exists and check-in has occurred
     IF NOT EXISTS (
-        SELECT 1 FROM "RESERVES.RESERVATION"
+        SELECT 1 FROM "reserves.reservation"
         WHERE ID = RESERVATION_ID AND CHECK_IN IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Reservation % has not been checked in or does not exist.', RESERVATION_ID;
     END IF;
 
     -- Set the check-out timestamp
-    UPDATE "RESERVES.RESERVATION"
+    UPDATE "reserves.reservation"
     SET CHECK_OUT = CURRENT_TIMESTAMP
     WHERE ID = RESERVATION_ID;
 END;
@@ -376,19 +376,19 @@ CREATE OR REPLACE FUNCTION fn_update_room_condition()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Update the room condition to "2" (e.g., cleaning or "3" - maintenance required)
-    UPDATE "ROOM_MANAGEMENT.ROOM"
+    UPDATE "room_management.room"
     SET CONDITION = 2
     WHERE ID IN (
         SELECT ROOM_ID
-        FROM "RESERVES.ROOM_RESERVATION"
+        FROM "reserves.room_reservation"
         WHERE RESERVATION_ID = OLD.ID
     );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_update_room_condition ON "RESERVES.RESERVATION";
+DROP TRIGGER IF EXISTS trg_update_room_condition ON "reserves.reservation";
 CREATE TRIGGER trg_update_room_condition
-AFTER UPDATE OF CHECK_OUT ON "RESERVES.RESERVATION"
+AFTER UPDATE OF CHECK_OUT ON "reserves.reservation"
 FOR EACH ROW
 WHEN (OLD.CHECK_OUT IS NULL AND NEW.CHECK_OUT IS NOT NULL) -- Only fire on the first check-out update
 EXECUTE FUNCTION fn_update_room_condition();

@@ -29,7 +29,7 @@ BEGIN
     -- Validate input for email uniqueness | can also be done via django instead 
     IF EXISTS (
         SELECT 1 
-        FROM "HR.USERS" 
+        FROM "hr.users" 
         WHERE EMAIL = _email
     ) THEN
         RAISE EXCEPTION 'Email % is already registered', _email;
@@ -37,7 +37,7 @@ BEGIN
 
     BEGIN -- PostgreSQL automatically wraps the BEGIN block in a transaction, so there’s no need for explicit BEGIN TRAN or COMMIT TRAN
         
-        INSERT INTO "HR.USERS" (
+        INSERT INTO "hr.users" (
             FIRST_NAME, LAST_NAME, EMAIL, HASHED_PASSWORD, NIF, PHONE, 
             FULL_ADDRESS, POSTAL_CODE, CITY, UTP
         ) VALUES (
@@ -85,9 +85,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_default_role_for_employee ON "HR.U_EMPLOYEE";
+DROP TRIGGER IF EXISTS trg_default_role_for_employee ON "hr.u_employee";
 CREATE TRIGGER trg_default_role_for_employee
-BEFORE INSERT ON "HR.U_EMPLOYEE"
+BEFORE INSERT ON "hr.u_employee"
 FOR EACH ROW
 EXECUTE FUNCTION trg_default_role_for_employee();
 
@@ -122,7 +122,7 @@ BEGIN
     -- Validate if the user is an employee
     SELECT EXISTS (
         SELECT 1
-        FROM "HR.U_EMPLOYEE"
+        FROM "hr.u_employee"
         WHERE ID = _user_id
     ) INTO _is_employee;
 
@@ -134,7 +134,7 @@ BEGIN
         RAISE EXCEPTION 'Invalid role ID %. Only 1 (Admin), 2 (Manager) or 3 (Employee) are allowed', _new_role_id;
     END IF;
     BEGIN
-        UPDATE "HR.U_EMPLOYEE"
+        UPDATE "hr.u_employee"
         SET ROLE_ID = _new_role_id
         WHERE ID = _user_id;
 
@@ -182,7 +182,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM "HR.USERS"
+        FROM "hr.users"
         WHERE ID = _user_id
     ) INTO _user_exists;
 
@@ -191,7 +191,7 @@ BEGIN
     END IF;
 
     BEGIN 
-        UPDATE "HR.USERS"
+        UPDATE "hr.users"
         SET INACTIVE = _inactive
         WHERE ID = _user_id;
 

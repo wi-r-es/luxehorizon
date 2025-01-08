@@ -42,7 +42,7 @@ class RoomType(models.Model):
     room_quality = PostgreSQLEnumField("room_quality_type")
 
     class Meta:
-        db_table = 'room_management_room_types'
+        db_table = 'room_management.room_types'
 
     def __str__(self):
         return f"{self.type_initials} - {self.room_view} - {self.room_quality}"

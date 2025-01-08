@@ -5,7 +5,7 @@ services:
     restart: always
     volumes:
       - data:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d:ro
+      #- ./db-init:/docker-entrypoint-initdb.d:ro
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -47,4 +47,4 @@ services:
 volumes:
   static_volume:
   data:
-  db-init:
+  #db-init:

@@ -24,7 +24,7 @@ DECLARE
 BEGIN
     SELECT CLIENT_ID, TOTAL_VALUE
     INTO _client_id, _total_value
-    FROM "RESERVES.RESERVATION"
+    FROM "reserves.reservation"
     WHERE ID = _reservation_id;
 
     IF NOT FOUND THEN
@@ -32,7 +32,7 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO "FINANCE.INVOICE" (
+        INSERT INTO "finance.invoice" (
             RESERVATION_ID, CLIENT_ID, FINAL_VALUE, EMISSION_DATE, BILLING_DATE,
             INVOICE_STATUS, PAYMENT_METHOD_ID
         ) VALUES (
@@ -79,8 +79,8 @@ DECLARE
 BEGIN
     SELECT FINAL_VALUE, COALESCE(SUM(p.PAYMENT_AMOUNT), 0)
     INTO _final_value, _current_paid
-    FROM "FINANCE.INVOICE" i
-    LEFT JOIN FINANCE.PAYMENTS p ON i.ID = p.INVOICE_ID
+    FROM "finance.invoice" i
+    LEFT JOIN finance.payments p ON i.ID = p.INVOICE_ID
     WHERE i.ID = _invoice_id
     GROUP BY i.FINAL_VALUE;
 
@@ -88,7 +88,7 @@ BEGIN
         RAISE EXCEPTION 'Invoice ID % does not exist.', _invoice_id;
     END IF;
     BEGIN
-        INSERT INTO FINANCE.PAYMENTS (
+        INSERT INTO finance.payments (
             INVOICE_ID, PAYMENT_AMOUNT, PAYMENT_DATE, PAYMENT_METHOD_ID
         ) VALUES (
             _invoice_id, _payment_amount, CURRENT_DATE, _payment_method_id
@@ -97,7 +97,7 @@ BEGIN
 
         -- Update the INVOICE table if fully paid. 
         IF _current_paid + _payment_amount >= _final_value THEN
-            UPDATE "FINANCE.INVOICE"
+            UPDATE "finance.invoice"
             SET PAYMENT_ID = _payment_id,
                 BILLING_DATE = CURRENT_TIMESTAMP,
                 INVOICE_STATUS = TRUE
@@ -144,7 +144,7 @@ CREATE OR REPLACE FUNCTION trg_update_reservation_status_on_payment()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.INVOICE_STATUS = TRUE THEN
-        UPDATE "RESERVES.RESERVATION"
+        UPDATE "reserves.reservation"
         SET R_DETAIL = 'C' -- confirmada
         WHERE ID = NEW.RESERVATION_ID;
 
@@ -154,9 +154,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_update_reservation_status_on_payment ON "FINANCE.INVOICE";
+DROP TRIGGER IF EXISTS trg_update_reservation_status_on_payment ON "finance.invoice";
 CREATE TRIGGER trg_update_reservation_status_on_payment
-AFTER UPDATE OF INVOICE_STATUS ON "FINANCE.INVOICE"
+AFTER UPDATE OF INVOICE_STATUS ON "finance.invoice"
 FOR EACH ROW
 EXECUTE FUNCTION trg_update_reservation_status_on_payment();
 
@@ -185,7 +185,7 @@ DECLARE
 BEGIN
     SELECT TAX
     INTO _existing_tax
-    FROM "FINANCE.PRICE_PER_SEASON"
+    FROM "finance.price_per_season"
     WHERE SEASON_ID = _season_id;
 
     IF NOT FOUND THEN
@@ -197,7 +197,7 @@ BEGIN
     END IF;
 
     BEGIN
-        UPDATE "FINANCE.PRICE_PER_SEASON"
+        UPDATE "finance.price_per_season"
         SET TAX = _new_tax
         WHERE SEASON_ID = _season_id;
 

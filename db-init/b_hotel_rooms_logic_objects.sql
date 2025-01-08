@@ -25,7 +25,7 @@ DECLARE
     hint TEXT;
 BEGIN
     BEGIN
-        INSERT INTO "MANAGEMENT.HOTEL" (
+        INSERT INTO "management.hotel" (
             H_NAME, FULL_ADDRESS, POSTAL_CODE, CITY, EMAIL, TELEPHONE, DETAILS, STARS
         ) VALUES (
             _name, _address, _postal_code, _city, _email, _telephone, _details, _stars
@@ -70,7 +70,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM "MANAGEMENT.HOTEL"
+        FROM "management.hotel"
         WHERE ID = _hotel_id
     ) INTO _hotel_exists;
 
@@ -80,7 +80,7 @@ BEGIN
 
     SELECT EXISTS (
         SELECT 1 
-        FROM "ROOM_MANAGEMENT.ROOM_TYPES" 
+        FROM "room_management.room_types" 
         WHERE ID = _type_id
     ) INTO _type_exists;
 
@@ -89,7 +89,7 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO "ROOM_MANAGEMENT.ROOM" (
+        INSERT INTO "room_management.room" (
             TYPE_ID, HOTEL_ID, ROOM_NUMBER, BASE_PRICE, CONDITION, CAPACITY
         ) VALUES (
             _type_id, _hotel_id, _room_number, _base_price, _condition, _capacity
@@ -136,7 +136,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM "ROOM_MANAGEMENT.ROOM" 
+        FROM "room_management.room" 
         WHERE ID = _room_id
     ) INTO _room_exists;
 
@@ -145,7 +145,7 @@ BEGIN
     END IF;
 
     BEGIN
-        UPDATE "ROOM_MANAGEMENT.ROOM"
+        UPDATE "room_management.room"
         SET CONDITION = _new_status
         WHERE ID = _room_id;
 
@@ -191,7 +191,7 @@ DECLARE
 BEGIN
     SELECT EXISTS (
         SELECT 1 
-        FROM "ROOM_MANAGEMENT.ROOM" 
+        FROM "room_management.room" 
         WHERE ID = _room_id
     ) INTO _room_exists;
 
@@ -201,7 +201,7 @@ BEGIN
 
     SELECT EXISTS (
         SELECT 1 
-        FROM "ROOM_MANAGEMENT.COMMODITY" 
+        FROM "room_management.commodity" 
         WHERE ID = _commodity_id
     ) INTO _commodity_exists;
 
@@ -210,7 +210,7 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO "ROOM_MANAGEMENT.ROOM_COMMODITY" (ROOM_ID, COMMODITY_ID)
+        INSERT INTO "room_management.room_commodity" (ROOM_ID, COMMODITY_ID)
         VALUES (_room_id, _commodity_id);
 
         RAISE NOTICE 'Room ID % linked to Commodity ID %', _room_id, _commodity_id;
@@ -243,13 +243,13 @@ DECLARE
 BEGIN
     IF EXISTS (
         SELECT 1
-        FROM "ROOM_MANAGEMENT.COMMODITY"
+        FROM "room_management.commodity"
         WHERE DETAILS = _commodity_detail
     ) THEN
         RAISE EXCEPTION 'Commodity % already exists.', _commodity_detail;
     END IF;
     BEGIN
-        INSERT INTO "ROOM_MANAGEMENT.COMMODITY" (DETAILS)
+        INSERT INTO "room_management.commodity" (DETAILS)
         VALUES (_commodity_detail);
 
         RAISE NOTICE 'Commodity % created successfully.', _commodity_detail;
