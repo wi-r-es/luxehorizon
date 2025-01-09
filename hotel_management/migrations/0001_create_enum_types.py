@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
                         'CITY',
                         'OCEAN',
                         'GARDEN',
+                        'POOL',
+                        'MOUNTAIN',
                         'NONE'
                     );
                 END IF;
@@ -29,6 +31,17 @@ class Migration(migrations.Migration):
                         'PREMIUM'
                     );
                 END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'room_capacity_type') THEN
+                    CREATE TYPE room_capacity_type AS ENUM (
+                        'SINGLE',
+                        'DOUBLE',
+                        'TRIPLE',
+                        'QUAD',
+                        'KING',
+                        'FAMILY'
+                    );
+                END IF;
             END
             $$;
             """,
@@ -36,6 +49,7 @@ class Migration(migrations.Migration):
             """
             DROP TYPE IF EXISTS room_quality_type;
             DROP TYPE IF EXISTS room_view_type;
+            DROP TYPE IF EXISTS room_capacity_type;
             """
         ),
     ]

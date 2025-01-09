@@ -40,12 +40,13 @@ class RoomType(models.Model):
     type_initials = models.CharField(max_length=100)
     room_view = PostgreSQLEnumField("room_view_type")
     room_quality = PostgreSQLEnumField("room_quality_type")
+    room_capacity = PostgreSQLEnumField("room_capacity_type")
 
     class Meta:
         db_table = 'room_management.room_types'
 
     def __str__(self):
-        return f"{self.type_initials} - {self.room_view} - {self.room_quality}"
+        return f"{self.type_initials} - {self.room_view} - {self.room_quality} - {self.room_capacity}"
 
 # class RoomType(models.Model):
 #     type_initials = models.CharField(max_length=100)

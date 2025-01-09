@@ -19,12 +19,22 @@ class Command(BaseCommand):
             'views': {
                 'CITY': 'C',
                 'OCEAN': 'O',
-                'GARDEN': 'G'
+                'GARDEN': 'G',
+                'POOL': 'P',
+                'MOUNTAIN': 'M',
             },
             'qualities': {
                 'STANDARD': 'S',
                 'DELUXE': 'D',
-                'PREMIUM': 'P'
+                'PREMIUM': 'P',
+            },
+            'capacity': {
+                'SINGLE': 'S',
+                'DOUBLE': 'D',
+                'TRIPLE': 'T',
+                'QUAD': 'Q',
+                'KING': 'K',
+                'FAMILY': 'F',
             },
         }
 
@@ -34,18 +44,19 @@ class Command(BaseCommand):
                 skipped_count = 0
 
                 # Generate all possible combinations
-                for view, quality in product(room_configs['views'].items(), room_configs['qualities'].items()):
+                for view, quality, capacity in product(room_configs['views'].items(), room_configs['qualities'].items(), room_configs['capacity'].items()):
                     view_name, view_code = view
                     quality_name, quality_code = quality
+                    capacity_name, capacity_code = capacity
                     
                     # Generate type initials (e.g., 'CS' for City Standard)
-                    type_initials = f"{view_code}{quality_code}"
+                    type_initials = f"{view_code}{quality_code}{capacity_code}"
                     
                     # Check if this type already exists
                     if options['skip_existing'] and RoomType.objects.filter(type_initials=type_initials).exists():
                         self.stdout.write(
                             self.style.WARNING(
-                                f'Skipping existing room type: {type_initials} ({view_name} {quality_name})'
+                                f'Skipping existing room type: {type_initials} ({view_name} {quality_name} {capacity_name})'
                             )
                         )
                         skipped_count += 1
@@ -55,12 +66,13 @@ class Command(BaseCommand):
                     room_type = RoomType.objects.create(
                         type_initials=type_initials,
                         room_view=view_name,
-                        room_quality=quality_name
+                        room_quality=quality_name,
+                        room_capacity=capacity_name
                     )
                     
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f'Created room type: {type_initials} ({view_name} {quality_name})'
+                            f'Created room type: {type_initials} ({view_name} {quality_name} {capacity_name})'
                         )
                     )
                     created_count += 1
