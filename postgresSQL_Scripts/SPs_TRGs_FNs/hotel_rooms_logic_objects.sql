@@ -26,18 +26,19 @@ DECLARE
 BEGIN
     BEGIN
         INSERT INTO "MANAGEMENT.HOTEL" (
-            H_NAME, FULL_ADDRESS, POSTAL_CODE, CITY, EMAIL, TELEPHONE, DETAILS, STARS
+            h_name, full_address, postal_code, city, email, telephone, details, stars
         ) VALUES (
             _name, _address, _postal_code, _city, _email, _telephone, _details, _stars
         );
 
         RAISE NOTICE 'Hotel % added successfully', _name;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
-            RAISE;
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -90,18 +91,19 @@ BEGIN
 
     BEGIN
         INSERT INTO "ROOM_MANAGEMENT.ROOM" (
-            TYPE_ID, HOTEL_ID, ROOM_NUMBER, BASE_PRICE, CONDITION, CAPACITY
+            type_id, hotel_id, room_number, base_price, condition, capacity
         ) VALUES (
             _type_id, _hotel_id, _room_number, _base_price, _condition, _capacity
         );
 
         RAISE NOTICE 'Room % added to Hotel ID %', _room_number, _hotel_id;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
-            RAISE;
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -146,16 +148,17 @@ BEGIN
 
     BEGIN
         UPDATE "ROOM_MANAGEMENT.ROOM"
-        SET CONDITION = _new_status
+        SET condition = _new_status
         WHERE ID = _room_id;
 
         RAISE NOTICE 'Room ID % status updated to %', _room_id, _new_status;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
-            RAISE;
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -210,16 +213,17 @@ BEGIN
     END IF;
 
     BEGIN
-        INSERT INTO "ROOM_MANAGEMENT.ROOM_COMMODITY" (ROOM_ID, COMMODITY_ID)
+        INSERT INTO "ROOM_MANAGEMENT.ROOM_COMMODITY" (room_id, commodity_id)
         VALUES (_room_id, _commodity_id);
 
         RAISE NOTICE 'Room ID % linked to Commodity ID %', _room_id, _commodity_id;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
-            RAISE;
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;  
 END;
 $$;
@@ -244,21 +248,22 @@ BEGIN
     IF EXISTS (
         SELECT 1
         FROM "ROOM_MANAGEMENT.COMMODITY"
-        WHERE DETAILS = _commodity_detail
+        WHERE details = _commodity_detail
     ) THEN
         RAISE EXCEPTION 'Commodity % already exists.', _commodity_detail;
     END IF;
     BEGIN
-        INSERT INTO "ROOM_MANAGEMENT.COMMODITY" (DETAILS)
+        INSERT INTO "ROOM_MANAGEMENT.COMMODITY" (details)
         VALUES (_commodity_detail);
 
         RAISE NOTICE 'Commodity % created successfully.', _commodity_detail;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
-            RAISE;
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;  
 END;
 $$;

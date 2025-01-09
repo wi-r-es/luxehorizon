@@ -61,14 +61,14 @@
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "management.hotel" (
     ID                  SERIAL,
-    H_NAME              VARCHAR(100)        NOT NULL,
-    FULL_ADDRESS        VARCHAR(160)        NOT NULL,
-    POSTAL_CODE         VARCHAR(8)          NOT NULL,
-    CITY                VARCHAR(100)        NOT NULL,
-    EMAIL               VARCHAR(100)        NOT NULL,
-    TELEPHONE           VARCHAR(20)         NOT NULL,
-    DETAILS             VARCHAR(200)        NOT NULL,
-    STARS               INT                 NOT NULL,
+    h_name              VARCHAR(100)        NOT NULL,
+    full_address        VARCHAR(160)        NOT NULL,
+    postal_code         VARCHAR(8)          NOT NULL,
+    city                VARCHAR(100)        NOT NULL,
+    email               VARCHAR(100)        NOT NULL,
+    telephone           VARCHAR(20)         NOT NULL,
+    details             VARCHAR(200)        NOT NULL,
+    stars               INT                 NOT NULL,
 
     CONSTRAINT      PK_HOTEL             PRIMARY KEY (ID)
 );
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS "room_management.room_types" (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "room_management.commodity" (
     ID                  SERIAL,
-    DETAILS             VARCHAR(100)            NOT NULL, -- wifi, safe, minibar, AC, 
+    details             VARCHAR(100)            NOT NULL, -- wifi, safe, minibar, AC, 
 
     CONSTRAINT      PK_COMMODITY            PRIMARY KEY (ID)
 );
@@ -128,17 +128,17 @@ END $$;
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "room_management.room" (
     ID                  SERIAL ,
-    TYPE_ID             INT                 NOT NULL,
-    HOTEL_ID            INT                 NOT NULL,
-    ROOM_NUMBER         INT                 NOT NULL, 
-    BASE_PRICE          NUMERIC(10, 2)      NOT NULL, -- changed from float for more appropriate data type
-    CONDITION           INT                 NOT NULL, -- 0 - livre, 1 - Sujo, 2 - Limpeza, 3 - manutenção
-    CAPACITY            "ROOM_MANAGEMENT.capacity_type",
+    type_id             INT                 NOT NULL,
+    hotel_id            INT                 NOT NULL,
+    room_number         INT                 NOT NULL, 
+    base_price          NUMERIC(10, 2)      NOT NULL, -- changed from float for more appropriate data type
+    condition           INT                 NOT NULL, -- 0 - livre, 1 - Sujo, 2 - Limpeza, 3 - manutenção
+    capacity            "ROOM_MANAGEMENT.capacity_type",
 
     CONSTRAINT      PK_ROOM                     PRIMARY KEY (ID),
-    CONSTRAINT      FK_ROOM_TYPES               FOREIGN KEY (TYPE_ID)           REFERENCES "room_management.room_types"(ID),
-    CONSTRAINT      FK_ROOM_HOTEL               FOREIGN KEY (HOTEL_ID)          REFERENCES "management.hotel"(ID),
-    CONSTRAINT      UC_ROOM_NUM_PER_HOTEL       UNIQUE(HOTEL_ID, ROOM_NUMBER)
+    CONSTRAINT      FK_ROOM_TYPES               FOREIGN KEY (type_id)           REFERENCES "room_management.room_types"(ID),
+    CONSTRAINT      FK_ROOM_HOTEL               FOREIGN KEY (hotel_id)          REFERENCES "management.hotel"(ID),
+    CONSTRAINT      UC_ROOM_NUM_PER_HOTEL       UNIQUE(hotel_id, room_number)
 );
 
 
@@ -148,8 +148,8 @@ CREATE TABLE IF NOT EXISTS "room_management.room" (
 CREATE TABLE IF NOT EXISTS "finance.season" (
     ID              SERIAL ,
     DESCRIPTIVE     CHAR(1)     NOT NULL, -- A - Alta, B - Baixa, F - Festividades
-    BEGIN_DATE      DATE        NOT NULL,
-    END_DATE        DATE        NOT NULL,
+    begin_date      DATE        NOT NULL,
+    end_date        DATE        NOT NULL,
 
     CONSTRAINT      PK_SEASON       PRIMARY KEY (ID)
 );
@@ -158,22 +158,22 @@ CREATE TABLE IF NOT EXISTS "finance.season" (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "finance.price_per_season" (
     ID                  SERIAL ,
-    SEASON_ID           INT         NOT NULL,
+    season_id           INT         NOT NULL,
     TAX                 FLOAT       NOT NULL,
 
     CONSTRAINT      PK_PRICE_PER_SEASON       PRIMARY KEY (ID),
-    CONSTRAINT      FK_PRICE_SEASON           FOREIGN KEY (SEASON_ID)      REFERENCES "finance.season"(ID) 
+    CONSTRAINT      FK_PRICE_SEASON           FOREIGN KEY (season_id)      REFERENCES "finance.season"(ID) 
 );
 /*==============================================================*/
 /* Table: ROOM_COMMODITY                                        */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "room_management.room_commodity" (
-    ROOM_ID             INT         NOT NULL,
-    COMMODITY_ID        INT         NOT NULL,
+    room_id             INT         NOT NULL,
+    commodity_id        INT         NOT NULL,
     
-    CONSTRAINT      PK_ROOM_COMMODITY        PRIMARY KEY (ROOM_ID, COMMODITY_ID),
-    CONSTRAINT      FK_RC_ROOM               FOREIGN KEY (ROOM_ID)               REFERENCES "finance.season"(ID),
-    CONSTRAINT      FK_RC_COMMODITY          FOREIGN KEY(COMMODITY_ID)           REFERENCES "finance.season"(ID) 
+    CONSTRAINT      PK_ROOM_COMMODITY        PRIMARY KEY (room_id, commodity_id),
+    CONSTRAINT      FK_RC_ROOM               FOREIGN KEY (room_id)               REFERENCES "finance.season"(ID),
+    CONSTRAINT      FK_RC_COMMODITY          FOREIGN KEY(commodity_id)           REFERENCES "finance.season"(ID) 
 );
 /*==============================================================*/
 /* Table: ACC_PERMISSIONS                                       */
@@ -197,33 +197,33 @@ ON CONFLICT (ID) DO NOTHING;
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "hr.users"(
     ID                      SERIAL,
-    FIRST_NAME              VARCHAR(100)            NOT NULL,
-    LAST_NAME               VARCHAR(100)            NOT NULL,
-    EMAIL                   VARCHAR(100)            NOT NULL,
-    HASHED_PASSWORD         VARCHAR(255)            NOT NULL,
-    INACTIVE                BOOLEAN                 NOT NULL, 
-    NIF                     VARCHAR(20)             NOT NULL,
-    PHONE                   VARCHAR(20)             NOT NULL,
-    FULL_ADDRESS            VARCHAR(160)            NOT NULL,
-    POSTAL_CODE             VARCHAR(8)              NOT NULL,
-    CITY                    VARCHAR(100)            NOT NULL,
+    first_name              VARCHAR(100)            NOT NULL,
+    last_name               VARCHAR(100)            NOT NULL,
+    email                   VARCHAR(100)            NOT NULL,
+    hashed_password         VARCHAR(255)            NOT NULL,
+    inactive                BOOLEAN                 NOT NULL, 
+    nif                     VARCHAR(20)             NOT NULL,
+    phone                   VARCHAR(20)             NOT NULL,
+    full_address            VARCHAR(160)            NOT NULL,
+    postal_code             VARCHAR(8)              NOT NULL,
+    city                    VARCHAR(100)            NOT NULL,
     utp                     CHAR(1)                 NOT NULL        DEFAULT 'C', -- C - Cliente, F - Funcionário, 
 
     CONSTRAINT      PK_USERS        PRIMARY KEY (ID),
-    CONSTRAINT      UC_EMAIL        UNIQUE(EMAIL),
-    CONSTRAINT      UC_NIF          UNIQUE(NIF),
-    CONSTRAINT      UC_PHONE        UNIQUE(PHONE),
-    CONSTRAINT      CK_UTP          CHECK (utp IN ('C', 'F'))
-);     -- PARTITION BY LIST (UTP);
+    CONSTRAINT      UC_email        UNIQUE(email),
+    CONSTRAINT      UC_nif          UNIQUE(nif),
+    CONSTRAINT      UC_phone        UNIQUE(phone),
+    CONSTRAINT      CK_utp          CHECK (utp IN ('C', 'F'))
+);     -- PARTITION BY LIST (utp);
 
 -- INHERITANCE VS PARTIOTIONING 
--- Partition for CLIENT (UTP = 'C')
+-- Partition for CLIENT (utp = 'C')
 -- CREATE TABLE IF NOT EXISTS CLIENT PARTITION OF USERS
 -- FOR VALUES IN ('C');
 
--- -- Partition for EMPLOYEE (UTP = 'F')
+-- -- Partition for EMPLOYEE (utp = 'F')
 -- CREATE TABLE IF NOT EXISTS EMPLOYEE (
---     ROLE_ID int NOT NULL REFERENCES ACC_PERMISSIONS(ID),
+--     role_id int NOT NULL REFERENCES ACC_PERMISSIONS(ID),
 --     SOCIAL_SECURITY INT NOT NULL
 -- ) PARTITION OF USERS
 -- FOR VALUES IN ('F');
@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS "hr.u_client" (
     CHECK (utp = 'C')
 ) INHERITS ("hr.users");
 CREATE TABLE IF NOT EXISTS "hr.u_employee" (
-    ROLE_ID             INT         NOT NULL        REFERENCES "sec.acc_permissions"(ID),
+    role_id             INT         NOT NULL        REFERENCES "sec.acc_permissions"(ID),
     SOCIAL_SECURITY     INT         NOT NULL,
     CHECK (utp = 'F')
 ) INHERITS ("hr.users");
@@ -247,46 +247,46 @@ CREATE TABLE IF NOT EXISTS "hr.u_employee" (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "reserves.reservation" (
     ID                  SERIAL ,
-    CLIENT_ID           INT                 NOT NULL,
-    BEGIN_DATE          DATE                NOT NULL,
-    END_DATE            DATE                NOT NULL,
+    client_id           INT                 NOT NULL,
+    begin_date          DATE                NOT NULL,
+    end_date            DATE                NOT NULL,
     status            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado
-    SEASON_ID           INT                 NOT NULL, 
-    TOTAL_VALUE         NUMERIC(10, 2)      NOT NULL,
+    season_id           INT                 NOT NULL, 
+    total_value         NUMERIC(10, 2)      NOT NULL,
     begin_date            TIMESTAMP           NULL,
     end_date           TIMESTAMP           NULL,
 
     CONSTRAINT      PK_RESERVATION          PRIMARY KEY (ID),
-    CONSTRAINT      FK_RESERV_CLIENT        FOREIGN KEY (CLIENT_ID)         REFERENCES "hr.users"(ID),
-    CONSTRAINT      FK_RESERV_SEASON        FOREIGN KEY (SEASON_ID)         REFERENCES "finance.season"(ID)
+    CONSTRAINT      FK_RESERV_CLIENT        FOREIGN KEY (client_id)         REFERENCES "hr.users"(ID),
+    CONSTRAINT      FK_RESERV_SEASON        FOREIGN KEY (season_id)         REFERENCES "finance.season"(ID)
 );
 /*==============================================================*/
 /* Table: ROOM_RESERVATION                                      */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "reserves.room_reservation" (
-    RESERVATION_ID          INT                 NOT NULL,
-    ROOM_ID                 INT                 NOT NULL,
-    PRICE_RESERVATION       NUMERIC(10, 2)      NOT NULL,
+    reservation_id          INT                 NOT NULL,
+    room_id                 INT                 NOT NULL,
+    price_reservation       NUMERIC(10, 2)      NOT NULL,
 
-    CONSTRAINT      PK_ROOM_RESERVATION         PRIMARY KEY (RESERVATION_ID, ROOM_ID),
-    CONSTRAINT      FK_RESERV                   FOREIGN KEY (RESERVATION_ID)                REFERENCES "reserves.reservation"(ID),
-    CONSTRAINT      FK_ROOM_RESERV              FOREIGN KEY (ROOM_ID)                       REFERENCES "room_management.room"(ID)
+    CONSTRAINT      PK_ROOM_RESERVATION         PRIMARY KEY (reservation_id, room_id),
+    CONSTRAINT      FK_RESERV                   FOREIGN KEY (reservation_id)                REFERENCES "reserves.reservation"(ID),
+    CONSTRAINT      FK_ROOM_RESERV              FOREIGN KEY (room_id)                       REFERENCES "room_management.room"(ID)
 );
 /*==============================================================*/
 /* Table: GUESTS                                                */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "reserves.guests" (
     ID                      SERIAL ,
-    RESERVATION_ID          INT                     NOT NULL,
+    reservation_id          INT                     NOT NULL,
     FULL_NAME               VARCHAR(100)            NOT NULL,
     CC_PASS                 VARCHAR(20)             NOT NULL, --CC OR PASSPORT
-    PHONE                   VARCHAR(20)             NOT NULL,
-    FULL_ADDRESS            VARCHAR(160)            NOT NULL,
-    POSTAL_CODE             VARCHAR(8)              NOT NULL,
-    CITY                    VARCHAR(100)            NOT NULL,
+    phone                   VARCHAR(20)             NOT NULL,
+    full_address            VARCHAR(160)            NOT NULL,
+    postal_code             VARCHAR(8)              NOT NULL,
+    city                    VARCHAR(100)            NOT NULL,
 
     CONSTRAINT      PK_GUESTS               PRIMARY KEY (ID),
-    CONSTRAINT      FK_GUEST_RESERV         FOREIGN KEY (RESERVATION_ID)        REFERENCES "reserves.reservation"(ID)
+    CONSTRAINT      FK_GUEST_RESERV         FOREIGN KEY (reservation_id)        REFERENCES "reserves.reservation"(ID)
 );
 /*==============================================================*/
 /* Table: PAYMENT_METHOD                                        */
@@ -304,39 +304,39 @@ CREATE TABLE IF NOT EXISTS "finance.payment_method" (
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "finance.payments" (
     ID                          SERIAL,
-    INVOICE_ID                  INT                     NOT NULL,
-    PAYMENT_AMOUNT              NUMERIC(10, 2)          NOT NULL,
-    PAYMENT_DATE                DATE                    NOT NULL,
-    PAYMENT_METHOD_ID           INT                     NOT NULL,
+    invoice_id                  INT                     NOT NULL,
+    payment_amount              NUMERIC(10, 2)          NOT NULL,
+    payment_date                DATE                    NOT NULL,
+    payment_method_id           INT                     NOT NULL,
 
     CONSTRAINT      PK_PAY               PRIMARY KEY (ID),
-    --CONSTRAINT      FK_PAY_INV           FOREIGN KEY (INVOICE_ID)            REFERENCES finance.invoice(ID),
-    CONSTRAINT      FK_PAY_TYPE          FOREIGN KEY (PAYMENT_METHOD_ID)     REFERENCES "finance.payment_method"(ID)
+    --CONSTRAINT      FK_PAY_INV           FOREIGN KEY (invoice_id)            REFERENCES finance.invoice(ID),
+    CONSTRAINT      FK_PAY_TYPE          FOREIGN KEY (payment_method_id)     REFERENCES "finance.payment_method"(ID)
 );
 /*==============================================================*/
 /* Table: INVOICE                                               */
 /*==============================================================*/
 CREATE table if not exists "finance.invoice" (
     ID                          SERIAL,
-    RESERVATION_ID              INT                     NOT NULL,
-    CLIENT_ID                   INT                     NOT NULL,
-    FINAL_VALUE                 NUMERIC(10, 2)          NOT NULL,
-    EMISSION_DATE               DATE                    NOT NULL,
-    BILLING_DATE                DATE                    NOT NULL,
-    INVOICE_STATUS              BOOLEAN                 NOT NULL, 
-    PAYMENT_ID                  INT                     NOT NULL,
+    reservation_id              INT                     NOT NULL,
+    client_id                   INT                     NOT NULL,
+    final_value                 NUMERIC(10, 2)          NOT NULL,
+    emission_date               DATE                    NOT NULL,
+    billing_date                DATE                    NOT NULL,
+    invoice_status              BOOLEAN                 NOT NULL, 
+    payment_id                  INT                     NOT NULL,
 
     CONSTRAINT      PK_INVOICE          PRIMARY KEY (ID),
-    CONSTRAINT      FK_INV_RESERV       FOREIGN KEY (RESERVATION_ID)        REFERENCES "reserves.reservation"(ID),
-    --CONSTRAINT      FK_INV_CLIENT       FOREIGN KEY (CLIENT_ID)             REFERENCES hr.users(ID),
-    CONSTRAINT      FK_INV_PAY          FOREIGN KEY (PAYMENT_ID)            REFERENCES "finance.payments"(ID)
+    CONSTRAINT      FK_INV_RESERV       FOREIGN KEY (reservation_id)        REFERENCES "reserves.reservation"(ID),
+    --CONSTRAINT      FK_INV_CLIENT       FOREIGN KEY (client_id)             REFERENCES hr.users(ID),
+    CONSTRAINT      FK_INV_PAY          FOREIGN KEY (payment_id)            REFERENCES "finance.payments"(ID)
 );
 ALTER TABLE "finance.payments" DROP CONSTRAINT IF EXISTS FK_PAY_INV;
 ALTER TABLE "finance.invoice" DROP CONSTRAINT IF EXISTS FK_INV_PAY;
 ALTER TABLE "finance.payments"
-ADD CONSTRAINT FK_PAY_INV FOREIGN KEY (INVOICE_ID) REFERENCES "finance.invoice"(ID);
+ADD CONSTRAINT FK_PAY_INV FOREIGN KEY (invoice_id) REFERENCES "finance.invoice"(ID);
 ALTER TABLE "finance.invoice"
-ADD CONSTRAINT FK_INV_PAY FOREIGN KEY (PAYMENT_ID) REFERENCES "finance.payments"(ID);
+ADD CONSTRAINT FK_INV_PAY FOREIGN KEY (payment_id) REFERENCES "finance.payments"(ID);
 
 
 
@@ -358,31 +358,31 @@ CREATE TABLE IF NOT EXISTS faturaDetalhes (
 /* Table: USER_PASSWORDS_DICTIONARY                             */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "sec.user_passwords_dictionary" ( -- for employees ONLY
-	USER_ID                 INT				        NOT NULL,
-	HASHED_PASSWD			VARCHAR(255)	        NOT NULL,
-	ValidFrom               TIMESTAMP               NOT NULL     DEFAULT CURRENT_TIMESTAMP,
-    ValidTo                 TIMESTAMP               NOT NULL, -- Set to six months from ValidFrom for each new record 
+	user_id                 INT				        NOT NULL,
+	hashed_password			VARCHAR(255)	        NOT NULL,
+	valid_from               TIMESTAMP               NOT NULL     DEFAULT CURRENT_TIMESTAMP,
+    valid_to                 TIMESTAMP               NOT NULL, -- Set to six months from valid_from for each new record 
 
-	--CONSTRAINT      PK_ACCOUNTS_ID      PRIMARY KEY(USER_ID),
-	CONSTRAINT      FK_USER_PASSWD      FOREIGN KEY(USER_ID)        REFERENCES "hr.users"(ID)
+	--CONSTRAINT      PK_ACCOUNTS_ID      PRIMARY KEY(user_id),
+	CONSTRAINT      FK_USER_PASSWD      FOREIGN KEY(user_id)        REFERENCES "hr.users"(ID)
 );
 
 /*==============================================================*/
 /* Table: USER_LOGIN_AUDIT                                      */
 /*==============================================================*/
 CREATE TABLE IF NOT EXISTS "sec.user_login_audit" (
-    USER_ID                 INT                     NOT NULL,
-    LOGIN_TIMESTAMP         TIMESTAMP               NOT NULL,
+    user_id                 INT                     NOT NULL,
+    login_timestamp         TIMESTAMP               NOT NULL,
 
-    CONSTRAINT  FK_USER_LOGIN       FOREIGN KEY(USER_ID) REFERENCES "hr.users" (ID)
+    CONSTRAINT  FK_USER_LOGIN       FOREIGN KEY(user_id) REFERENCES "hr.users" (ID)
 );
 /*==============================================================*/
 /* Table: ERROR_LOG                                             */
 /*==============================================================*/
 CREATE table if not exists "sec.error_log" (
     ID                          SERIAL,
-    ERROR_MESSAGE	            VARCHAR(4000),
-	ERROR_HINT                  VARCHAR(400),
+    error_message	            VARCHAR(4000),
+	error_hint                  VARCHAR(400),
 	ERROR_CONTEXT               VARCHAR(400),
     ERROR_TIMESTAMP             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -418,11 +418,11 @@ CREATE TABLE IF NOT EXISTS "sec.audit_log" (
 /* INDEXES                                                      */
 /*==============================================================*/
 --INDEXES FOR PERFORMANCE
--- CREATE INDEX idx_room_hotelID ON ROOM(HOTEL_ID);
--- CREATE INDEX idx_reservation_clientID ON RESERVATION(CLIENT_ID);
--- CREATE INDEX idx_invoice_clientID ON INVOICE(CLIENT_ID);
+-- CREATE INDEX idx_room_hotelID ON ROOM(hotel_id);
+-- CREATE INDEX idx_reservation_clientID ON RESERVATION(client_id);
+-- CREATE INDEX idx_invoice_clientID ON INVOICE(client_id);
 
--- maybe index  ON reserves.room_reservation for ROOM_ID, BEGIN_DATE, and END_DATE to make RESERVES.trg_check_room_availability have less overhead for performance optimization
+-- maybe index  ON reserves.room_reservation for room_id, begin_date, and end_date to make RESERVES.trg_check_room_availability have less overhead for performance optimization
 
 DO $$
 BEGIN
@@ -432,7 +432,7 @@ BEGIN
         WHERE schemaname = 'public' 
           AND indexname = 'idx_room_hotelid'
     ) THEN
-        CREATE INDEX idx_room_hotelid ON "room_management.room"(HOTEL_ID);
+        CREATE INDEX idx_room_hotelid ON "room_management.room"(hotel_id);
     END IF;
 END $$;
 
@@ -444,7 +444,7 @@ BEGIN
         WHERE schemaname = 'public' 
           AND indexname = 'idx_reservation_clientid'
     ) THEN
-        CREATE INDEX idx_reservation_clientid ON "reserves.reservation"(CLIENT_ID);
+        CREATE INDEX idx_reservation_clientid ON "reserves.reservation"(client_id);
     END IF;
 END $$;
 
@@ -456,6 +456,6 @@ BEGIN
         WHERE schemaname = 'public' 
           AND indexname = 'idx_invoice_clientid'
     ) THEN
-        CREATE INDEX idx_invoice_clientid ON "finance.invoice"(CLIENT_ID);
+        CREATE INDEX idx_invoice_clientid ON "finance.invoice"(client_id);
     END IF;
 END $$;

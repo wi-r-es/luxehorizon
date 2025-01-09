@@ -30,7 +30,7 @@ BEGIN
     IF EXISTS (
         SELECT 1 
         FROM "HR.USERS" 
-        WHERE EMAIL = _email
+        WHERE email = _email
     ) THEN
         RAISE EXCEPTION 'Email % is already registered', _email;
     END IF;
@@ -38,21 +38,20 @@ BEGIN
     BEGIN -- PostgreSQL automatically wraps the BEGIN block in a transaction, so there’s no need for explicit BEGIN TRAN or COMMIT TRAN
         
         INSERT INTO "HR.USERS" (
-            FIRST_NAME, LAST_NAME, EMAIL, HASHED_PASSWORD, NIF, PHONE, 
-            FULL_ADDRESS, POSTAL_CODE, CITY, UTP
+            first_name, last_name, email, hashed_password, nif, phone, 
+            full_address, postal_code, city, utp
         ) VALUES (
             _first_name, _last_name, _email, _hashed_password, _nif, _phone, 
             _full_address, _postal_code, _city, _utp
         );
         RAISE NOTICE 'User % registered successfully', _email;
-     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            -- Log the error into the error table
-            CALL "SEC.LogError"(msg, hint, content );
+    EXCEPTION WHEN OTHERS THEN
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -78,8 +77,8 @@ CREATE OR REPLACE FUNCTION trg_default_role_for_employee()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Check if the user type is 'F' (employee)
-    IF NEW.UTP = 'F' THEN
-        NEW.ROLE_ID := 3; -- Default to "Funcionario"
+    IF NEW.utp = 'F' THEN
+        NEW.role_id := 3; -- Default to "Funcionario"
     END IF;
 
     RETURN NEW;
@@ -135,17 +134,17 @@ BEGIN
     END IF;
     BEGIN
         UPDATE "HR.U_EMPLOYEE"
-        SET ROLE_ID = _new_role_id
+        SET role_id = _new_role_id
         WHERE ID = _user_id;
 
         RAISE NOTICE 'User ID % role updated to %', _user_id, _new_role_id;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -192,17 +191,17 @@ BEGIN
 
     BEGIN 
         UPDATE "HR.USERS"
-        SET INACTIVE = _inactive
+        SET inactive = _inactive
         WHERE ID = _user_id;
 
         RAISE NOTICE 'User ID % status updated to %', _user_id, _inactive;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;

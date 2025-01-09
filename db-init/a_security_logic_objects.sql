@@ -7,7 +7,7 @@
 ██      ██    ██ ██    ██ ██      ██   ██ ██   ██ ██    ██ ██   ██ 
 ███████  ██████   ██████  ███████ ██   ██ ██   ██  ██████  ██   ██                                                                    
 */
-CREATE OR REPLACE PROCEDURE "sec.LogError"(
+CREATE OR REPLACE PROCEDURE sp_secLogError(
     _ErrorMessage VARCHAR(4000),
     _ErrorHint VARCHAR(400),
     _ErrorContent VARCHAR(400)
@@ -16,7 +16,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Log the error details into the error log table
-    INSERT INTO "sec.error_log" (ERROR_MESSAGE, ERROR_HINT, ERROR_CONTENT)
+    INSERT INTO "sec.error_log" (error_message, error_hint, error_content)
     VALUES (_ErrorMessage, _ErrorHint, _ErrorContent);
 
     -- Raise the error to the caller
@@ -44,16 +44,16 @@ CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "sec.user_passwords_dictionary" (
-        USER_ID, 
-        HASHED_PASSWD, 
-        ValidFrom, 
-        ValidTo
+        user_id, 
+        hashed_password, 
+        valid_from, 
+        valid_to
     ) VALUES (
-        NEW.ID, 
-        NEW.HASHED_PASSWORD, 
+        NEW.id, 
+        NEW.hashed_password, 
         CURRENT_TIMESTAMP, 
         CASE 
-            WHEN NEW.UTP = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
+            WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
             ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
         END
     );
@@ -63,7 +63,7 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_after_user_insert_update ON "hr.users";
 CREATE TRIGGER trg_after_user_insert_update
-AFTER INSERT OR UPDATE OF HASHED_PASSWORD
+AFTER INSERT OR UPDATE OF hashed_password
 ON "hr.users"
 FOR EACH ROW
 EXECUTE FUNCTION trg_insert_user_password_dictionary();
@@ -81,9 +81,9 @@ CREATE OR REPLACE FUNCTION fn_track_user_login()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "sec.user_login_audit" (
-        USER_ID, LOGIN_TIMESTAMP
+        user_id, login_timestamp
     ) VALUES (
-        NEW.ID, CURRENT_TIMESTAMP
+        NEW.id, CURRENT_TIMESTAMP
     );
     RETURN NEW;
 END;
@@ -92,7 +92,7 @@ DROP TRIGGER IF EXISTS trg_track_user_login ON "hr.users";
 CREATE TRIGGER trg_track_user_login
 AFTER INSERT OR UPDATE ON "hr.users"
 FOR EACH ROW
-WHEN (NEW.UTP = 'F') -- Optional: for employees only
+WHEN (NEW.utp = 'F') -- Optional: for employees only
 EXECUTE FUNCTION fn_track_user_login();
 
 /*
@@ -120,8 +120,8 @@ BEGIN
     SELECT EXISTS (
         SELECT 1
         FROM "sec.user_passwords_dictionary"
-        WHERE USER_ID = _user_id
-          AND HASHED_PASSWD = _new_hashed_password
+        WHERE user_id = _user_id
+          AND hashed_password = _new_hashed_password
     ) INTO _is_password_reused;
 
     -- If the password is already used, raise an exception
@@ -131,18 +131,18 @@ BEGIN
 
     BEGIN 
         UPDATE "hr.users"
-        SET HASHED_PASSWORD = _new_hashed_password
+        SET hashed_password = _new_hashed_password
         WHERE ID = _user_id;
 
         -- Insert the new password into the password history table
         INSERT INTO "sec.user_passwords_dictionary" (
-            USER_ID, HASHED_PASSWD, ValidFrom, ValidTo
+            user_id, hashed_password, valid_from, valid_to
         ) VALUES (
             _user_id, 
             _new_hashed_password, 
             CURRENT_TIMESTAMP, 
             CASE 
-                WHEN (SELECT UTP FROM hr.users WHERE ID = _user_id) = 'F' 
+                WHEN (SELECT utp FROM hr.users WHERE ID = _user_id) = 'F' 
                 THEN CURRENT_TIMESTAMP + INTERVAL '6 months' 
                 ELSE CURRENT_TIMESTAMP + INTERVAL '100 years'
             END
@@ -150,12 +150,12 @@ BEGIN
 
             RAISE NOTICE 'Password for User ID % changed successfully.', _user_id;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -171,7 +171,7 @@ $$;
 CREATE OR REPLACE FUNCTION trg_log_changes()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO "sec.change_log" (TABLE_NAME, OPERATION_TYPE, ROW_ID, CHANGED_BY)
+    INSERT INTO "sec.change_log" (table_name, operation_type, row_id, changed_by)
     VALUES (
         TG_TABLE_NAME,
         TG_OP,
@@ -212,7 +212,7 @@ CREATE OR REPLACE PROCEDURE sp_log_audit(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    INSERT INTO "sec.audit_log" (USERNAME, ACTION_TYPE, TABLE_NAME, ROW_ID)
+    INSERT INTO "sec.audit_log" (username, action_type, table_name, row_id)
     VALUES (_username, _action_type, _table_name, _row_id);
 
     RAISE NOTICE 'Action logged: User %, Action %', _username, _action_type;
@@ -237,20 +237,20 @@ CREATE OR REPLACE FUNCTION fn_user_login(
 BEGIN
     RETURN QUERY
     SELECT
-        u.ID AS user_id,
-        u.FIRST_NAME,
-        u.LAST_NAME,
-        u.EMAIL,
+        u.id AS user_id,
+        u.first_name,
+        u.last_name,
+        u.email,
         CASE
-            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM "sec.acc_permission" ap WHERE ap.ID = e.ROLE_ID)
+            WHEN u.utp = 'F' THEN (SELECT perm_description FROM "sec.acc_permission" ap WHERE ap.id = e.role_id)
             ELSE 'Client'
         END AS role_description,
-        u.UTP AS user_type
+        u.utp AS user_type
     FROM "hr.users" u
     LEFT JOIN "hr.u_employee" e ON u.ID = e.ID
-    WHERE u.EMAIL = _email
-      AND u.HASHED_PASSWORD = _hashed_password
-      AND u.INACTIVE = FALSE;
+    WHERE u.email = _email
+      AND u.hashed_password = _hashed_password
+      AND u.inactive = FALSE;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Invalid credentials or user is inactive.';
@@ -261,7 +261,7 @@ BEGIN
         _username := _email,
         _action_type := 'LOGIN',
         _table_name := 'hr.users',
-        _row_id := (SELECT ID FROM hr.users WHERE EMAIL = _email)
+        _row_id := (SELECT id FROM hr.users WHERE email = _email)
     );
 END;
 $$ LANGUAGE plpgsql;

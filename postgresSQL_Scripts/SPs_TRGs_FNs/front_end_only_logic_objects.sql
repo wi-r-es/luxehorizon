@@ -11,24 +11,24 @@ CREATE OR REPLACE FUNCTION fn_get_available_rooms(
     _begin_date DATE,
     _end_date DATE
 ) RETURNS TABLE (
-    ROOM_ID INT,
-    ROOM_NUMBER INT,
-    HOTEL_ID INT,
-    BASE_PRICE NUMERIC(10, 2),
-    CAPACITY "room_capacity_type"
+    room_id INT,
+    room_number INT,
+    hotel_id INT,
+    base_price NUMERIC(10, 2),
+    capacity "room_capacity_type"
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT r.ID, r.ROOM_NUMBER, r.HOTEL_ID, r.BASE_PRICE, r.CAPACITY
+    SELECT r.ID, r.room_number, r.hotel_id, r.base_price, r.capacity
     FROM "room_management.room" r
-    WHERE r.CONDITION = 0 
+    WHERE r.condition = 0 
       AND NOT EXISTS (
           SELECT 1
-          FROM "RESERVES.ROOM_RESERVATION" rr
-          INNER JOIN "RESERVES.RESERVATION" res ON rr.RESERVATION_ID = res.ID
-          WHERE rr.ROOM_ID = r.ID
-            AND res.BEGIN_DATE < _end_date
-            AND res.END_DATE > _begin_date
+          FROM "reserves.room_reservation" rr
+          INNER JOIN "reserves.reservation" res ON rr.reservation_id = res.ID
+          WHERE rr.room_id = r.ID
+            AND res.begin_date < _end_date
+            AND res.end_date > _begin_date
       );
 END;
 $$ LANGUAGE plpgsql;
@@ -44,17 +44,17 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_find_reservation_by_id(
     _reservation_id INT
 ) RETURNS TABLE (
-    RESERVATION_ID INT,
-    CLIENT_ID INT,
-    BEGIN_DATE DATE,
-    END_DATE DATE,
-    TOTAL_VALUE NUMERIC(10, 2),
+    reservation_id INT,
+    client_id INT,
+    begin_date DATE,
+    end_date DATE,
+    total_value NUMERIC(10, 2),
     STATUS CHAR(2)
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT r.ID, r.CLIENT_ID, r.BEGIN_DATE, r.END_DATE, r.TOTAL_VALUE, r.status
-    FROM "RESERVES.RESERVATION" r
+    SELECT r.ID, r.client_id, r.begin_date, r.end_date, r.total_value, r.status
+    FROM "reserves.reservation" r
     WHERE r.ID = _reservation_id;
 END;
 $$ LANGUAGE plpgsql;
@@ -81,9 +81,9 @@ DECLARE
     _tax_rate FLOAT;
     _total_price NUMERIC(10, 2);
 BEGIN
-    SELECT BASE_PRICE INTO _base_price FROM "ROOM_MANAGEMENT.ROOM" WHERE ID = _room_id;
+    SELECT base_price INTO _base_price FROM "ROOM_MANAGEMENT.ROOM" WHERE ID = _room_id;
 
-    SELECT TAX INTO _tax_rate FROM "FINANCE.PRICE_PER_SEASON" WHERE SEASON_ID = _season_id;
+    SELECT TAX INTO _tax_rate FROM "FINANCE.PRICE_PER_SEASON" WHERE season_id = _season_id;
 
     _total_price := _base_price + (_base_price * _tax_rate );
 
@@ -107,7 +107,7 @@ DECLARE
     _room_price NUMERIC(10, 2);
 BEGIN
     FOR _room_price IN
-        SELECT BASE_PRICE
+        SELECT base_price
         FROM "ROOM_MANAGEMENT.ROOM"
         WHERE ID = ANY(_room_ids)
     LOOP

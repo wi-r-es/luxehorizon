@@ -22,9 +22,9 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    SELECT CLIENT_ID, TOTAL_VALUE
+    SELECT client_id, total_value
     INTO _client_id, _total_value
-    FROM "RESERVES.RESERVATION"
+    FROM "reserves.reservation"
     WHERE ID = _reservation_id;
 
     IF NOT FOUND THEN
@@ -33,8 +33,8 @@ BEGIN
 
     BEGIN
         INSERT INTO "FINANCE.INVOICE" (
-            RESERVATION_ID, CLIENT_ID, FINAL_VALUE, EMISSION_DATE, BILLING_DATE,
-            INVOICE_STATUS, PAYMENT_METHOD_ID
+            reservation_id, client_id, final_value, emission_date, billing_date,
+            invoice_status, payment_method_id
         ) VALUES (
             _reservation_id, _client_id, _total_value, _emission_date, NULL,
             FALSE, _payment_method_id -- Unpaid by default
@@ -43,12 +43,12 @@ BEGIN
 
         RAISE NOTICE 'Invoice ID % generated successfully for Reservation ID %', _invoice_id, _reservation_id;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -77,19 +77,19 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
-    SELECT FINAL_VALUE, COALESCE(SUM(p.PAYMENT_AMOUNT), 0)
+    SELECT final_value, COALESCE(SUM(p.payment_amount), 0)
     INTO _final_value, _current_paid
     FROM "FINANCE.INVOICE" i
-    LEFT JOIN FINANCE.PAYMENTS p ON i.ID = p.INVOICE_ID
+    LEFT JOIN FINANCE.PAYMENTS p ON i.ID = p.invoice_id
     WHERE i.ID = _invoice_id
-    GROUP BY i.FINAL_VALUE;
+    GROUP BY i.final_value;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Invoice ID % does not exist.', _invoice_id;
     END IF;
     BEGIN
         INSERT INTO FINANCE.PAYMENTS (
-            INVOICE_ID, PAYMENT_AMOUNT, PAYMENT_DATE, PAYMENT_METHOD_ID
+            invoice_id, payment_amount, payment_date, payment_method_id
         ) VALUES (
             _invoice_id, _payment_amount, CURRENT_DATE, _payment_method_id
         )
@@ -98,9 +98,9 @@ BEGIN
         -- Update the INVOICE table if fully paid. 
         IF _current_paid + _payment_amount >= _final_value THEN
             UPDATE "FINANCE.INVOICE"
-            SET PAYMENT_ID = _payment_id,
-                BILLING_DATE = CURRENT_TIMESTAMP,
-                INVOICE_STATUS = TRUE
+            SET payment_id = _payment_id,
+                billing_date = CURRENT_TIMESTAMP,
+                invoice_status = TRUE
             WHERE ID = _invoice_id;
 
             RAISE NOTICE 'Invoice ID % is now fully paid.', _invoice_id;
@@ -109,12 +109,12 @@ BEGIN
                 _invoice_id, _final_value - (_current_paid + _payment_amount);
         END IF;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -143,12 +143,12 @@ $$;
 CREATE OR REPLACE FUNCTION trg_update_reservation_status_on_payment()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.INVOICE_STATUS = TRUE THEN
-        UPDATE "RESERVES.RESERVATION"
+    IF NEW.invoice_status = TRUE THEN
+        UPDATE "reserves.reservation"
         SET status = 'C' -- confirmada
-        WHERE ID = NEW.RESERVATION_ID;
+        WHERE ID = NEW.reservation_id;
 
-        RAISE NOTICE 'Reservation ID % is now marked as Paid.', NEW.RESERVATION_ID;
+        RAISE NOTICE 'Reservation ID % is now marked as Paid.', NEW.reservation_id;
     END IF;
 
     RETURN NEW;
@@ -156,7 +156,7 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_update_reservation_status_on_payment ON "FINANCE.INVOICE";
 CREATE TRIGGER trg_update_reservation_status_on_payment
-AFTER UPDATE OF INVOICE_STATUS ON "FINANCE.INVOICE"
+AFTER UPDATE OF invoice_status ON "FINANCE.INVOICE"
 FOR EACH ROW
 EXECUTE FUNCTION trg_update_reservation_status_on_payment();
 
@@ -186,7 +186,7 @@ BEGIN
     SELECT TAX
     INTO _existing_tax
     FROM "FINANCE.PRICE_PER_SEASON"
-    WHERE SEASON_ID = _season_id;
+    WHERE season_id = _season_id;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Season ID % does not exist in PRICE_PER_SEASON.', _season_id;
@@ -199,16 +199,16 @@ BEGIN
     BEGIN
         UPDATE "FINANCE.PRICE_PER_SEASON"
         SET TAX = _new_tax
-        WHERE SEASON_ID = _season_id;
+        WHERE season_id = _season_id;
 
         RAISE NOTICE 'Tax for Season ID % updated successfully to %.', _season_id, _new_tax;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;

@@ -5,7 +5,7 @@
 ██      ██    ██ ██    ██ ██      ██   ██ ██   ██ ██    ██ ██   ██ 
 ███████  ██████   ██████  ███████ ██   ██ ██   ██  ██████  ██   ██                                                                    
 */
-CREATE OR REPLACE PROCEDURE "SEC.LogError"(
+CREATE OR REPLACE PROCEDURE sp_secLogError(
     _ErrorMessage VARCHAR(4000),
     _ErrorHint VARCHAR(400),
     _ErrorContent VARCHAR(400)
@@ -14,7 +14,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Log the error details into the error log table
-    INSERT INTO "SEC.ERROR_LOG" (ERROR_MESSAGE, ERROR_HINT, ERROR_CONTENT)
+    INSERT INTO "sec.error_log" (error_message, error_hint, error_content)
     VALUES (_ErrorMessage, _ErrorHint, _ErrorContent);
 
     -- Raise the error to the caller
@@ -42,16 +42,16 @@ CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "SEC.USER_PASSWORDS_DICTIONARY" (
-        USER_ID, 
-        HASHED_PASSWD, 
-        ValidFrom, 
-        ValidTo
+        user_id, 
+        hashed_password, 
+        valid_from, 
+        valid_to
     ) VALUES (
         NEW.ID, 
-        NEW.HASHED_PASSWORD, 
+        NEW.hashed_password, 
         CURRENT_TIMESTAMP, 
         CASE 
-            WHEN NEW.UTP = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
+            WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
             ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
         END
     );
@@ -61,7 +61,7 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_after_user_insert_update ON "HR.USERS";
 CREATE TRIGGER trg_after_user_insert_update
-AFTER INSERT OR UPDATE OF HASHED_PASSWORD
+AFTER INSERT OR UPDATE OF hashed_password
 ON "HR.USERS"
 FOR EACH ROW
 EXECUTE FUNCTION trg_insert_user_password_dictionary();
@@ -79,7 +79,7 @@ CREATE OR REPLACE FUNCTION fn_track_user_login()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "SEC.USER_LOGIN_AUDIT" (
-        USER_ID, LOGIN_TIMESTAMP
+        user_id, login_timestamp
     ) VALUES (
         NEW.ID, CURRENT_TIMESTAMP
     );
@@ -90,7 +90,7 @@ DROP TRIGGER IF EXISTS trg_track_user_login ON "HR.USERS";
 CREATE TRIGGER trg_track_user_login
 AFTER INSERT OR UPDATE ON "HR.USERS"
 FOR EACH ROW
-WHEN (NEW.UTP = 'F') -- Optional: for employees only
+WHEN (NEW.utp = 'F') -- Optional: for employees only
 EXECUTE FUNCTION fn_track_user_login();
 
 /*
@@ -118,8 +118,8 @@ BEGIN
     SELECT EXISTS (
         SELECT 1
         FROM "SEC.USER_PASSWORDS_DICTIONARY"
-        WHERE USER_ID = _user_id
-          AND HASHED_PASSWD = _new_hashed_password
+        WHERE user_id = _user_id
+          AND hashed_password = _new_hashed_password
     ) INTO _is_password_reused;
 
     -- If the password is already used, raise an exception
@@ -129,18 +129,18 @@ BEGIN
 
     BEGIN 
         UPDATE "HR.USERS"
-        SET HASHED_PASSWORD = _new_hashed_password
+        SET hashed_password = _new_hashed_password
         WHERE ID = _user_id;
 
         -- Insert the new password into the password history table
         INSERT INTO "SEC.USER_PASSWORDS_DICTIONARY" (
-            USER_ID, HASHED_PASSWD, ValidFrom, ValidTo
+            user_id, hashed_password, valid_from, valid_to
         ) VALUES (
             _user_id, 
             _new_hashed_password, 
             CURRENT_TIMESTAMP, 
             CASE 
-                WHEN (SELECT UTP FROM HR.USERS WHERE ID = _user_id) = 'F' 
+                WHEN (SELECT utp FROM HR.USERS WHERE ID = _user_id) = 'F' 
                 THEN CURRENT_TIMESTAMP + INTERVAL '6 months' 
                 ELSE CURRENT_TIMESTAMP + INTERVAL '100 years'
             END
@@ -148,12 +148,12 @@ BEGIN
 
             RAISE NOTICE 'Password for User ID % changed successfully.', _user_id;
     EXCEPTION WHEN OTHERS THEN
-        msg = MESSAGE_TEXT,
-        content = PG_EXCEPTION_DETAIL,
-        hint = PG_EXCEPTION_HINT;
-            CALL "SEC.LogError"(msg, hint, content );
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content );
 
-            RAISE;
+        RAISE NOTICE E'--- Call content ---\n%', content;
     END;    
 END;
 $$;
@@ -181,9 +181,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 --Reservation Table Trigger
-DROP TRIGGER IF EXISTS trg_log_reservation_changes ON "RESERVES.RESERVATION";
+DROP TRIGGER IF EXISTS trg_log_reservation_changes ON "reserves.reservation";
 CREATE TRIGGER trg_log_reservation_changes
-AFTER INSERT OR UPDATE OR DELETE ON "RESERVES.RESERVATION"
+AFTER INSERT OR UPDATE OR DELETE ON "reserves.reservation"
 FOR EACH ROW
 EXECUTE FUNCTION trg_log_changes();
 --Invoice Table Trigger
@@ -236,19 +236,19 @@ BEGIN
     RETURN QUERY
     SELECT
         u.ID AS user_id,
-        u.FIRST_NAME,
-        u.LAST_NAME,
-        u.EMAIL,
+        u.first_name,
+        u.last_name,
+        u.email,
         CASE
-            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM "SEC.ACC_PERMISSIONS" ap WHERE ap.ID = e.ROLE_ID)
+            WHEN u.utp = 'F' THEN (SELECT PERM_DESCRIPTION FROM "SEC.ACC_PERMISSIONS" ap WHERE ap.ID = e.role_id)
             ELSE 'Client'
         END AS role_description,
-        u.UTP AS user_type
+        u.utp AS user_type
     FROM "HR.USERS" u
     LEFT JOIN "HR.U_EMPLOYEE" e ON u.ID = e.ID
-    WHERE u.EMAIL = _email
-      AND u.HASHED_PASSWORD = _hashed_password
-      AND u.INACTIVE = FALSE;
+    WHERE u.email = _email
+      AND u.hashed_password = _hashed_password
+      AND u.inactive = FALSE;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Invalid credentials or user is inactive.';
@@ -259,7 +259,7 @@ BEGIN
         _username := _email,
         _action_type := 'LOGIN',
         _table_name := 'HR.USERS',
-        _row_id := (SELECT ID FROM HR.USERS WHERE EMAIL = _email)
+        _row_id := (SELECT ID FROM HR.USERS WHERE email = _email)
     );
 END;
 $$ LANGUAGE plpgsql;

@@ -27,15 +27,15 @@ BEGIN
 
     SELECT COUNT(*) INTO inserted_count
     FROM HR.USERS
-    WHERE FIRST_NAME = _first_name
-      AND LAST_NAME = _last_name
-      AND EMAIL = _email
-      AND NIF = _nif
-      AND PHONE = _phone
-      AND FULL_ADDRESS = _full_address
-      AND POSTAL_CODE = _postal_code
-      AND CITY = _city
-      AND UTP = _utp;
+    WHERE first_name = _first_name
+      AND last_name = _last_name
+      AND email = _email
+      AND nif = _nif
+      AND phone = _phone
+      AND full_address = _full_address
+      AND postal_code = _postal_code
+      AND city = _city
+      AND utp = _utp;
 
     IF inserted_count > 0 THEN
         result := 'OK';
