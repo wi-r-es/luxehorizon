@@ -100,7 +100,7 @@ class UserPasswordsDictionary(models.Model):
     valid_to = models.DateTimeField()
 
     class Meta:
-        db_table = "sec.u_user_passwords_dictionary"
+        db_table = "sec.user_passwords_dictionary"
 
     def __str__(self):
         return f"Password history for {self.user.email}"

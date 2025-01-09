@@ -18,6 +18,7 @@ CREATE OR REPLACE PROCEDURE sp_register_user(
     _postal_code VARCHAR(8),
     _city VARCHAR(100),
     _utp CHAR(1) DEFAULT 'C' ,
+    _inactive BOOLEAN DEFAULT False ,
     _is_active BOOLEAN DEFAULT True ,
     _is_staff BOOLEAN DEFAULT False,
     _is_superuser BOOLEAN DEFAULT False
@@ -40,10 +41,10 @@ BEGIN
 
     BEGIN -- PostgreSQL automatically wraps the BEGIN block in a transaction, so there’s no need for explicit BEGIN TRAN or COMMIT TRAN
         
-        INSERT INTO "hr.users" (
+        INSERT INTO "hr.users" ( password, inactive,
             first_name, last_name, email, hashed_password, nif, phone, 
             full_address, postal_code, city, utp, is_active, is_staff, is_superuser
-        ) VALUES (
+        ) VALUES (_hashed_password, _inactive,
             _first_name, _last_name, _email, _hashed_password, _nif, _phone, 
             _full_address, _postal_code, _city, _utp, _is_active, _is_staff, _is_superuser
         );
