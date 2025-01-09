@@ -60,3 +60,17 @@ SELECT TEST_register_user(
     'Example City',
     'C'
 );
+
+
+SELECT TEST_register_user(
+    'John',
+    'NotDoe',
+    'john.notdoe@example.com',
+    'hashed_password_example',
+    '123456789',
+    '987654321',
+    '123 Example Street',
+    '3500-678',
+    'Example City',
+    'F'
+);
