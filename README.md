@@ -1,5 +1,5 @@
 
-# BEFORE
+# ON HOST MACHINE
 ## luxehorizon
 for installing the dependencies of this project run the following command 
 pip install -r requirements.txt
@@ -26,6 +26,6 @@ python manage.py migrate
 ## everytime you enter the project and there are new migrations please run 
 python manage.py migrate
 
-# After
+# USING DOCKER CONTAINER
 docker-compose build
 docker-compose up
