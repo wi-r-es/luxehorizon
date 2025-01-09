@@ -39,10 +39,10 @@ BEGIN
         
         INSERT INTO "HR.USERS" (
             first_name, last_name, email, hashed_password, nif, phone, 
-            full_address, postal_code, city, utp
+            full_address, postal_code, city, utp, password
         ) VALUES (
             _first_name, _last_name, _email, _hashed_password, _nif, _phone, 
-            _full_address, _postal_code, _city, _utp
+            _full_address, _postal_code, _city, _utp, _hashed_password
         );
         RAISE NOTICE 'User % registered successfully', _email;
     EXCEPTION WHEN OTHERS THEN

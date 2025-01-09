@@ -16,8 +16,8 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Log the error details into the error log table
-    INSERT INTO "sec.error_log" (error_message, error_hint, error_content)
-    VALUES (_ErrorMessage, _ErrorHint, _ErrorContent);
+    INSERT INTO "sec.error_log" (error_message, error_hint, error_context, error_timestamp)
+    VALUES (_ErrorMessage, _ErrorHint, _ErrorContent, CURRENT_TIMESTAMP);
 
     -- Raise the error to the caller
     RAISE EXCEPTION '%', _ErrorMessage

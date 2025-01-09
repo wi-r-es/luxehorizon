@@ -131,7 +131,7 @@ class ErrorLog(models.Model):
     error_message = models.TextField()  # Detailed error message
     error_hint = models.CharField(max_length=400, blank=True, null=True)  # Optional hint
     error_context = models.CharField(max_length=400, blank=True, null=True)  # Context of the error
-    error_timestamp = models.DateTimeField(default=now)  # Timestamp of the error occurrence
+    error_timestamp = models.DateTimeField(auto_now_add=True)  # Timestamp of the error occurrence
 
     class Meta:
         db_table = "sec.error_log"

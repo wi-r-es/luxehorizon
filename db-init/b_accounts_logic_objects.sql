@@ -17,7 +17,10 @@ CREATE OR REPLACE PROCEDURE sp_register_user(
     _full_address VARCHAR(160),
     _postal_code VARCHAR(8),
     _city VARCHAR(100),
-    _utp CHAR(1) DEFAULT 'C' 
+    _utp CHAR(1) DEFAULT 'C' ,
+    _is_active BOOLEAN DEFAULT True ,
+    _is_staff BOOLEAN DEFAULT False,
+    _is_superuser BOOLEAN DEFAULT False
 )
 LANGUAGE plpgsql
 AS $$
@@ -39,10 +42,10 @@ BEGIN
         
         INSERT INTO "hr.users" (
             first_name, last_name, email, hashed_password, nif, phone, 
-            full_address, postal_code, city, utp
+            full_address, postal_code, city, utp, is_active, is_staff, is_superuser
         ) VALUES (
             _first_name, _last_name, _email, _hashed_password, _nif, _phone, 
-            _full_address, _postal_code, _city, _utp
+            _full_address, _postal_code, _city, _utp, _is_active, _is_staff, _is_superuser
         );
         RAISE NOTICE 'User % registered successfully', _email;
     
@@ -170,7 +173,7 @@ $$;
 */
 CREATE OR REPLACE PROCEDURE sp_update_user_status(
     _user_id INT,
-    _inactive BOOLEAN
+    _is_active BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -192,10 +195,10 @@ BEGIN
 
     BEGIN 
         UPDATE "hr.users"
-        SET inactive = _inactive
+        SET is_active = _is_active
         WHERE ID = _user_id;
 
-        RAISE NOTICE 'User ID % status updated to %', _user_id, _inactive;
+        RAISE NOTICE 'User ID % status updated to %', _user_id, _is_active;
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,
