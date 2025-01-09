@@ -15,12 +15,12 @@ CREATE OR REPLACE FUNCTION fn_get_available_rooms(
     ROOM_NUMBER INT,
     HOTEL_ID INT,
     BASE_PRICE NUMERIC(10, 2),
-    CAPACITY "ROOM_MANAGEMENT.capacity_type"
+    CAPACITY "room_capacity_type"
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT r.ID, r.ROOM_NUMBER, r.HOTEL_ID, r.BASE_PRICE, r.CAPACITY
-    FROM ROOM_MANAGEMENT.ROOM r
+    FROM "room_management.room" r
     WHERE r.CONDITION = 0 
       AND NOT EXISTS (
           SELECT 1
@@ -53,7 +53,7 @@ CREATE OR REPLACE FUNCTION fn_find_reservation_by_id(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT r.ID, r.CLIENT_ID, r.BEGIN_DATE, r.END_DATE, r.TOTAL_VALUE, r.R_DETAIL
+    SELECT r.ID, r.CLIENT_ID, r.BEGIN_DATE, r.END_DATE, r.TOTAL_VALUE, r.status
     FROM "RESERVES.RESERVATION" r
     WHERE r.ID = _reservation_id;
 END;

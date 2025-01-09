@@ -250,11 +250,11 @@ CREATE TABLE IF NOT EXISTS "reserves.reservation" (
     CLIENT_ID           INT                 NOT NULL,
     BEGIN_DATE          DATE                NOT NULL,
     END_DATE            DATE                NOT NULL,
-    R_DETAIL            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado
+    status            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado
     SEASON_ID           INT                 NOT NULL, 
     TOTAL_VALUE         NUMERIC(10, 2)      NOT NULL,
-    CHECK_IN            TIMESTAMP           NULL,
-    CHECK_OUT           TIMESTAMP           NULL,
+    begin_date            TIMESTAMP           NULL,
+    end_date           TIMESTAMP           NULL,
 
     CONSTRAINT      PK_RESERVATION          PRIMARY KEY (ID),
     CONSTRAINT      FK_RESERV_CLIENT        FOREIGN KEY (CLIENT_ID)         REFERENCES "hr.users"(ID),

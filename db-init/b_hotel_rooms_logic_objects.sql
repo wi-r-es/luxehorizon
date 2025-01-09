@@ -57,7 +57,7 @@ CREATE OR REPLACE PROCEDURE sp_add_room(
     _room_number INT,
     _base_price NUMERIC(10, 2),
     _condition INT DEFAULT 0, -- Available = 0
-    _capacity "ROOM_MANAGEMENT.capacity_type" DEFAULT 'S'
+    _capacity "room_capacity_type" DEFAULT 'S'
 )
 LANGUAGE plpgsql
 AS $$

@@ -1,9 +1,4 @@
 
-INSERT INTO "sec.acc_permissions" (id, perm_description, perm_level)
-VALUES (1, 'Admin', 1),
-       (2, 'Manager', 2),
-       (3, 'Funcionário', 3)
-ON CONFLICT (ID) DO NOTHING;
 
 /*
 ██       ██████   ██████  ███████ ██████  ██████   ██████  ██████  
@@ -12,7 +7,7 @@ ON CONFLICT (ID) DO NOTHING;
 ██      ██    ██ ██    ██ ██      ██   ██ ██   ██ ██    ██ ██   ██ 
 ███████  ██████   ██████  ███████ ██   ██ ██   ██  ██████  ██   ██                                                                    
 */
-CREATE OR REPLACE PROCEDURE "SEC.LogError"(
+CREATE OR REPLACE PROCEDURE "sec.LogError"(
     _ErrorMessage VARCHAR(4000),
     _ErrorHint VARCHAR(400),
     _ErrorContent VARCHAR(400)
@@ -247,7 +242,7 @@ BEGIN
         u.LAST_NAME,
         u.EMAIL,
         CASE
-            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM "sec.acc_permissions" ap WHERE ap.ID = e.ROLE_ID)
+            WHEN u.UTP = 'F' THEN (SELECT PERM_DESCRIPTION FROM "sec.acc_permission" ap WHERE ap.ID = e.ROLE_ID)
             ELSE 'Client'
         END AS role_description,
         u.UTP AS user_type

@@ -145,7 +145,7 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.INVOICE_STATUS = TRUE THEN
         UPDATE "RESERVES.RESERVATION"
-        SET R_DETAIL = 'C' -- confirmada
+        SET status = 'C' -- confirmada
         WHERE ID = NEW.RESERVATION_ID;
 
         RAISE NOTICE 'Reservation ID % is now marked as Paid.', NEW.RESERVATION_ID;

@@ -301,7 +301,7 @@ CREATE OR REPLACE FUNCTION fn_trg_update_room_status_upon_cancelation()
 RETURNS TRIGGER AS $$
 BEGIN
     -- If the reservation is being rejected ('R') or cancelled ('CC'), mark the rooms as available
-    IF NEW.R_DETAIL IN ('R', 'CC') THEN
+    IF NEW.status IN ('R', 'CC') THEN
         UPDATE "room_management.room"
         SET CONDITION = 0 -- 0 indicates available
         WHERE ID IN (
@@ -316,7 +316,7 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_update_room_status_upon_cancelation ON "reserves.reservation";
 CREATE TRIGGER trg_update_room_status_upon_cancelation
-AFTER UPDATE OF R_DETAIL ON "reserves.reservation"
+AFTER UPDATE OF status ON "reserves.reservation"
 FOR EACH ROW
 EXECUTE FUNCTION fn_trg_update_room_status_upon_cancelation();
 
@@ -330,7 +330,7 @@ BEGIN
     -- Ensure the reservation exists and is confirmed
     IF NOT EXISTS (
         SELECT 1 FROM "reserves.reservation"
-        WHERE ID = RESERVATION_ID AND R_DETAIL = 'C'
+        WHERE ID = RESERVATION_ID AND status = 'C'
     ) THEN
         RAISE EXCEPTION 'Reservation % is not confirmed or does not exist.', RESERVATION_ID;
     END IF;
@@ -346,7 +346,7 @@ BEGIN
 
     -- Set the check-in timestamp
     UPDATE "reserves.reservation"
-    SET CHECK_IN = CURRENT_TIMESTAMP
+    SET begin_date = CURRENT_TIMESTAMP
     WHERE ID = RESERVATION_ID;
 END;
 $$ LANGUAGE plpgsql;
@@ -358,14 +358,14 @@ BEGIN
     -- Ensure the reservation exists and check-in has occurred
     IF NOT EXISTS (
         SELECT 1 FROM "reserves.reservation"
-        WHERE ID = RESERVATION_ID AND CHECK_IN IS NOT NULL
+        WHERE ID = RESERVATION_ID AND begin_date IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Reservation % has not been checked in or does not exist.', RESERVATION_ID;
     END IF;
 
     -- Set the check-out timestamp
     UPDATE "reserves.reservation"
-    SET CHECK_OUT = CURRENT_TIMESTAMP
+    SET end_date = CURRENT_TIMESTAMP
     WHERE ID = RESERVATION_ID;
 END;
 $$ LANGUAGE plpgsql;
@@ -388,9 +388,9 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_update_room_condition ON "reserves.reservation";
 CREATE TRIGGER trg_update_room_condition
-AFTER UPDATE OF CHECK_OUT ON "reserves.reservation"
+AFTER UPDATE OF end_date ON "reserves.reservation"
 FOR EACH ROW
-WHEN (OLD.CHECK_OUT IS NULL AND NEW.CHECK_OUT IS NOT NULL) -- Only fire on the first check-out update
+WHEN (OLD.end_date IS NULL AND NEW.end_date IS NOT NULL) -- Only fire on the first check-out update
 EXECUTE FUNCTION fn_update_room_condition();
 
 
