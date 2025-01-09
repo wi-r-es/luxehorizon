@@ -8,14 +8,6 @@ pip install -r requirements.txt
 clone the .env.example to a .env flie and place it on the root of the project
 replace all the placeholders to the right values
 
-## create the schemas manually in the SQL DATABASE after database creation
-CREATE SCHEMA IF NOT EXISTS MANAGEMENT;
-CREATE SCHEMA IF NOT EXISTS ROOM_MANAGEMENT;
-CREATE SCHEMA IF NOT EXISTS HR;
-CREATE SCHEMA IF NOT EXISTS FINANCE;
-CREATE SCHEMA IF NOT EXISTS SEC;
-CREATE SCHEMA IF NOT EXISTS RESERVES;
-
 ## if you make changes on the models please run: 
 python manage.py makemigrations
 
