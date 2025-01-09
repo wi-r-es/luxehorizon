@@ -6,7 +6,7 @@ BEGIN
     SELECT 
         SUM(total_value) AS total_revenue,
         COUNT(DISTINCT client_id) AS expected_guests
-    FROM "RESERVES.reservation"
+    FROM "reserves.reservation"
     WHERE status = 'C'; -- Only confirmed reservations
 END;
 $$ LANGUAGE plpgsql;
@@ -19,10 +19,10 @@ BEGIN
     SELECT 
         h.city,
         SUM(r.total_value) AS revenue
-    FROM "RESERVES.reservation" r
-    JOIN "RESERVES.room_reservation" rr ON r.id = rr.reservation_id
-    JOIN "ROOM_MANAGEMENT.room" rm ON rr.room_id = rm.id
-    JOIN "MANAGEMENT.hotel" h ON rm.hotel_id = h.id
+    FROM "reserves.reservation" r
+    JOIN "reserves.room_reservation" rr ON r.id = rr.reservation_id
+    JOIN "room_management.room" rm ON rr.room_id = rm.id
+    JOIN "management.hotel" h ON rm.hotel_id = h.id
     GROUP BY h.city
     ORDER BY revenue DESC
     LIMIT 5;
@@ -37,7 +37,7 @@ BEGIN
     SELECT 
         EXTRACT(DAY FROM r.begin_date)::INTEGER AS day,
         SUM(r.total_value) AS revenue
-    FROM "RESERVES.reservation" r
+    FROM "reserves.reservation" r
     WHERE r.begin_date >= DATE_TRUNC('month', CURRENT_DATE)
     GROUP BY day
     ORDER BY day;

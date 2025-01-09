@@ -65,7 +65,7 @@ DECLARE
 	season_rate NUMERIC;
 BEGIN
     -- Verificar se o quarto existe
-    IF NOT EXISTS (SELECT 1 FROM "ROOM_MANAGEMENT.room" WHERE id = room_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM "room_management.room" WHERE id = room_id) THEN
         RAISE EXCEPTION 'Quarto não encontrado.';
     END IF;
 
@@ -78,7 +78,7 @@ BEGIN
 
     -- Buscar temporada válida
     SELECT id, rate INTO season_id, season_rate
-    FROM "FINANCE.season"
+    FROM "finance.season"
     WHERE begin_date <= checkin AND end_date >= checkout;
 
     IF season_id IS NULL THEN
@@ -87,7 +87,7 @@ BEGIN
 
     -- Obter preço base do quarto
     SELECT base_price INTO room_base_price
-    FROM "ROOM_MANAGEMENT.room"
+    FROM "room_management.room"
     WHERE id = room_id;
 
     IF room_base_price IS NULL THEN
@@ -98,12 +98,12 @@ BEGIN
     total_price := nights * room_base_price * season_rate;
 
     -- Inserir a reserva
-    INSERT INTO "RESERVES.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
+    INSERT INTO "reserves.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
     VALUES (user_id, checkin, checkout, 'P', season_id, total_price)
     RETURNING id INTO reservation_id;
 
     -- Relacionar o quarto à reserva
-    INSERT INTO "RESERVES.room_reservation" (reservation_id, room_id, price_reservation)
+    INSERT INTO "reserves.room_reservation" (reservation_id, room_id, price_reservation)
     VALUES (reservation_id, room_id, total_price);
 
     -- Confirmação de sucesso
@@ -214,19 +214,19 @@ BEGIN
     -- Verificar se a reserva existe
     IF NOT EXISTS (
         SELECT 1 
-        FROM "RESERVES.reservation" 
+        FROM "reserves.reservation" 
         WHERE id = _reservation_id
     ) THEN
         RAISE EXCEPTION 'Reservation ID % does not exist.', _reservation_id;
     END IF;
 
     -- Deletar associações com quartos
-    DELETE FROM "RESERVES.room_reservation"
+    DELETE FROM "reserves.room_reservation"
     WHERE reservation_id = _reservation_id;
 
     -- Atualizar o status da reserva para "Cancelado"
-    UPDATE "RESERVES.reservation"
-    SET status = 'CC'  -- Substituir 'CC' pelo código adequado se necessário
+    UPDATE "reserves.reservation"
+    SET status = 'C'  -- Substituir 'C' pelo código adequado se necessário
     WHERE id = _reservation_id;
 
     -- Mensagem de sucesso

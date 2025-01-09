@@ -7,7 +7,7 @@
     <div class="row">
         {% with 0 as active_count %}
         {% for reservation in reservations %}
-        {% if reservation.status != 'CC' %}
+        {% if reservation.status != 'C' %}
         {% with active_count|add:1 as active_count %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">

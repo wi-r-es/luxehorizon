@@ -119,7 +119,7 @@ def cancel_reservation(request):
             # Chamar o procedimento armazenado no banco de dados
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    CALL RESERVES.sp_cancel_reservation(%s);
+                    CALL sp_cancel_reservation(%s);
                 """, [reservation_id])
 
             # Redirecionar para a página de reservas com uma mensagem de sucesso
@@ -139,7 +139,7 @@ def cancel_reservation(request):
             # Chamar o procedimento armazenado no banco de dados
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    CALL RESERVES.sp_cancel_reservation(%s);
+                    CALL sp_cancel_reservation(%s);
                 """, [reservation_id])
 
             # Redirecionar para a página de reservas com uma mensagem de sucesso
