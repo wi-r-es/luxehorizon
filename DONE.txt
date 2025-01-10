@@ -1,0 +1,6 @@
+TUDO O QUE FOI FEITO COM PROCEDURES E FUNCIONA
+
+-- Create Users
+-- Register
+-- Create Hotel
+-- Create Room
