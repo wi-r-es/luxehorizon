@@ -40,33 +40,39 @@ $$;
 ██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  ███████ ██████  ██  ██████    ██    ██  ██████  ██   ████ ██   ██ ██   ██    ██    
                                                                                                                                                          
 */
-CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary() --tested
+CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO "sec.user_passwords_dictionary" (
-        user_id, 
-        hashed_password, 
-        valid_from, 
-        valid_to
-    ) VALUES (
-        NEW.id, 
-        NEW.hashed_password, 
-        CURRENT_TIMESTAMP, 
-        CASE 
-            WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
-            ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
-        END
-    );
+    -- Inserir apenas se o hashed_password mudou ou for um novo registo
+    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.hashed_password <> OLD.hashed_password) THEN
+        INSERT INTO "sec.user_passwords_dictionary" (
+            user_id, 
+            hashed_password, 
+            valid_from, 
+            valid_to
+        ) VALUES (
+            NEW.id, 
+            NEW.hashed_password, 
+            CURRENT_TIMESTAMP, 
+            CASE 
+                WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
+                ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
+            END
+        );
+    END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_after_user_insert_update ON "hr.users";
+
 CREATE TRIGGER trg_after_user_insert_update
 AFTER INSERT OR UPDATE OF hashed_password
 ON "hr.users"
 FOR EACH ROW
 EXECUTE FUNCTION trg_insert_user_password_dictionary();
+
 
 /*
 ████████ ██████   ██████          ████████ ██████   █████   ██████ ██   ██         ██    ██ ███████ ███████ ██████          ██       ██████   ██████  ██ ███    ██ 
