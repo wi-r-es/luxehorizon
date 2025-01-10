@@ -275,7 +275,111 @@ BEGIN
 END;
 $$;
 
+/*
+███████ ██████          ██    ██ ██████  ██████   █████  ████████ ███████           ██████  ██████  ███    ███ ███    ███  ██████  ██████  ██ ████████ ██    ██ 
+██      ██   ██         ██    ██ ██   ██ ██   ██ ██   ██    ██    ██               ██      ██    ██ ████  ████ ████  ████ ██    ██ ██   ██ ██    ██     ██  ██  
+███████ ██████          ██    ██ ██████  ██   ██ ███████    ██    █████            ██      ██    ██ ██ ████ ██ ██ ████ ██ ██    ██ ██   ██ ██    ██      ████   
+     ██ ██              ██    ██ ██      ██   ██ ██   ██    ██    ██               ██      ██    ██ ██  ██  ██ ██  ██  ██ ██    ██ ██   ██ ██    ██       ██    
+███████ ██      ███████  ██████  ██      ██████  ██   ██    ██    ███████  ███████  ██████  ██████  ██      ██ ██      ██  ██████  ██████  ██    ██       ██    
+*/
+CREATE OR REPLACE PROCEDURE sp_update_commodity(
+    _commodity_id INT,
+    _commodity_detail VARCHAR(100)
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    msg TEXT;
+    content TEXT;
+    hint TEXT;
+BEGIN
+    -- Check if the commodity to update exists
+    IF NOT EXISTS (
+        SELECT 1
+        FROM "room_management.commodity"
+        WHERE id = _commodity_id
+    ) THEN
+        RAISE EXCEPTION 'Commodity with ID % does not exist.', _commodity_id;
+    END IF;
 
+    -- Check for duplicate details in other rows
+    IF EXISTS (
+        SELECT 1
+        FROM "room_management.commodity"
+        WHERE details = _commodity_detail
+        AND id != _commodity_id
+    ) THEN
+        RAISE EXCEPTION 'Commodity detail % already exists.', _commodity_detail;
+    END IF;
 
+    -- Attempt to update the commodity
+    BEGIN
+        UPDATE "room_management.commodity"
+        SET details = _commodity_detail
+        WHERE id = _commodity_id;
+
+        RAISE NOTICE 'Commodity % updated successfully.', _commodity_id;
+    EXCEPTION WHEN OTHERS THEN
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content);
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
+    END;
+END;
+$$;
+
+/*
+███████ ██████          ██████   ███████ ██      ███████ ████████ ███████           ██████  ██████  ███    ███ ███    ███  ██████  ██████  ██ ████████ ██    ██ 
+██      ██   ██         ██    ██ ██      ██      ██         ██    ██               ██      ██    ██ ████  ████ ████  ████ ██    ██ ██   ██ ██    ██     ██  ██  
+███████ ██████          ██    ██ █████   ██      █████      ██    █████            ██      ██    ██ ██ ████ ██ ██ ████ ██ ██    ██ ██   ██ ██    ██      ████   
+     ██ ██              ██    ██ ██      ██      ██         ██    ██               ██      ██    ██ ██  ██  ██ ██  ██  ██ ██    ██ ██   ██ ██    ██       ██    
+███████ ██      ███████ ██████   ███████ ██████  ███████    ██    ███████  ███████  ██████  ██████  ██      ██ ██      ██  ██████  ██████  ██    ██       ██    
+*/
+CREATE OR REPLACE PROCEDURE sp_delete_commodity(
+    _commodity_id INT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    msg TEXT;
+    content TEXT;
+    hint TEXT;
+BEGIN
+    -- Check if the commodity exists
+    IF NOT EXISTS (
+        SELECT 1
+        FROM "room_management.commodity"
+        WHERE id = _commodity_id
+    ) THEN
+        RAISE EXCEPTION 'Commodity with ID % does not exist.', _commodity_id;
+    END IF;
+
+    -- Check if the commodity is being used in the room_commodity table
+    IF EXISTS (
+        SELECT 1
+        FROM "room_management.room_commodity"
+        WHERE commodity_id = _commodity_id
+    ) THEN
+        RAISE EXCEPTION 'Commodity with ID % is being used in the room_commodity table and cannot be deleted.', _commodity_id;
+    END IF;
+
+    -- Attempt to delete the commodity
+    BEGIN
+        DELETE FROM "room_management.commodity"
+        WHERE id = _commodity_id;
+
+        RAISE NOTICE 'Commodity with ID % deleted successfully.', _commodity_id;
+    EXCEPTION WHEN OTHERS THEN
+        GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
+                                content = PG_EXCEPTION_DETAIL,
+                                hint = PG_EXCEPTION_HINT;
+        CALL sp_secLogError(msg, hint, content);
+
+        RAISE NOTICE E'--- Call content ---\n%', content;
+    END;
+END;
+$$;
 
 

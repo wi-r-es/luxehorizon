@@ -1,5 +1,5 @@
 from django import forms
-from .models import Hotel, Room, RoomType
+from .models import Hotel, Room, RoomType, Commodity
 
 class HotelForm(forms.ModelForm):
     class Meta:
@@ -51,3 +51,11 @@ class RoomForm(forms.ModelForm):
         self.fields['room_type'].label_from_instance = lambda obj: (
             f"{obj.type_initials} - {obj.room_view} ({obj.room_quality}, {obj.room_capacity} pessoas)"
         )
+
+class CommodityForm(forms.ModelForm):
+    class Meta:
+        model = Commodity
+        fields = ['details']
+        widgets = {
+            'details': forms.TextInput(attrs={'class': 'form-control'})
+        }
