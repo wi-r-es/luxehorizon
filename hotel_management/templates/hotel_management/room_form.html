@@ -18,32 +18,43 @@
         {% endif %}
     </h1>
     
-    <form method="post">
+    <form method="post" novalidate>
         {% csrf_token %}
         
-        <div class="mb-3">
-            {{ form.type.label_tag }}
-            {{ form.type }}
-        </div>
-        
+        <!-- Número do Quarto -->
         <div class="mb-3">
             {{ form.room_number.label_tag }}
             {{ form.room_number }}
+            {% if form.room_number.errors %}
+                <div class="text-danger">{{ form.room_number.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Tipo do Quarto -->
+        <div class="mb-3">
+            {{ form.room_type.label_tag }}
+            {{ form.room_type }}
+            {% if form.room_type.errors %}
+                <div class="text-danger">{{ form.room_type.errors.0 }}</div>
+            {% endif %}
         </div>
         
+        <!-- Preço Base -->
         <div class="mb-3">
             {{ form.base_price.label_tag }}
             {{ form.base_price }}
+            {% if form.base_price.errors %}
+                <div class="text-danger">{{ form.base_price.errors.0 }}</div>
+            {% endif %}
         </div>
         
+        <!-- Estado do Quarto -->
         <div class="mb-3">
             {{ form.condition.label_tag }}
             {{ form.condition }}
-        </div>
-        
-        <div class="mb-3">
-            {{ form.capacity.label_tag }}
-            {{ form.capacity }}
+            {% if form.condition.errors %}
+                <div class="text-danger">{{ form.condition.errors.0 }}</div>
+            {% endif %}
         </div>
         
         <button type="submit" class="btn btn-primary">

@@ -5,6 +5,17 @@
 {% block main_content %}
 <div class="container my-4">
     <h1 class="mb-4">{{ heading }}</h1>
+
+    <!-- Alert messages block -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form Section -->
     <form method="post" novalidate>
         {% csrf_token %}
         <div class="mb-3">

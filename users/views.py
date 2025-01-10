@@ -11,19 +11,77 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import User
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
 from .forms import UserForm
+from django.db import connection
+from django.contrib.auth.hashers import make_password
+from django import forms
 
+def hash_password(password):
+    return make_password(password)
 
+class RegisterForm(forms.Form):
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    email = forms.EmailField(max_length=100)
+    password = forms.CharField(widget=forms.PasswordInput)
+    password_confirm = forms.CharField(widget=forms.PasswordInput)
+    nif = forms.CharField(max_length=20)
+    phone = forms.CharField(max_length=20)
+    full_address = forms.CharField(max_length=160, required=False)
+    postal_code = forms.CharField(max_length=8, required=False)
+    city = forms.CharField(max_length=100, required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        password_confirm = cleaned_data.get("password_confirm")
+
+        if password and password_confirm and password != password_confirm:
+            self.add_error('password_confirm', "Passwords do not match.")
+
+        return cleaned_data
+    
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Save the user
-            messages.success(request, "Registration successful!")
-            return redirect('login')
+            try:
+                # Collect form data
+                first_name = form.cleaned_data['first_name']
+                last_name = form.cleaned_data['last_name']
+                email = form.cleaned_data['email']
+                password = form.cleaned_data['password']
+                nif = form.cleaned_data['nif']
+                phone = form.cleaned_data['phone']
+                address = form.cleaned_data.get('full_address', '')
+                postal_code = form.cleaned_data.get('postal_code', '')
+                city = form.cleaned_data.get('city', '')
+                hashed_password = hash_password(password)  # Custom hashing function
+                utp = 'C'  # Default user type
+                social_sec = None  # Default as None
+
+                # Call the PostgreSQL procedure
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        CALL sp_register_user(
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        )
+                    """, [
+                        first_name, last_name, email, hashed_password, nif, phone, 
+                        address, postal_code, city, utp, social_sec, True, False, False
+                    ])
+                
+                messages.success(request, "Registration successful!")
+                return redirect('login')
+
+            except Exception as e:
+                # Log the error if needed
+                messages.error(request, f"An error occurred: {str(e)}")
         else:
             messages.error(request, "Please correct the errors below.")
+    
     else:
         form = RegisterForm()
+
     return render(request, 'users/register.html', {'form': form})
 
 

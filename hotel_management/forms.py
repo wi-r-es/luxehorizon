@@ -43,9 +43,11 @@ class RoomForm(forms.ModelForm):
             'base_price': 'Preço Base (€)',
             'condition': 'Estado',
         }
-        
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Dynamically set the queryset for room types to include all available RoomType objects
+        # Dynamically set the queryset for room types
         self.fields['room_type'].queryset = RoomType.objects.all()
-
+        self.fields['room_type'].label_from_instance = lambda obj: (
+            f"{obj.type_initials} - {obj.room_view} ({obj.room_quality}, {obj.room_capacity} pessoas)"
+        )

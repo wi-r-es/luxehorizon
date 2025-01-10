@@ -6,6 +6,7 @@ from django.contrib import messages
 from reservation.models import RoomReservation, Reservation
 from django.http import Http404
 from django.db.models import Min
+from django.db import connection
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -42,22 +43,37 @@ def hotel_list(request):
         'order': order,
     })
 
-# View para adicionar ou editar um hotel
+# View for adding or editing a hotel
 def hotel_form(request, hotel_id=None):
     if hotel_id:
-        # busca o hotel pelo id
+        # Fetch the hotel by ID for editing
         hotel = get_object_or_404(Hotel, id=hotel_id)
         heading = "Editar Hotel"
     else:
-        #cria um novo hotel
-        hotel = Hotel()
+        # Initialize a new hotel for addition
+        hotel = None  # No instance for new entries
         heading = "Adicionar Hotel"
 
     if request.method == 'POST':
         form = HotelForm(request.POST, instance=hotel)
         if form.is_valid():
-            form.save()
-            return redirect('hotel_list')
+            # Extract cleaned data from the form
+            data = form.cleaned_data
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        CALL sp_add_hotel(%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, [
+                        data['h_name'], data['full_address'], data['postal_code'],
+                        data['city'], data['email'], data['telephone'],
+                        data.get('details', ''), data.get('stars', 0)
+                    ])
+                messages.success(request, "Hotel added successfully!")
+                return redirect('hotel_list')
+            except Exception as e:
+                messages.error(request, f"An error occurred: {str(e)}")
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = HotelForm(instance=hotel)
 
@@ -65,6 +81,7 @@ def hotel_form(request, hotel_id=None):
         'form': form,
         'heading': heading
     })
+
 
 # View para apagar um hotel
 def delete_hotel(request, hotel_id):
@@ -103,21 +120,25 @@ def room_list(request, hotel_id):
     })
 
 def create_room(request, hotel_id):
-    hotel = get_object_or_404(Hotel, id=hotel_id)  
+    # Obtém o hotel ou retorna 404 se não existir
+    hotel = get_object_or_404(Hotel, id=hotel_id)
 
     if request.method == 'POST':
         form = RoomForm(request.POST)
         if form.is_valid():
+            # Cria um quarto sem salvar imediatamente no banco
             new_room = form.save(commit=False)
-            new_room.hotel = hotel 
+            # Associa o quarto ao hotel
+            new_room.hotel = hotel
             new_room.save()
-            return redirect('room_list', hotel_id=hotel.id)  
+            return redirect('room_list', hotel_id=hotel.id)  # Redireciona para a lista de quartos
     else:
         form = RoomForm()
 
     return render(request, 'hotel_management/room_form.html', {
         'form': form,
         'hotel': hotel,
+        'room': None,  # Define como None, já que o quarto ainda não existe
     })
 
 def edit_room(request, hotel_id, room_id):
