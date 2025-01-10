@@ -98,7 +98,12 @@ class Employee(User):
         db_table = "hr.u_employee"
 
 class UserPasswordsDictionary(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name="password_history")
+    id = models.AutoField(primary_key=True) 
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="password_histories"
+    )
     hashed_password = models.CharField(max_length=255)
     valid_from = models.DateTimeField(default=timezone.now)
     valid_to = models.DateTimeField()
@@ -107,10 +112,8 @@ class UserPasswordsDictionary(models.Model):
         db_table = "sec.user_passwords_dictionary"
 
     def __str__(self):
-        return f"Password history for {self.user.email}"
-    
+        return f"Password history for {self.user.email}: {self.hashed_password}"
 
-from django.db import models
 from django.utils.timezone import now
 
 

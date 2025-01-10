@@ -40,26 +40,23 @@ $$;
 ██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  ███████ ██████  ██  ██████    ██    ██  ██████  ██   ████ ██   ██ ██   ██    ██    
                                                                                                                                                          
 */
-CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
+CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary() --tested
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Inserir apenas se o hashed_password mudou ou for um novo registo
-    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.hashed_password <> OLD.hashed_password) THEN
-        INSERT INTO "sec.user_passwords_dictionary" (
-            user_id, 
-            hashed_password, 
-            valid_from, 
-            valid_to
-        ) VALUES (
-            NEW.id, 
-            NEW.hashed_password, 
-            CURRENT_TIMESTAMP, 
-            CASE 
-                WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
-                ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
-            END
-        );
-    END IF;
+     INSERT INTO "sec.user_passwords_dictionary" (
+        user_id, 
+        hashed_password, 
+        valid_from, 
+        valid_to
+    ) VALUES (
+        NEW.id, 
+        NEW.hashed_password, 
+        CURRENT_TIMESTAMP, 
+        CASE 
+            WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
+            ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
+        END
+    );
 
     RETURN NEW;
 END;
@@ -136,7 +133,7 @@ BEGIN
     END IF;
 
     BEGIN 
-        UPDATE "hr.users"
+        UPDATE public."hr.users"
         SET hashed_password = _new_hashed_password
         WHERE id = _user_id;
 
@@ -148,7 +145,7 @@ BEGIN
             _new_hashed_password, 
             CURRENT_TIMESTAMP, 
             CASE 
-                WHEN (SELECT utp FROM hr.users WHERE id = _user_id) = 'F' 
+                WHEN (SELECT utp FROM "hr.users" WHERE id = _user_id) = 'F' 
                 THEN CURRENT_TIMESTAMP + INTERVAL '6 months' 
                 ELSE CURRENT_TIMESTAMP + INTERVAL '100 years'
             END
