@@ -31,10 +31,11 @@
             </thead>
             <tbody>
                 {% for room in rooms %}
+                {% with room.room_type as room_types %}
                 <tr>
                     <td class="text-center">{{ room.room_number }}</td>
-                    <td>{{ room.type.type_initials }}</td>
-                    <td class="text-center">{{ room.get_capacity_display }}</td>
+                    <td>{{ room_types.type_initials }}</td>
+                    <td class="text-center">{{ room_types.room_capacity }}</td>
                     <td class="text-end">{{ room.base_price }}</td>
                     <td class="text-center">
                         {% if room.condition == 0 %}
@@ -52,6 +53,7 @@
                         <a href="{% url 'delete_room' hotel.id room.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Apagar</a>
                     </td>
                 </tr>
+                {% endwith %}
                 {% empty %}
                 <tr>
                     <td colspan="6" class="text-center">N&atilde;o h&aacute; quartos para mostrar.</td>
