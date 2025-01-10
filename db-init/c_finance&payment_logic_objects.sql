@@ -7,7 +7,7 @@
  */
 
 
-CREATE OR REPLACE PROCEDURE sp_generate_invoice(
+CREATE OR REPLACE PROCEDURE sp_generate_invoice( --tested
     _reservation_id INT,
     _payment_method_id INT,
     OUT _invoice_id INT
@@ -62,7 +62,7 @@ $$;
 ███████ ██      ███████ ██   ██ ██████  ██████  ███████ ██      ██   ██    ██    ██      ██ ███████ ██   ████    ██    
                                                                                                                                                                                                                                                                         
 */
-CREATE OR REPLACE PROCEDURE sp_add_payment(
+CREATE OR REPLACE PROCEDURE sp_add_payment( --TESTED
     _invoice_id INT,
     _payment_amount NUMERIC(10, 2),
     _payment_method_id INT
@@ -80,7 +80,7 @@ BEGIN
     SELECT final_value, COALESCE(SUM(p.payment_amount), 0)
     INTO _final_value, _current_paid
     FROM "finance.invoice" i
-    LEFT JOIN finance.payments p ON i.id = p.invoice_id
+    LEFT JOIN "finance.payments" p ON i.id = p.invoice_id
     WHERE i.id = _invoice_id
     GROUP BY i.final_value;
 
@@ -88,7 +88,7 @@ BEGIN
         RAISE EXCEPTION 'Invoice id % does not exist.', _invoice_id;
     END IF;
     BEGIN
-        INSERT INTO finance.payments (
+        INSERT INTO "finance.payments" (
             invoice_id, payment_amount, payment_date, payment_method_id
         ) VALUES (
             _invoice_id, _payment_amount, CURRENT_DATE, _payment_method_id
@@ -98,7 +98,7 @@ BEGIN
         -- Update the INVOICE table if fully paid. 
         IF _current_paid + _payment_amount >= _final_value THEN
             UPDATE "finance.invoice"
-            SET payment_id = _payment_id,
+            SET payment_method_id = _payment_id,
                 billing_date = CURRENT_TIMESTAMP,
                 invoice_status = TRUE
             WHERE id = _invoice_id;
@@ -140,7 +140,7 @@ $$;
 ███████    ██    ██   ██    ██     ██████  ███████ ███████  ██████  ██   ████ ███████ ██      ██   ██    ██    ██      ██ ███████ ██   ████    ██    
                                                                                                                                                      
 */
-CREATE OR REPLACE FUNCTION trg_update_reservation_status_on_payment()
+CREATE OR REPLACE FUNCTION trg_update_reservation_status_on_payment() --TESTED
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.invoice_status = TRUE THEN

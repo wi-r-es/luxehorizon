@@ -19,7 +19,7 @@ class Invoice(models.Model):
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices')
     final_value = models.DecimalField(max_digits=10, decimal_places=2)
     emission_date = models.DateField(default=timezone.now)
-    billing_date = models.DateField()
+    billing_date = models.DateField(null=True)
     invoice_status = models.BooleanField() 
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, related_name='invoices')
 

@@ -19,10 +19,6 @@ BEGIN
     INSERT INTO "sec.error_log" (error_message, error_hint, error_context, error_timestamp)
     VALUES (_ErrorMessage, _ErrorHint, _ErrorContent, CURRENT_TIMESTAMP);
 
-    -- Raise the error to the caller
-    RAISE EXCEPTION '%', _ErrorMessage
-        USING ERRCODE = 'P0001', -- PostgreSQL user-defined exception code
-              DETAIL = 'Error Hint: ' || _ErrorHint || ', Error Content: ' || _ErrorContent;
 END;
 $$;
 
@@ -80,7 +76,7 @@ EXECUTE FUNCTION trg_insert_user_password_dictionary();
                                                                                                                                                                    
 */
 -- Log user login
-CREATE OR REPLACE FUNCTION fn_track_user_login()
+CREATE OR REPLACE FUNCTION fn_track_user_login() --tested but need improvement
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "sec.user_login_audit" (

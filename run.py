@@ -21,7 +21,7 @@ def main():
         "python manage.py init_db",
         "python manage.py load_sql_logic_objs",
         "python manage.py init_seasons",
-        "python manage.py runserver 0.0.0.0:8000"
+        "python manage.py runserver 127.0.0.1:8000"
     ]
 
     for command in commands:
