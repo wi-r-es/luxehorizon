@@ -133,26 +133,6 @@ def cancel_reservation(request):
 
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
 
-def cancel_reservation(request):
-    if request.method == "POST":
-        try:
-            # Extrair o ID da reserva do formulário
-            reservation_id = int(request.POST.get("reservation_id"))
-
-            # Chamar o procedimento armazenado no banco de dados
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    CALL sp_cancel_reservation(%s);
-                """, [reservation_id])
-
-            # Redirecionar para a página de reservas com uma mensagem de sucesso
-            return redirect('my_reservations')
-        except Exception as e:
-            # Caso ocorra um erro, renderizar a página com uma mensagem de erro
-            return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
-
 def season_list(request):
     # Get the query parameter for searching
     query = request.GET.get('q', '')

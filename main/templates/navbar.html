@@ -48,11 +48,11 @@
                                 <i class="bi bi-speedometer2 mr-2"></i> Painel de Controlo
                             </a>
                         {% endif %}
-                        <!-- {% if request.role.perm_level == 3 %}
-                            <a class="dropdown-item d-flex align-items-center" href="{% url 'employe_dashboard' %}">
+                        {% if request.user.role.perm_level == 3 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'employee_dash' %}">
                                 <i class="bi bi-speedometer2 mr-2"></i> Serviços
                             </a>
-                        {% endif %} -->
+                        {% endif %}
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{% url 'logout' %}" class="dropdown-item m-0 p-0">
                             {% csrf_token %}
