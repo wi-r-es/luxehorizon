@@ -356,13 +356,23 @@ EXECUTE FUNCTION fn_trg_check_room_availability();
 /*
  * Makes rooms related to a rejected or cancelled reservation available again
 */
-CREATE OR REPLACE FUNCTION fn_trg_update_room_status_upon_cancelation()          -- NOT WORKING BUT NOT GOING TO BE USED ANYWAY, DB CHANGED SO NO NEED
+CREATE OR REPLACE FUNCTION fn_trg_update_room_status_upon_cancelation() --WORKING --TESTED
 RETURNS TRIGGER AS $$
 BEGIN
     -- If the reservation is being rejected ('R') or cancelled ('CC'), mark the rooms as available
     IF NEW.status IN ('R', 'CC') THEN
         UPDATE "room_management.room"
         SET condition = 0 -- 0 indicates available
+        WHERE id IN (
+            SELECT room_id -- Associated rooms are updated in one operation within the trigger
+            FROM "reserves.room_reservation"
+            WHERE reservation_id = NEW.id
+        );
+    END IF;
+
+    IF NEW.status IN ('C') THEN
+        UPDATE "room_management.room"
+        SET condition = 1 -- 0 indicates BEING USED
         WHERE id IN (
             SELECT room_id -- Associated rooms are updated in one operation within the trigger
             FROM "reserves.room_reservation"
@@ -395,7 +405,7 @@ EXECUTE FUNCTION fn_trg_update_room_status_upon_cancelation();
 
 
 
-CREATE OR REPLACE PROCEDURE sp_check_in(reservation_id INT)
+CREATE OR REPLACE PROCEDURE sp_check_in(reservation_id INT) --tested
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -409,7 +419,7 @@ BEGIN
 
     -- Set the check-in timestamp
     UPDATE "reserves.reservation"
-    SET begin_date = CURRENT_TIMESTAMP
+    SET status = 'CI'
     WHERE id = reservation_id;
 
     RAISE NOTICE 'Check-in completed for reservation id %.', reservation_id;
@@ -418,7 +428,7 @@ $$;
 
 
 
-CREATE OR REPLACE PROCEDURE sp_check_out(reservation_id INT)
+CREATE OR REPLACE PROCEDURE sp_check_out(reservation_id INT) --tested
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -432,7 +442,7 @@ BEGIN
 
     -- Set the check-out timestamp
     UPDATE "reserves.reservation"
-    SET end_date = CURRENT_TIMESTAMP
+    SET status = 'CO'
     WHERE id = reservation_id;
 
     RAISE NOTICE 'Check-out completed for reservation id %.', reservation_id;
@@ -443,7 +453,7 @@ $$;
 
 
 
-CREATE OR REPLACE FUNCTION fn_update_room_condition()
+CREATE OR REPLACE FUNCTION fn_update_room_condition() --TESTED
 RETURNS TRIGGER AS $$
 BEGIN
     -- Update the room condition to "2" (e.g., cleaning or maintenance required)
@@ -461,9 +471,9 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_update_room_condition ON "reserves.reservation";
 CREATE TRIGGER trg_update_room_condition
-AFTER UPDATE OF end_date ON "reserves.reservation"
+AFTER UPDATE OF status ON "reserves.reservation"
 FOR EACH ROW
-WHEN (OLD.end_date IS NULL AND NEW.end_date IS NOT NULL) -- Fire only on the first check-out
+WHEN (NEW.status = 'CO') -- Fire only when the status is set to 'CO' (Checked Out)
 EXECUTE FUNCTION fn_update_room_condition();
 
 

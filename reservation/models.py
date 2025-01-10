@@ -51,12 +51,16 @@ class Reservation(models.Model):
     CONFIRMED = 'C'
     REJECTED = 'R'
     CANCELED = 'CC'
+    CHECK_IN = 'CI'
+    CHECK_OUT = 'CO'
     
     RESERVATION_STATUS_CHOICES = [
         (PENDING, 'Pending'),
         (CONFIRMED, 'Confirmed'),
         (REJECTED, 'Rejected'),
         (CANCELED, 'Canceled'),
+        (CHECK_IN, 'Checked In'),
+        (CHECK_OUT, 'Checked Out'),
     ]
 
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations")

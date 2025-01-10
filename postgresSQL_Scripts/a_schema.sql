@@ -250,7 +250,7 @@ CREATE TABLE IF NOT EXISTS "reserves.reservation" (
     client_id           INT                 NOT NULL,
     begin_date          DATE                NOT NULL,
     end_date            DATE                NOT NULL,
-    status            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado
+    status            CHAR(2)             NOT NULL, -- P - Pendente, C - Confirmada, R - Rejeitada, CC- Cancelado, -CI check in, -CO checked out
     season_id           INT                 NOT NULL, 
     total_value         NUMERIC(10, 2)      NOT NULL,
     begin_date            TIMESTAMP           NULL,
