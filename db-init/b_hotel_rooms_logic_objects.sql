@@ -7,7 +7,7 @@
                                                                                                   
 */
 -- Procedure to add hotel
-CREATE OR REPLACE PROCEDURE sp_add_hotel(
+CREATE OR REPLACE PROCEDURE sp_add_hotel( --TESTED
     _name VARCHAR(100),
     _address VARCHAR(160),
     _postal_code VARCHAR(8),
@@ -53,7 +53,7 @@ $$;
                                                                                              
 */
 -- Procedure to add room
-CREATE OR REPLACE PROCEDURE sp_add_room(
+CREATE OR REPLACE PROCEDURE sp_add_room( --TESTED
     _hotel_id INT,
     _room_type_initials VARCHAR(100),
     _room_number INT,
@@ -88,9 +88,9 @@ BEGIN
     END IF;
     BEGIN
         -- Insert new room
-        INSERT INTO "hotel_management.rooms" (
-            hotel,
-            room_type,
+        INSERT INTO "room_management.room" (
+            hotel_id,
+            room_type_id,
             room_number,
             base_price,
             condition
@@ -131,7 +131,7 @@ $$;
                                                                                                 
                                                                                                                                                                                 
 */
-CREATE OR REPLACE PROCEDURE sp_update_room_status(
+CREATE OR REPLACE PROCEDURE sp_update_room_status( --tested
     _room_id INT,
     _new_status INT
 )
@@ -186,7 +186,7 @@ $$;
                                                                     
 */
 
-CREATE OR REPLACE PROCEDURE sp_link_commodity_to_room(
+CREATE OR REPLACE PROCEDURE sp_link_commodity_to_room( --TESTED
     _room_id INT,
     _commodity_id INT
 )
@@ -242,7 +242,7 @@ $$;
      ██ ██              ██      ██   ██ ██      ██   ██    ██    ██              ██      ██    ██ ██  ██  ██ ██  ██  ██ ██    ██ ██   ██ ██    ██       ██    
 ███████ ██      ███████  ██████ ██   ██ ███████ ██   ██    ██    ███████ ███████  ██████  ██████  ██      ██ ██      ██  ██████  ██████  ██    ██       ██    
 */
-CREATE OR REPLACE PROCEDURE sp_create_commodity(
+CREATE OR REPLACE PROCEDURE sp_create_commodity( --TESTED
     _commodity_detail VARCHAR(100)
 )
 LANGUAGE plpgsql
