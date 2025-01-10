@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Hotel, Room
+from .models import Hotel, Room, Commodity
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
-from .forms import HotelForm, RoomForm
+from .forms import HotelForm, RoomForm, CommodityForm
 from django.contrib import messages
 from reservation.models import RoomReservation, Reservation
 from django.http import Http404
@@ -315,3 +315,73 @@ def filter_rooms_guests(request):
         'checkout': checkout,
         'guests': guests,
     })
+
+def commodity_list(request):
+    # Sorting and searching logic
+    sort = request.GET.get('sort', 'details')
+    order = request.GET.get('order', 'asc')
+    query = request.GET.get('q', '')
+
+    # Filter commodities based on search query
+    commodities = Commodity.objects.filter(details__icontains=query)
+
+    # Sorting commodities based on selected field
+    if sort == 'details':
+        commodities = commodities.order_by(f"{'' if order == 'asc' else '-'}details")
+
+    context = {
+        'commodities': commodities,
+        'sort': sort,
+        'order': order,
+        'query': query,
+    }
+    return render(request, 'commodities/commodities_list.html', context)
+
+def commodity_form(request, commodity_id=None):
+    if commodity_id:
+        commodity = get_object_or_404(Commodity, id=commodity_id)
+        operation = "editar"
+    else:
+        commodity = None
+        operation = "adicionar"
+
+    if request.method == 'POST':
+        form = CommodityForm(request.POST, instance=commodity)
+        if form.is_valid():
+            details = form.cleaned_data.get('details')
+
+            if commodity is None:
+                # Creating a new commodity
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        CALL sp_create_commodity(%s);
+                    """, [details])
+                messages.success(request, "Comodidade adicionada com sucesso!")
+            else:
+                # Update the existing commodity
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        CALL sp_update_commodity(%s,%s);
+                    """, [commodity_id, details])
+                messages.success(request, "Comodidade atualizada com sucesso!")
+
+            return redirect('commodities_list')
+        else:
+            messages.error(request, "Erro ao processar o formulário.")
+    else:
+        form = CommodityForm(instance=commodity)
+
+    return render(request, 'commodities/commodities_form.html', {
+        'form': form,
+        'operation': operation,
+        'commodity': commodity or {},
+    })
+
+def commodity_delete(request, commodity_id):
+    commodity = get_object_or_404(Commodity, id=commodity_id)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            CALL sp_delete_commodity(%s);
+        """, [commodity_id])
+    messages.success(request, "Comodidade removida com sucesso!")
+    return redirect('commodities_list')
