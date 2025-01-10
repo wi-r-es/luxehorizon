@@ -162,31 +162,37 @@ def season_list(request):
     if query:
         seasons = seasons.filter(descriptive__icontains=query)
 
-    # Sorting
-    sort = request.GET.get('sort', 'descriptive')
-    order = request.GET.get('order', 'asc')
-    
-    if order == 'desc':
-        sort = '-' + sort
+    # Sorting parameters
+    sort = request.GET.get('sort', 'descriptive')  # Default sorting field
+    order = request.GET.get('order', 'asc')  # Default order is ascending
 
-    # Sort seasons based on the sort parameter
+    # Validate sorting fields
+    valid_sort_fields = ['descriptive', 'begin_month', 'begin_day', 'end_month', 'end_day', 'rate']
+    if sort not in valid_sort_fields:
+        sort = 'descriptive'  # Fallback to default sorting
+
+    # Adjust for descending order if specified
+    if order == 'desc':
+        sort = f"-{sort}"
+
+    # Apply sorting to the queryset
     seasons = seasons.order_by(sort)
 
-    # Adjust context to display the month/day format
+    # Format context data
     context = {
         'seasons': [
             {
                 'id': season.id,
-                'descriptive': season.get_descriptive_display(),
-                'begin': f"{season.begin_month}/{season.begin_day}",
-                'end': f"{season.end_month}/{season.end_day}",
+                'descriptive': season.get_descriptive_display(),  # Use display name for choices
+                'begin_date': f"{season.begin_day}/{season.begin_month}",
+                'end_date': f"{season.end_day}/{season.end_month}",
                 'rate': season.rate,
             }
             for season in seasons
         ],
         'query': query,
-        'sort': sort.lstrip('-'),  
-        'order': order,
+        'sort': sort.lstrip('-'),  # Pass the current sorting field without the '-' for templates
+        'order': order,  # Pass the current order for templates
     }
     return render(request, 'seasons/seasons_list.html', context)
 
