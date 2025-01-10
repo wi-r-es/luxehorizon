@@ -201,7 +201,7 @@ CREATE TABLE IF NOT EXISTS "hr.users"(
     last_name               VARCHAR(100)            NOT NULL,
     email                   VARCHAR(100)            NOT NULL,
     hashed_password         VARCHAR(255)            NOT NULL,
-    inactive                BOOLEAN                 NOT NULL, 
+    is_active                BOOLEAN                 NOT NULL, 
     nif                     VARCHAR(20)             NOT NULL,
     phone                   VARCHAR(20)             NOT NULL,
     full_address            VARCHAR(160)            NOT NULL,

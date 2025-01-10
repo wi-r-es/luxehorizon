@@ -248,7 +248,7 @@ BEGIN
     LEFT JOIN "HR.U_EMPLOYEE" e ON u.ID = e.ID
     WHERE u.email = _email
       AND u.hashed_password = _hashed_password
-      AND u.inactive = FALSE;
+      AND u.is_active = FALSE;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Invalid credentials or user is inactive.';

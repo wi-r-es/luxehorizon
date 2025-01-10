@@ -1,3 +1,9 @@
+/*
+this file tests the following objects:
+    - sp_register_user
+    - trg_default_role_for_employee -> trg_default_role_for_employee
+    - trg_after_user_insert_update -> trg_insert_user_password_dictionary
+*/
 CREATE OR REPLACE FUNCTION TEST_register_user(
     _first_name VARCHAR(100),
     _last_name VARCHAR(100),
@@ -67,8 +73,8 @@ SELECT TEST_register_user(
     'NotDoe',
     'john.notdoe@example.com',
     'hashed_password_example',
-    '123456789',
-    '987654321',
+    '123456799',
+    '987654322',
     '123 Example Street',
     '3500-678',
     'Example City',

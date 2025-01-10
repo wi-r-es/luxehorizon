@@ -25,7 +25,6 @@ class Migration(migrations.Migration):
                 ('last_name', models.CharField(max_length=100)),
                 ('email', models.EmailField(max_length=254, unique=True)),
                 ('hashed_password', models.CharField(max_length=255)),
-                ('inactive', models.BooleanField(default=False)),
                 ('nif', models.CharField(max_length=20, unique=True, verbose_name='NIF')),
                 ('phone', models.CharField(max_length=20, unique=True)),
                 ('full_address', models.CharField(max_length=160)),

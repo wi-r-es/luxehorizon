@@ -169,7 +169,7 @@ $$;
 */
 CREATE OR REPLACE PROCEDURE sp_update_user_status(
     _user_id INT,
-    _inactive BOOLEAN
+    _is_active BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -191,10 +191,10 @@ BEGIN
 
     BEGIN 
         UPDATE "HR.USERS"
-        SET inactive = _inactive
+        SET is_active = _is_active
         WHERE ID = _user_id;
 
-        RAISE NOTICE 'User ID % status updated to %', _user_id, _inactive;
+        RAISE NOTICE 'User ID % status updated to %', _user_id, _is_active;
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,

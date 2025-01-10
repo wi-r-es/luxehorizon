@@ -5,6 +5,7 @@ from django.utils import timezone
 
 class AccPermission(models.Model):
     PERMISSION_LEVELS = (
+        (0, 'None'),
         (1, 'Admin'),
         (2, 'Manager'),
         (3, 'Funcionário'),
@@ -49,13 +50,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     hashed_password = models.CharField(max_length=255)  # This is the hashed password field
-    inactive = models.BooleanField(default=False)
+
     nif = models.CharField(max_length=20, unique=True, verbose_name="NIF")
     phone = models.CharField(max_length=20, unique=True)
     full_address = models.CharField(max_length=160)
     postal_code = models.CharField(max_length=8)
     city = models.CharField(max_length=100)
     utp = models.CharField(max_length=1, choices=USER_TYPES, default=CLIENT)
+
+    role = models.ForeignKey(AccPermission, on_delete=models.CASCADE, default=0)
+    social_security = models.IntegerField(null=True)
 
     # Add permissions and staff status fields
     is_active = models.BooleanField(default=True)
@@ -87,8 +91,8 @@ class Client(User):
         db_table = "hr.u_client"
 
 class Employee(User):
-    role = models.ForeignKey(AccPermission, on_delete=models.CASCADE)
-    social_security = models.IntegerField()
+   # role = models.ForeignKey(AccPermission, on_delete=models.CASCADE)
+    #social_security = models.IntegerField()
 
     class Meta:
         db_table = "hr.u_employee"

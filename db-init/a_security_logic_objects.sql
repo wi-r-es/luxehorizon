@@ -7,7 +7,7 @@
 ██      ██    ██ ██    ██ ██      ██   ██ ██   ██ ██    ██ ██   ██ 
 ███████  ██████   ██████  ███████ ██   ██ ██   ██  ██████  ██   ██                                                                    
 */
-CREATE OR REPLACE PROCEDURE sp_secLogError(
+CREATE OR REPLACE PROCEDURE sp_secLogError( --half tested working but not
     _ErrorMessage VARCHAR(4000),
     _ErrorHint VARCHAR(400),
     _ErrorContent VARCHAR(400)
@@ -40,7 +40,7 @@ $$;
 ██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  ███████ ██████  ██  ██████    ██    ██  ██████  ██   ████ ██   ██ ██   ██    ██    
                                                                                                                                                          
 */
-CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
+CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary() --tested
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "sec.user_passwords_dictionary" (
@@ -242,15 +242,15 @@ BEGIN
         u.last_name,
         u.email,
         CASE
-            WHEN u.utp = 'F' THEN (SELECT perm_description FROM "sec.acc_permission" ap WHERE ap.id = e.role_id)
+            WHEN u.utp = 'F' THEN (SELECT perm_description FROM "sec.acc_permission" ap WHERE ap.id = u.role_id)
             ELSE 'Client'
         END AS role_description,
         u.utp AS user_type
     FROM "hr.users" u
-    LEFT JOIN "hr.u_employee" e ON u.ID = e.ID
+    --LEFT JOIN "hr.u_employee" e ON u.ID = e.ID
     WHERE u.email = _email
       AND u.hashed_password = _hashed_password
-      AND u.inactive = FALSE;
+      AND u.is_active = TRUE;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Invalid credentials or user is inactive.';

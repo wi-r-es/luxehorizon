@@ -12,6 +12,7 @@ class Command(BaseCommand):
         try:
             # Create initial permissions
             permissions_data = [
+                {'perm_description': 'None', 'perm_level': 0},
                 {'perm_description': 'Administrator', 'perm_level': 1},
                 {'perm_description': 'Manager', 'perm_level': 2},
                 {'perm_description': 'Employee', 'perm_level': 3},

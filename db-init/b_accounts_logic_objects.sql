@@ -7,7 +7,7 @@
                                                                                                                               
 */
 -- SP TO REGISTER A NEW USER (CLIENT OR EMPLOYEE)
-CREATE OR REPLACE PROCEDURE sp_register_user(
+CREATE OR REPLACE PROCEDURE sp_register_user( --tested
     _first_name VARCHAR(100),
     _last_name VARCHAR(100),
     _email VARCHAR(100),
@@ -18,7 +18,6 @@ CREATE OR REPLACE PROCEDURE sp_register_user(
     _postal_code VARCHAR(8),
     _city VARCHAR(100),
     _utp CHAR(1) DEFAULT 'C' ,
-    _inactive BOOLEAN DEFAULT False ,
     _is_active BOOLEAN DEFAULT True ,
     _is_staff BOOLEAN DEFAULT False,
     _is_superuser BOOLEAN DEFAULT False
@@ -29,6 +28,7 @@ DECLARE
     msg text;
     hint text;
     content text;
+    _role_id  INT;
 BEGIN
     -- Validate input for email uniqueness | can also be done via django instead 
     IF EXISTS (
@@ -39,12 +39,18 @@ BEGIN
         RAISE EXCEPTION 'Email % is already registered', _email;
     END IF;
 
+    -- Check the value of _utp and assign an integer to _result
+    _role_id := CASE
+        WHEN _utp = 'C' THEN 0
+        ELSE 3
+    END;
+
     BEGIN -- PostgreSQL automatically wraps the BEGIN block in a transaction, so there’s no need for explicit BEGIN TRAN or COMMIT TRAN
-        
-        INSERT INTO "hr.users" ( password, inactive,
+
+        INSERT INTO "hr.users" ( password, role_id,
             first_name, last_name, email, hashed_password, nif, phone, 
             full_address, postal_code, city, utp, is_active, is_staff, is_superuser
-        ) VALUES (_hashed_password, _inactive,
+        ) VALUES (_hashed_password, _role_id,
             _first_name, _last_name, _email, _hashed_password, _nif, _phone, 
             _full_address, _postal_code, _city, _utp, _is_active, _is_staff, _is_superuser
         );
@@ -89,9 +95,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_default_role_for_employee ON "hr.u_employee";
+DROP TRIGGER IF EXISTS trg_default_role_for_employee ON "hr.users";
 CREATE TRIGGER trg_default_role_for_employee
-BEFORE INSERT ON "hr.u_employee"
+BEFORE INSERT ON "hr.users"
 FOR EACH ROW
 EXECUTE FUNCTION trg_default_role_for_employee();
 
@@ -124,10 +130,10 @@ DECLARE
     hint TEXT;
 BEGIN
     -- Validate if the user is an employee
-    SELECT EXISTS (
+    SELECT EXISTS (users
         SELECT 1
-        FROM "hr.u_employee"
-        WHERE ID = _user_id
+        FROM "hr.users" 
+        WHERE ID = _user_id AND utp='F'
     ) INTO _is_employee;
 
     IF NOT _is_employee THEN
