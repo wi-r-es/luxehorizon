@@ -19,14 +19,14 @@ CREATE OR REPLACE FUNCTION fn_get_available_rooms(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT r.ID, r.room_number, r.hotel_id, r.base_price, r.capacity
+    SELECT r.id, r.room_number, r.hotel_id, r.base_price, r.capacity
     FROM "room_management.room" r
     WHERE r.condition = 0 
       AND NOT EXISTS (
           SELECT 1
           FROM "reserves.room_reservation" rr
-          INNER JOIN "reserves.reservation" res ON rr.reservation_id = res.ID
-          WHERE rr.room_id = r.ID
+          INNER JOIN "reserves.reservation" res ON rr.reservation_id = res.id
+          WHERE rr.room_id = r.id
             AND res.begin_date < _end_date
             AND res.end_date > _begin_date
       );
@@ -53,9 +53,9 @@ CREATE OR REPLACE FUNCTION fn_find_reservation_by_id(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT r.ID, r.client_id, r.begin_date, r.end_date, r.total_value, r.status
+    SELECT r.id, r.client_id, r.begin_date, r.end_date, r.total_value, r.status
     FROM "reserves.reservation" r
-    WHERE r.ID = _reservation_id;
+    WHERE r.id = _reservation_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -81,7 +81,7 @@ DECLARE
     _tax_rate FLOAT;
     _total_price NUMERIC(10, 2);
 BEGIN
-    SELECT base_price INTO _base_price FROM "room_management.room" WHERE ID = _room_id;
+    SELECT base_price INTO _base_price FROM "room_management.room" WHERE id = _room_id;
 
     SELECT TAX INTO _tax_rate FROM "finance.price_per_season" WHERE season_id = _season_id;
 
@@ -109,7 +109,7 @@ BEGIN
     FOR _room_price IN
         SELECT base_price
         FROM "room_management.room"
-        WHERE ID = ANY(_room_ids)
+        WHERE id = ANY(_room_ids)
     LOOP
         _total_price := _total_price + (_room_price + (_room_price * _tax_rate));
     END LOOP;

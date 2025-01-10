@@ -69,12 +69,12 @@ class Commodity(models.Model):
         return self.details
 
 class Room(models.Model):
-    type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
+    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     room_number = models.IntegerField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     condition = models.IntegerField()  # 0 - available, 1 - dirty, 2 - maintenance
-    capacity = models.CharField(max_length=1, choices=CapacityType.choices)
+    #capacity = models.CharField(max_length=1, choices=CapacityType.choices)
 
     class Meta:
         db_table = 'room_management.room'

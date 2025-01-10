@@ -29,7 +29,7 @@ DECLARE
 	season_rate NUMERIC;
 BEGIN
     -- Verificar se o quarto existe
-    IF NOT EXISTS (SELECT 1 FROM "room_management.room" WHERE ID = room_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM "room_management.room" WHERE id = room_id) THEN
         RAISE EXCEPTION 'Quarto não encontrado.';
     END IF;
 
@@ -52,7 +52,7 @@ BEGIN
     -- Obter preço base do quarto
     SELECT base_price INTO room_base_price
     FROM "room_management.room"
-    WHERE ID = room_id;
+    WHERE id = room_id;
 
     IF room_base_price IS NULL THEN
         RAISE EXCEPTION 'O quarto não possui preço definido.';
@@ -64,14 +64,14 @@ BEGIN
     -- Inserir a reserva
     INSERT INTO "reserves.reservation" (client_id, begin_date, end_date, status, season_id, total_value)
     VALUES (user_id, checkin, checkout, 'P', season_id, total_price)
-    RETURNING ID INTO reservation_id;
+    RETURNING id INTO reservation_id;
 
     -- Relacionar o quarto à reserva
     INSERT INTO "reserves.room_reservation" (reservation_id, room_id, price_reservation)
     VALUES (reservation_id, room_id, total_price);
 
     -- Confirmação de sucesso
-    RAISE NOTICE 'Reserva criada com sucesso. ID da reserva: %', reservation_id;
+    RAISE NOTICE 'Reserva criada com sucesso. id da reserva: %', reservation_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -115,22 +115,22 @@ BEGIN
         SELECT NOT EXISTS (
             SELECT 1 
             FROM "reserves.room_reservation" rr
-            INNER JOIN "reserves.reservation" r ON rr.reservation_id = r.ID
+            INNER JOIN "reserves.reservation" r ON rr.reservation_id = r.id
             WHERE rr.room_id = _room_id
               AND r.begin_date < _new_end_date
               AND r.end_date > _new_begin_date
-              AND r.ID <> _reservation_id
+              AND r.id <> _reservation_id
         ) INTO _room_available;
 
         IF NOT _room_available THEN
-            RAISE EXCEPTION 'Room ID % is not available for the selected dates.', _room_id;
+            RAISE EXCEPTION 'Room id % is not available for the selected dates.', _room_id;
         END IF;
     END LOOP;
     BEGIN
         UPDATE "reserves.reservation"
         SET begin_date = _new_begin_date,
             end_date = _new_end_date
-        WHERE ID = _reservation_id;
+        WHERE id = _reservation_id;
         
         --All existing room assignments for the reservation are removed
         DELETE FROM "reserves.room_reservation" WHERE reservation_id = _reservation_id;
@@ -140,13 +140,13 @@ BEGIN
             INSERT INTO "reserves.room_reservation" (
                 reservation_id, room_id, price_reservation
             ) VALUES (
-                _reservation_id, _room_id, (SELECT base_price FROM ROOM WHERE ID = _room_id)
+                _reservation_id, _room_id, (SELECT base_price FROM ROOM WHERE id = _room_id)
             );
         END LOOP;
 
-        RAISE NOTICE 'Reservation ID % updated successfully.', _reservation_id;
+        RAISE NOTICE 'Reservation id % updated successfully.', _reservation_id;
     
-    RAISE NOTICE 'Reservation ID % created successfully for Client ID %', _reservation_id, _client_id;
+    RAISE NOTICE 'Reservation id % created successfully for Client id %', _reservation_id, _client_id;
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,
@@ -180,9 +180,9 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 
         FROM "reserves.reservation" 
-        WHERE ID = _reservation_id
+        WHERE id = _reservation_id
     ) THEN
-        RAISE EXCEPTION 'Reservation ID % does not exist.', _reservation_id;
+        RAISE EXCEPTION 'Reservation id % does not exist.', _reservation_id;
     END IF;
 
     -- Deletar associações com quartos
@@ -192,10 +192,10 @@ BEGIN
     -- Atualizar o status da reserva para "Cancelado"
     UPDATE "reserves.reservation"
     SET status = 'CC'  -- Substituir 'CC' pelo código adequado se necessário
-    WHERE ID = _reservation_id;
+    WHERE id = _reservation_id;
 
     -- Mensagem de sucesso
-    RAISE NOTICE 'Reservation ID % cancelled successfully.', _reservation_id;
+    RAISE NOTICE 'Reservation id % cancelled successfully.', _reservation_id;
 
 END;
 $$;
@@ -225,14 +225,14 @@ BEGIN
     SELECT NOT EXISTS (
         SELECT 1 
         FROM "reserves.room_reservation" rr
-        INNER JOIN "reserves.reservation" r ON rr.reservation_id = r.ID
+        INNER JOIN "reserves.reservation" r ON rr.reservation_id = r.id
         WHERE rr.room_id = NEW.room_id
           AND r.begin_date < NEW.end_date
           AND r.end_date > NEW.begin_date
     ) INTO _room_available;
 
     IF NOT _room_available THEN
-        RAISE EXCEPTION 'Room ID % is not available for the selected dates.', NEW.room_id;
+        RAISE EXCEPTION 'Room id % is not available for the selected dates.', NEW.room_id;
     END IF;
 
     RETURN NEW;
@@ -269,10 +269,10 @@ BEGIN
     IF NEW.status IN ('R', 'CC') THEN
         UPDATE "room_management.room"
         SET condition = 0 -- 0 indicates available
-        WHERE ID IN (
+        WHERE id IN (
             SELECT room_id -- Associated rooms are updated in one operation within the trigger
             FROM "reserves.room_reservation"
-            WHERE reservation_id = NEW.ID
+            WHERE reservation_id = NEW.id
         );
     END IF;
 
@@ -290,12 +290,12 @@ EXECUTE FUNCTION fn_trg_update_room_status_upon_cancelation();
 
 
 CREATE OR REPLACE FUNCTION sp_check_in(reservation_id INT)
-RETURNS VOID AS $$
+RETURNS VOid AS $$
 BEGIN
     -- Ensure the reservation exists and is confirmed
     IF NOT EXISTS (
         SELECT 1 FROM "reserves.reservation"
-        WHERE ID = reservation_id AND status = 'C'
+        WHERE id = reservation_id AND status = 'C'
     ) THEN
         RAISE EXCEPTION 'Reservation % is not confirmed or does not exist.', reservation_id;
     END IF;
@@ -303,7 +303,7 @@ BEGIN
     -- Ensure the current date is within the reservation period
     IF NOT EXISTS (
         SELECT 1 FROM "reserves.reservation"
-        WHERE ID = reservation_id
+        WHERE id = reservation_id
           AND CURRENT_DATE BETWEEN begin_date AND end_date
     ) THEN
         RAISE EXCEPTION 'Current date is not within the reservation period for reservation %.', reservation_id;
@@ -312,18 +312,18 @@ BEGIN
     -- Set the check-in timestamp
     UPDATE "reserves.reservation"
     SET begin_date = CURRENT_TIMESTAMP
-    WHERE ID = reservation_id;
+    WHERE id = reservation_id;
 END;
 $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION sp_check_out(reservation_id INT)
-RETURNS VOID AS $$
+RETURNS VOid AS $$
 BEGIN
     -- Ensure the reservation exists and check-in has occurred
     IF NOT EXISTS (
         SELECT 1 FROM "reserves.reservation"
-        WHERE ID = reservation_id AND begin_date IS NOT NULL
+        WHERE id = reservation_id AND begin_date IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Reservation % has not been checked in or does not exist.', reservation_id;
     END IF;
@@ -331,7 +331,7 @@ BEGIN
     -- Set the check-out timestamp
     UPDATE "reserves.reservation"
     SET end_date = CURRENT_TIMESTAMP
-    WHERE ID = reservation_id;
+    WHERE id = reservation_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -343,10 +343,10 @@ BEGIN
     -- Update the room condition to "2" (e.g., cleaning or "3" - maintenance required)
     UPDATE "room_management.room"
     SET condition = 2
-    WHERE ID IN (
+    WHERE id IN (
         SELECT room_id
         FROM "reserves.room_reservation"
-        WHERE reservation_id = OLD.ID
+        WHERE reservation_id = OLD.id
     );
     RETURN NEW;
 END;

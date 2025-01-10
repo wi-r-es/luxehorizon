@@ -29,22 +29,23 @@ class HotelForm(forms.ModelForm):
 class RoomForm(forms.ModelForm):
     class Meta:
         model = Room
-        fields = ['type', 'room_number', 'base_price', 'condition', 'capacity']
+        fields = ['room_type', 'room_number', 'base_price', 'condition']
         widgets = {
             'condition': forms.Select(choices=[
-                (0, 'Disponível'),
-                (1, 'Sujo'),
-                (2, 'Em Manutenção'),
-            ])
+                (0, 'Disponível'),          # Available
+                (1, 'Sujo'),               # Dirty
+                (2, 'Em Manutenção'),      # Under Maintenance
+            ]),
         }
         labels = {
-            'type': 'Tipo',
+            'room_type': 'Tipo de Quarto',
             'room_number': 'Nº do Quarto',
             'base_price': 'Preço Base (€)',
-            'Estado': 'Condition',
-            'capacity': 'Capacidade',
+            'condition': 'Estado',
         }
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['type'].queryset = RoomType.objects.all()
+        # Dynamically set the queryset for room types to include all available RoomType objects
+        self.fields['room_type'].queryset = RoomType.objects.all()
+

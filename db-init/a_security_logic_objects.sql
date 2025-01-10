@@ -132,7 +132,7 @@ BEGIN
     BEGIN 
         UPDATE "hr.users"
         SET hashed_password = _new_hashed_password
-        WHERE ID = _user_id;
+        WHERE id = _user_id;
 
         -- Insert the new password into the password history table
         INSERT INTO "sec.user_passwords_dictionary" (
@@ -142,13 +142,13 @@ BEGIN
             _new_hashed_password, 
             CURRENT_TIMESTAMP, 
             CASE 
-                WHEN (SELECT utp FROM hr.users WHERE ID = _user_id) = 'F' 
+                WHEN (SELECT utp FROM hr.users WHERE id = _user_id) = 'F' 
                 THEN CURRENT_TIMESTAMP + INTERVAL '6 months' 
                 ELSE CURRENT_TIMESTAMP + INTERVAL '100 years'
             END
         );
 
-            RAISE NOTICE 'Password for User ID % changed successfully.', _user_id;
+            RAISE NOTICE 'Password for User id % changed successfully.', _user_id;
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,
@@ -175,7 +175,7 @@ BEGIN
     VALUES (
         TG_TABLE_NAME,
         TG_OP,
-        CASE WHEN TG_OP = 'DELETE' THEN OLD.ID ELSE NEW.ID END,
+        CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END,
         SESSION_USER
     );
 
@@ -222,7 +222,7 @@ $$;
 
 
 
---IDFK WHETHER THIS WILL BE USED LIKE THIS OR NOT, TBD
+--idFK WHETHER THIS WILL BE USED LIKE THIS OR NOT, TBD
 CREATE OR REPLACE FUNCTION fn_user_login(
     _email VARCHAR(100),
     _hashed_password TEXT
@@ -247,7 +247,7 @@ BEGIN
         END AS role_description,
         u.utp AS user_type
     FROM "hr.users" u
-    --LEFT JOIN "hr.u_employee" e ON u.ID = e.ID
+    --LEFT JOIN "hr.u_employee" e ON u.id = e.id
     WHERE u.email = _email
       AND u.hashed_password = _hashed_password
       AND u.is_active = TRUE;

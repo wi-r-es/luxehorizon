@@ -14,7 +14,8 @@ CREATE OR REPLACE FUNCTION TEST_register_user(
     _full_address VARCHAR(160),
     _postal_code VARCHAR(8),
     _city VARCHAR(100),
-    _utp CHAR(1)
+    _utp CHAR(1),
+    _sc INT = NULL
 )
 RETURNS TEXT AS $$
 DECLARE
@@ -32,7 +33,8 @@ BEGIN
         _full_address,
         _postal_code,
         _city,
-        _utp
+        _utp,
+        _sc
     );
 
     -- Check if the user has been successfully inserted
@@ -53,7 +55,7 @@ BEGIN
     RETURN result;
 END $$ LANGUAGE plpgsql;
 
--- Example test invocation
+-- Test invocation
 SELECT TEST_register_user(
     'John',
     'Doe',
@@ -78,5 +80,6 @@ SELECT TEST_register_user(
     '123 Example Street',
     '3500-678',
     'Example City',
-    'F'
+    'F',
+    250250250
 );

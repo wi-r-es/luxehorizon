@@ -25,10 +25,10 @@ BEGIN
     SELECT client_id, total_value
     INTO _client_id, _total_value
     FROM "reserves.reservation"
-    WHERE ID = _reservation_id;
+    WHERE id = _reservation_id;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Reservation ID % does not exist.', _reservation_id;
+        RAISE EXCEPTION 'Reservation id % does not exist.', _reservation_id;
     END IF;
 
     BEGIN
@@ -39,9 +39,9 @@ BEGIN
             _reservation_id, _client_id, _total_value, _emission_date, NULL,
             FALSE, _payment_method_id -- Unpaid by default
         )
-        RETURNING ID INTO _invoice_id;
+        RETURNING id INTO _invoice_id;
 
-        RAISE NOTICE 'Invoice ID % generated successfully for Reservation ID %', _invoice_id, _reservation_id;
+        RAISE NOTICE 'Invoice id % generated successfully for Reservation id %', _invoice_id, _reservation_id;
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,
@@ -80,12 +80,12 @@ BEGIN
     SELECT final_value, COALESCE(SUM(p.payment_amount), 0)
     INTO _final_value, _current_paid
     FROM "finance.invoice" i
-    LEFT JOIN finance.payments p ON i.ID = p.invoice_id
-    WHERE i.ID = _invoice_id
+    LEFT JOIN finance.payments p ON i.id = p.invoice_id
+    WHERE i.id = _invoice_id
     GROUP BY i.final_value;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Invoice ID % does not exist.', _invoice_id;
+        RAISE EXCEPTION 'Invoice id % does not exist.', _invoice_id;
     END IF;
     BEGIN
         INSERT INTO finance.payments (
@@ -93,7 +93,7 @@ BEGIN
         ) VALUES (
             _invoice_id, _payment_amount, CURRENT_DATE, _payment_method_id
         )
-        RETURNING ID INTO _payment_id;
+        RETURNING id INTO _payment_id;
 
         -- Update the INVOICE table if fully paid. 
         IF _current_paid + _payment_amount >= _final_value THEN
@@ -101,11 +101,11 @@ BEGIN
             SET payment_id = _payment_id,
                 billing_date = CURRENT_TIMESTAMP,
                 invoice_status = TRUE
-            WHERE ID = _invoice_id;
+            WHERE id = _invoice_id;
 
-            RAISE NOTICE 'Invoice ID % is now fully paid.', _invoice_id;
+            RAISE NOTICE 'Invoice id % is now fully paid.', _invoice_id;
         ELSE
-            RAISE NOTICE 'Partial payment recorded for Invoice ID %. Remaining balance: %.',
+            RAISE NOTICE 'Partial payment recorded for Invoice id %. Remaining balance: %.',
                 _invoice_id, _final_value - (_current_paid + _payment_amount);
         END IF;
     EXCEPTION WHEN OTHERS THEN
@@ -146,9 +146,9 @@ BEGIN
     IF NEW.invoice_status = TRUE THEN
         UPDATE "reserves.reservation"
         SET status = 'C' -- confirmada
-        WHERE ID = NEW.reservation_id;
+        WHERE id = NEW.reservation_id;
 
-        RAISE NOTICE 'Reservation ID % is now marked as Paid.', NEW.reservation_id;
+        RAISE NOTICE 'Reservation id % is now marked as Paid.', NEW.reservation_id;
     END IF;
 
     RETURN NEW;
@@ -189,7 +189,7 @@ BEGIN
     WHERE season_id = _season_id;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Season ID % does not exist in PRICE_PER_SEASON.', _season_id;
+        RAISE EXCEPTION 'Season id % does not exist in PRICE_PER_SEASON.', _season_id;
     END IF;
 
     IF _new_tax < 0 OR _new_tax > 1.0 THEN
@@ -201,7 +201,7 @@ BEGIN
         SET TAX = _new_tax
         WHERE season_id = _season_id;
 
-        RAISE NOTICE 'Tax for Season ID % updated successfully to %.', _season_id, _new_tax;
+        RAISE NOTICE 'Tax for Season id % updated successfully to %.', _season_id, _new_tax;
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,
