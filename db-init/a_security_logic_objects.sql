@@ -19,10 +19,6 @@ BEGIN
     INSERT INTO "sec.error_log" (error_message, error_hint, error_context, error_timestamp)
     VALUES (_ErrorMessage, _ErrorHint, _ErrorContent, CURRENT_TIMESTAMP);
 
-    -- Raise the error to the caller
-    RAISE EXCEPTION '%', _ErrorMessage
-        USING ERRCODE = 'P0001', -- PostgreSQL user-defined exception code
-              DETAIL = 'Error Hint: ' || _ErrorHint || ', Error Content: ' || _ErrorContent;
 END;
 $$;
 
@@ -40,26 +36,23 @@ $$;
 ██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  ███████ ██████  ██  ██████    ██    ██  ██████  ██   ████ ██   ██ ██   ██    ██    
                                                                                                                                                          
 */
-CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary()
+CREATE OR REPLACE FUNCTION trg_insert_user_password_dictionary() --tested
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Inserir apenas se o hashed_password mudou ou for um novo registo
-    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.hashed_password <> OLD.hashed_password) THEN
-        INSERT INTO "sec.user_passwords_dictionary" (
-            user_id, 
-            hashed_password, 
-            valid_from, 
-            valid_to
-        ) VALUES (
-            NEW.id, 
-            NEW.hashed_password, 
-            CURRENT_TIMESTAMP, 
-            CASE 
-                WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
-                ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
-            END
-        );
-    END IF;
+     INSERT INTO "sec.user_passwords_dictionary" (
+        user_id, 
+        hashed_password, 
+        valid_from, 
+        valid_to
+    ) VALUES (
+        NEW.id, 
+        NEW.hashed_password, 
+        CURRENT_TIMESTAMP, 
+        CASE 
+            WHEN NEW.utp = 'F' THEN CURRENT_TIMESTAMP + INTERVAL '6 months' -- Employees only
+            ELSE CURRENT_TIMESTAMP + INTERVAL '100 years' 
+        END
+    );
 
     RETURN NEW;
 END;
@@ -83,7 +76,7 @@ EXECUTE FUNCTION trg_insert_user_password_dictionary();
                                                                                                                                                                    
 */
 -- Log user login
-CREATE OR REPLACE FUNCTION fn_track_user_login()
+CREATE OR REPLACE FUNCTION fn_track_user_login() --tested but need improvement
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "sec.user_login_audit" (
@@ -110,7 +103,7 @@ EXECUTE FUNCTION fn_track_user_login();
                                                                                                                                                       
 */
 -- IMPLEMENTATION OF HISTORY VERSIONING TABLE FROM MSSQL BUT FOR POSTEGRESQL 
-CREATE OR REPLACE PROCEDURE sp_change_password(
+CREATE OR REPLACE PROCEDURE sp_change_password( --tested
     _user_id INT,
     _new_hashed_password TEXT
 )
@@ -137,7 +130,8 @@ BEGIN
 
     BEGIN 
         UPDATE "hr.users"
-        SET hashed_password = _new_hashed_password
+        SET hashed_password = _new_hashed_password,
+            password = _new_hashed_password
         WHERE id = _user_id;
 
         -- Insert the new password into the password history table
@@ -148,7 +142,7 @@ BEGIN
             _new_hashed_password, 
             CURRENT_TIMESTAMP, 
             CASE 
-                WHEN (SELECT utp FROM hr.users WHERE id = _user_id) = 'F' 
+                WHEN (SELECT utp FROM "hr.users" WHERE id = _user_id) = 'F' 
                 THEN CURRENT_TIMESTAMP + INTERVAL '6 months' 
                 ELSE CURRENT_TIMESTAMP + INTERVAL '100 years'
             END

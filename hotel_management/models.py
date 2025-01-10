@@ -73,7 +73,7 @@ class Room(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     room_number = models.IntegerField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    condition = models.IntegerField()  # 0 - available, 1 - dirty, 2 - maintenance
+    condition = models.IntegerField()  # 0 - available, 1 - occuppied, 2 - dirty, 3- maintenance
 
     class Meta:
         db_table = 'room_management.room'

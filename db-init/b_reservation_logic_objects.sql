@@ -370,9 +370,9 @@ BEGIN
         );
     END IF;
 
-    IF NEW.status IN ('C') THEN
+    IF NEW.status IN ('C', 'P') THEN
         UPDATE "room_management.room"
-        SET condition = 1 -- 0 indicates BEING USED
+        SET condition = 1 -- 1 indicates BEING USED
         WHERE id IN (
             SELECT room_id -- Associated rooms are updated in one operation within the trigger
             FROM "reserves.room_reservation"
