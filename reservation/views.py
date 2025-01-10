@@ -101,7 +101,7 @@ def confirm_reservation(request):
             # Chamar o procedimento no banco de dados
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    CALL create_reservation(%s, %s, %s, %s, %s);
+                    CALL sp_create_reservation(%s, %s, %s, %s, %s);
                 """, [user_id, room_id, checkin, checkout, guests])
 
             return redirect('my_reservations')
@@ -169,15 +169,24 @@ def season_list(request):
     # Sort seasons based on the sort parameter
     seasons = seasons.order_by(sort)
 
-    # Passing context to the template
+    # Adjust context to display the month/day format
     context = {
-        'seasons': seasons,
+        'seasons': [
+            {
+                'id': season.id,
+                'descriptive': season.get_descriptive_display(),
+                'begin': f"{season.begin_month}/{season.begin_day}",
+                'end': f"{season.end_month}/{season.end_day}",
+                'rate': season.rate,
+            }
+            for season in seasons
+        ],
         'query': query,
         'sort': sort.lstrip('-'),  
         'order': order,
-
     }
     return render(request, 'seasons/seasons_list.html', context)
+
 
 def season_form(request, season_id=None):
     if season_id:
@@ -191,7 +200,6 @@ def season_form(request, season_id=None):
         form = SeasonForm(request.POST, instance=season)
         if form.is_valid():
             new_season = form.save(commit=False)
-
             new_season.save()
             messages.success(request, f"{'Temporada adicionada' if season is None else 'Temporada atualizada'} com sucesso!")
             return redirect('seasons_list')

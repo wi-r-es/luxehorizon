@@ -34,6 +34,7 @@ services:
       python manage.py generate_default_roomtypes &&
       python manage.py init_db && 
       python manage.py load_sql_logic_objs &&
+      python manage.py init_seasons &&
       python manage.py runserver 0.0.0.0:8000"
     restart: always
     volumes:

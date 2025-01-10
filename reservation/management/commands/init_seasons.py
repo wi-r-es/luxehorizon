@@ -22,7 +22,7 @@ class Command(BaseCommand):
                     'descriptive': Season.LOW,
                     'begin_month': 1,
                     'begin_day': 1,
-                    'end_month': 3,
+                    'end_month': 5,
                     'end_day': 31,
                     'rate': 75.00
                 },
@@ -33,8 +33,17 @@ class Command(BaseCommand):
                     'end_month': 12,
                     'end_day': 31,
                     'rate': 200.00
+                },
+                {
+                    'descriptive': Season.MIDLOW,
+                    'begin_month': 9,
+                    'begin_day': 1,
+                    'end_month': 12,
+                    'end_day': 19,
+                    'rate': 100.00
                 }
             ]
+
 
             created_seasons = []
             for season_data in seasons_data:

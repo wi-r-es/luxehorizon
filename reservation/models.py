@@ -3,50 +3,67 @@ from users.models import User
 from hotel_management.models import Room
 
 class Season(models.Model):
-    HIGH = 'A'
-    LOW = 'B'
+    HIGH = 'H'
+    LOW = 'L'
     FESTIVAL = 'F'
-    
+    MIDLOW = 'M'
+
     SEASON_DESCRIPTIVE_CHOICES = [
         (HIGH, 'High'),
         (LOW, 'Low'),
+        (MIDLOW, 'MidLow'),
         (FESTIVAL, 'Festival')
     ]
 
-    descriptive = models.TextField()
-    begin_date = models.DateField()
-    end_date = models.DateField()
+    descriptive = models.TextField(choices=SEASON_DESCRIPTIVE_CHOICES)
+    begin_month = models.IntegerField()
+    begin_day = models.IntegerField()
+    end_month = models.IntegerField()
+    end_day = models.IntegerField()
     rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        default=0.00, 
+        default=0.00,
         verbose_name="Season Rate"
     )
 
     class Meta:
         db_table = 'finance.season'
-        unique_together = ('descriptive', 'begin_date', 'end_date', 'rate')
 
     def __str__(self):
-        return f"Season {self.get_descriptive_display()} ({self.begin_date} to {self.end_date})"
+        return f"Season {self.get_descriptive_display()} ({self.begin_month}/{self.begin_day} to {self.end_month}/{self.end_day})"
+
+    def is_date_in_season(self, date_to_check):
+        """
+        Check if a given date is within the season's range.
+        """
+        start = date_to_check.replace(month=self.begin_month, day=self.begin_day)
+        end = date_to_check.replace(month=self.end_month, day=self.end_day)
+        if self.begin_month > self.end_month:
+            # Handle seasons that span across the year-end
+            end = end.replace(year=end.year + 1)
+        return start <= date_to_check <= end
+
 
 
 class Reservation(models.Model):
     PENDING = 'P'
     CONFIRMED = 'C'
     REJECTED = 'R'
+    CANCELED = 'CC'
     
     RESERVATION_STATUS_CHOICES = [
         (PENDING, 'Pending'),
         (CONFIRMED, 'Confirmed'),
         (REJECTED, 'Rejected'),
+        (CANCELED, 'Canceled'),
     ]
 
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations")
     begin_date = models.DateField()
     end_date = models.DateField()
     status = models.CharField(
-        max_length=1,
+        max_length=2,
         choices=RESERVATION_STATUS_CHOICES,
         default=PENDING,
         verbose_name="Reservation Status"

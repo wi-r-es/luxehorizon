@@ -168,22 +168,23 @@ $$;
    ██    ██   ██  ██████  ███████ ███████  ██████   ██████  ███████  ██████ ██   ██ ██   ██ ██   ████  ██████  ███████ ███████ 
                                                                                                                                
 */
-CREATE OR REPLACE FUNCTION trg_log_changes()
+CREATE OR REPLACE FUNCTION trg_log_changes() --TESTED
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO "sec.change_log" (table_name, operation_type, row_id, changed_by)
+    INSERT INTO "sec.change_log" (table_name, operation_type, row_id, changed_by, change_timestamp)
     VALUES (
         TG_TABLE_NAME,
         TG_OP,
         CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END,
-        SESSION_USER
+        SESSION_USER,
+        CURRENT_TIMESTAMP
     );
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 --Reservation Table Trigger
-DROP TRIGGER IF EXISTS trg_log_reservation_changes ON "reserves.reservation";
+DROP TRIGGER IF EXISTS trg_log_reservation_changes ON "reserves.reservation"; --TESTED
 CREATE TRIGGER trg_log_reservation_changes
 AFTER INSERT OR UPDATE OR DELETE ON "reserves.reservation"
 FOR EACH ROW
