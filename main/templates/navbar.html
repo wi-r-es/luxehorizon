@@ -38,16 +38,21 @@
                         <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
                             <i class="bi bi-person-circle mr-2"></i> Perfil
                         </a>
-                        {% if request.user.is_staff == False %}
+                        {% if request.user.role.perm_level == 444 %}
                             <a class="dropdown-item d-flex align-items-center" href="{% url 'my_reservations' %}">
                                 <i class="bi bi-journal-text mr-2"></i> Minhas Reservas
                             </a>
                         {% endif %}
-                        {% if request.user.is_staff %}
+                        {% if request.user.role.perm_level == 2 %}
                             <a class="dropdown-item d-flex align-items-center" href="{% url 'admin_dashboard' %}">
                                 <i class="bi bi-speedometer2 mr-2"></i> Painel de Controlo
                             </a>
                         {% endif %}
+                        <!-- {% if request.role.perm_level == 3 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'employe_dashboard' %}">
+                                <i class="bi bi-speedometer2 mr-2"></i> Serviços
+                            </a>
+                        {% endif %} -->
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{% url 'logout' %}" class="dropdown-item m-0 p-0">
                             {% csrf_token %}
