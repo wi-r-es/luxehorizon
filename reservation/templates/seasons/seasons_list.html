@@ -36,17 +36,17 @@
                         </a>
                     </th>
                     <th>
-                        <a href="?q={{ query }}&sort=begin_date&order={% if sort == 'begin_date' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                        <a href="?q={{ query }}&sort=begin_month&order={% if sort == 'begin_month' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             Data de Início
-                            {% if sort == 'begin_date' %}
+                            {% if sort == 'begin_month' %}
                             <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}" aria-hidden="true"></i>
                             {% endif %}
                         </a>
                     </th>
                     <th>
-                        <a href="?q={{ query }}&sort=end_date&order={% if sort == 'end_date' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                        <a href="?q={{ query }}&sort=end_month&order={% if sort == 'end_month' and order == 'asc' %}desc{% else %}asc{% endif %}">
                             Data de Fim
-                            {% if sort == 'end_date' %}
+                            {% if sort == 'end_month' %}
                             <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}" aria-hidden="true"></i>
                             {% endif %}
                         </a>
@@ -59,6 +59,7 @@
                             {% endif %}
                         </a>
                     </th>
+                    
                     <th class="text-center">Actions</th>
                 </tr>
             </thead>

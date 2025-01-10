@@ -15,7 +15,7 @@
         {% csrf_token %}
 
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-8">
                 <div class="form-group">
                     <label for="id_description">Descrição</label>
                     {{ form.descriptive }}
@@ -23,20 +23,32 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label for="id_begin_date">Data de Início</label>
-                    {{ form.begin_date }}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="id_end_date">Data de Fim</label>
-                    {{ form.end_date }}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
                     <label for="id_rate">Variação</label>
                     {{ form.rate }}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="id_begin_day">Dia de Início</label>
+                    {{ form.begin_day }}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="id_begin_month">Mês de Início</label>
+                    {{ form.begin_month }}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="id_end_day">Dia de Fim</label>
+                    {{ form.end_day }}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="id_end_month">Mês de Fim</label>
+                    {{ form.end_month }}
                 </div>
             </div>
         </div>
