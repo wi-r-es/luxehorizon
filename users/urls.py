@@ -5,7 +5,7 @@ from .views import CustomLoginView, register, CustomLogoutView, profile_view, up
 
 urlpatterns = [
     path('', views.users_list, name='users_list'),
-    path('user/add/', views.users_form, name='users_add'),
+    path('user/add/', register, name='users_add'),
     path('user/edit/<int:user_id>/', views.users_form, name='users_edit'),
     path('user/delete/<int:user_id>/', views.delete_user, name='delete_user'),
     path('login/', CustomLoginView.as_view(), name='login'),
