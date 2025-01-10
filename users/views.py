@@ -40,50 +40,83 @@ class RegisterForm(forms.Form):
 
         return cleaned_data
     
-def register(request):
+def register_or_edit_user(request, user_id=None):
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+        operation = "editar"
+    else:
+        user = None
+        operation = "adicionar"
+
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
             try:
-                # Collect form data
+                # Dados do formulário
                 first_name = form.cleaned_data['first_name']
                 last_name = form.cleaned_data['last_name']
                 email = form.cleaned_data['email']
-                password = form.cleaned_data['password']
                 nif = form.cleaned_data['nif']
                 phone = form.cleaned_data['phone']
                 address = form.cleaned_data.get('full_address', '')
                 postal_code = form.cleaned_data.get('postal_code', '')
                 city = form.cleaned_data.get('city', '')
-                hashed_password = hash_password(password)  # Custom hashing function
-                utp = 'C'  # Default user type
-                social_sec = None  # Default as None
 
-                # Call the PostgreSQL procedure
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        CALL sp_register_user(
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                        )
-                    """, [
-                        first_name, last_name, email, hashed_password, nif, phone, 
-                        address, postal_code, city, utp, social_sec, True, False, False
-                    ])
-                
-                messages.success(request, "Registration successful!")
-                return redirect('login')
+                if operation == "adicionar":
+                    password = form.cleaned_data['password']
+                    hashed_password = hash_password(password)
+
+                    # Criar novo utilizador
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            CALL sp_register_user(
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            )
+                        """, [
+                            first_name, last_name, email, hashed_password, nif, phone, 
+                            address, postal_code, city, 'C', None, True, False, False
+                        ])
+                else:
+                    # Atualizar utilizador existente
+                    user.first_name = first_name
+                    user.last_name = last_name
+                    user.email = email
+                    user.nif = nif
+                    user.phone = phone
+                    user.full_address = address
+                    user.postal_code = postal_code
+                    user.city = city
+                    user.save()
+
+                messages.success(
+                    request,
+                    f"{'Utilizador adicionado com sucesso!' if operation == 'adicionar' else 'Utilizador atualizado com sucesso!'}"
+                )
+                return redirect('users_list')
 
             except Exception as e:
-                # Log the error if needed
-                messages.error(request, f"An error occurred: {str(e)}")
+                messages.error(request, f"Ocorreu um erro: {str(e)}")
         else:
-            messages.error(request, "Please correct the errors below.")
-    
+            messages.error(request, "Por favor, corrija os erros abaixo.")
     else:
-        form = RegisterForm()
+        # Pré-popular o formulário no modo de edição
+        initial_data = {
+            'first_name': user.first_name if user else '',
+            'last_name': user.last_name if user else '',
+            'email': user.email if user else '',
+            'nif': user.nif if user else '',
+            'phone': user.phone if user else '',
+            'full_address': user.full_address if user else '',
+            'postal_code': user.postal_code if user else '',
+            'city': user.city if user else '',
+        }
+        form = RegisterForm(initial=initial_data)
 
-    return render(request, 'users/register.html', {'form': form})
-
+    return render(request, 'users/users_form.html', {
+        'form': form,
+        'operation': operation,
+        'user': user,
+    })
 
 class CustomLoginView(LoginView):
     form_class = CustomLoginForm
