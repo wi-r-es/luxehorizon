@@ -4,3 +4,5 @@ TUDO O QUE FOI FEITO COM PROCEDURES E FUNCIONA
 -- Register
 -- Create Hotel
 -- Create Room
+-- Create Season // não foi por procedures
+-- Update Season // não foi por procedures
