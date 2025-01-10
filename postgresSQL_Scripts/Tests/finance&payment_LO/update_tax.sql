@@ -12,10 +12,10 @@ BEGIN
         CALL sp_update_tax(_season_id, _new_tax);
 
         -- Verify the tax value is updated
-        SELECT TAX
+        SELECT rate
         INTO updated_tax
-        FROM "finance.price_per_season"
-        WHERE season_id = _season_id;
+        FROM "finance.season"
+        WHERE id = _season_id;
 
         IF updated_tax = _new_tax THEN
             result := 'OK';
@@ -30,4 +30,8 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 --Test invocation
-SELECT TEST_update_tax(1, 0.15); 
+SELECT TEST_update_tax(1, 100); 
+
+
+
+

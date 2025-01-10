@@ -171,35 +171,35 @@ EXECUTE FUNCTION trg_update_reservation_status_on_payment();
 ███████ ██      ███████  ██████  ██      ██████  ██   ██    ██    ███████ ███████    ██    ██   ██ ██   ██ 
                                                                                                            
 */
-CREATE OR REPLACE PROCEDURE sp_update_tax(
+CREATE OR REPLACE PROCEDURE sp_update_tax( --tested 
     _season_id INT,
     _new_tax FLOAT
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    _existing_tax FLOAT;
+    _existing_rate FLOAT;
     msg TEXT;
     content TEXT;
     hint TEXT;
 BEGIN
-    SELECT TAX
-    INTO _existing_tax
-    FROM "finance.price_per_season"
-    WHERE season_id = _season_id;
+    SELECT rate
+    INTO _existing_rate
+    FROM "finance.season"
+    WHERE id = _season_id;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Season id % does not exist in PRICE_PER_SEASON.', _season_id;
+        RAISE EXCEPTION 'Season id % does not exist in season ', _season_id;
     END IF;
 
-    IF _new_tax < 0 OR _new_tax > 1.0 THEN
+    IF _new_tax < 0 OR _new_tax > 499.99 THEN
         RAISE EXCEPTION 'The new tax value % is invalid. It must be between 0 and 100.', _new_tax;
     END IF;
 
     BEGIN
-        UPDATE "finance.price_per_season"
-        SET TAX = _new_tax
-        WHERE season_id = _season_id;
+        UPDATE "finance.season"
+        SET rate = _new_tax
+        WHERE id = _season_id;
 
         RAISE NOTICE 'Tax for Season id % updated successfully to %.', _season_id, _new_tax;
     EXCEPTION WHEN OTHERS THEN
