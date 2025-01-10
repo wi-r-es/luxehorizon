@@ -1,0 +1,142 @@
+{% extends "layouts/base_with_sidebar_employee.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">Calendário</h2>
+
+    <div class="d-flex justify-content-center align-items-center mb-4">
+        <button id="prev-month" class="btn btn-outline-primary me-3">
+            <i class="bi bi-chevron-left"></i> Anterior
+        </button>
+        <span id="month-year" class="h4 mx-3">{{ current_month_name }} {{ current_year }}</span>
+        <button id="next-month" class="btn btn-outline-primary ms-3">
+            Próximo <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-muted">Dom</th>
+                    <th>Seg</th>
+                    <th>Ter</th>
+                    <th>Qua</th>
+                    <th>Qui</th>
+                    <th>Sex</th>
+                    <th>Sáb</th>
+                </tr>
+            </thead>
+            <tbody id="calendar-body">
+                {% for week in calendar %}
+                <tr>
+                    {% for day in week %}
+                        <td>
+                            {% if day %}
+                                <a href="#" class="btn btn-outline-primary rounded-circle">{{ day }}</a>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Definir a variável para o mês e ano atuais
+    let currentMonth = {{ current_month|add:"-1" }}; // O mês será zero indexado, ou seja, Janeiro é 0, Fevereiro é 1, etc.
+    let currentYear = {{ current_year }};
+
+    // Função para gerar o calendário
+    function generateCalendar(month, year) {
+        let firstDay = new Date(year, month, 1);
+        let lastDay = new Date(year, month + 1, 0);
+        let calendar = [];
+        let week = [];
+        
+        // Preencher com dias em branco até o primeiro dia do mês
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            week.push(null);
+        }
+
+        // Preencher o mês com os dias reais
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            week.push(i);
+
+            // Se for sábado, adicionar a semana e começar uma nova
+            if (week.length === 7) {
+                calendar.push(week);
+                week = [];
+            }
+        }
+
+        // Se a última semana não tiver 7 dias, preencher com nulls
+        if (week.length > 0) {
+            while (week.length < 7) {
+                week.push(null);
+            }
+            calendar.push(week);
+        }
+
+        return calendar;
+    }
+
+    // Atualizar a interface do calendário
+    function updateCalendar() {
+        let calendarBody = document.getElementById("calendar-body");
+        let monthYearLabel = document.getElementById("month-year");
+
+        // Gerar calendário com base no mês e ano atuais
+        let calendar = generateCalendar(currentMonth, currentYear);
+        let calendarHTML = "";
+
+        // Montar o calendário
+        for (let i = 0; i < calendar.length; i++) {
+            let week = calendar[i];
+            calendarHTML += "<tr>";
+            for (let j = 0; j < week.length; j++) {
+                let day = week[j];
+                if (day) {
+                    calendarHTML += `<td><a href="#" class="btn btn-outline-primary rounded-circle">${day}</a></td>`;
+                } else {
+                    calendarHTML += "<td><span></span></td>";
+                }
+            }
+            calendarHTML += "</tr>";
+        }
+
+        calendarBody.innerHTML = calendarHTML;
+        monthYearLabel.innerText = `${monthNames[currentMonth]} ${currentYear}`;
+    }
+
+    // Meses do ano
+    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+    // Navegação para o mês anterior
+    document.getElementById("prev-month").addEventListener("click", function() {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        updateCalendar();
+    });
+
+    // Navegação para o próximo mês
+    document.getElementById("next-month").addEventListener("click", function() {
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        updateCalendar();
+    });
+
+    // Inicializar o calendário
+    updateCalendar();
+</script>
+{% endblock %}
