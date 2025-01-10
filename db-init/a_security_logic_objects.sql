@@ -107,7 +107,7 @@ EXECUTE FUNCTION fn_track_user_login();
                                                                                                                                                       
 */
 -- IMPLEMENTATION OF HISTORY VERSIONING TABLE FROM MSSQL BUT FOR POSTEGRESQL 
-CREATE OR REPLACE PROCEDURE sp_change_password(
+CREATE OR REPLACE PROCEDURE sp_change_password( --tested
     _user_id INT,
     _new_hashed_password TEXT
 )
@@ -133,8 +133,9 @@ BEGIN
     END IF;
 
     BEGIN 
-        UPDATE public."hr.users"
-        SET hashed_password = _new_hashed_password
+        UPDATE "hr.users"
+        SET hashed_password = _new_hashed_password,
+            password = _new_hashed_password
         WHERE id = _user_id;
 
         -- Insert the new password into the password history table
