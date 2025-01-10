@@ -32,6 +32,9 @@ def my_reservations(request):
         # Calcular o número de noites
         nights = (reservation.end_date - reservation.begin_date).days
 
+        print(reservation.begin_date)
+        print(reservation.end_date)
+        
         reservation_list.append({
             'id': reservation.id,
             'title': room_details,

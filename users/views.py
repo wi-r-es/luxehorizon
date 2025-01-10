@@ -175,7 +175,19 @@ def update_profile(request):
     if request.method == 'POST':
         user = request.user
 
-        # Update basic information
+        # Validação da Password Antiga
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('password')
+        if old_password and new_password:  # Se o utilizador pretende mudar a password
+            if not user.check_password(old_password):
+                messages.error(request, "A password antiga está incorreta.")
+                return render(request, 'users/profile.html', {'user': user})
+            if old_password == new_password:
+                messages.error(request, "A nova password não pode ser igual à antiga.")
+                return render(request, 'users/profile.html', {'user': user})
+            user.set_password(new_password)  # Define a nova password
+
+        # Atualizar informações básicas do utilizador
         user.first_name = request.POST.get('first_name')
         user.last_name = request.POST.get('last_name')
         user.nif = request.POST.get('nif')
@@ -184,16 +196,16 @@ def update_profile(request):
         user.postal_code = request.POST.get('postal_code')
         user.city = request.POST.get('city')
 
-        # Update switches (is_staff and is_active)
-        user.is_staff = 'flexSwitchCheckChecked' in request.POST  # Switch checked = True
-        user.is_active = 'flexSwitchCheckDefault' in request.POST  # Switch checked = True
+        # Atualizar switches (is_staff e is_active)
+        # user.is_staff = 'flexSwitchCheckChecked' in request.POST  # Switch checked = True
+        # user.is_active = 'flexSwitchCheckDefault' in request.POST  # Switch checked = True
 
-        # If employee, update additional fields
+        # Atualizar informações de Employee
         if hasattr(user, 'employee'):
             user.employee.social_security = request.POST.get('social_security')
 
-        user.save()  # Save changes
-        messages.success(request, "Profile updated successfully.")
+        user.save()  # Salvar alterações
+        messages.success(request, "Perfil atualizado com sucesso.")
         return redirect('/')
 
     return render(request, 'users/profile.html', {'user': request.user})

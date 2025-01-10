@@ -9,6 +9,14 @@
     <form method="post" action="{% url 'update_profile' %}">
         {% csrf_token %}
         
+        {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- Basic Information Section -->
         <div class="row">
             <div class="col-12">
@@ -43,6 +51,24 @@
                 </div>
             </div>
 
+            <!-- Password Antiga-->
+            <div class="col-md-6">
+                <div class="form-group
+                ">
+                    <label for="id_old_password">Password Antiga</label>
+                    <input type="password" class="form-control" id="id_old_password" name="old_password">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="col-md-6">
+                <div class="form-group
+                ">
+                    <label for="id_password">Nova Password</label>
+                    <input type="password" class="form-control" id="id_password" name="password">
+                </div>
+            </div>
+
             <!-- Telefone e Morada -->
             <div class="col-md-6">
                 <div class="form-group">
@@ -72,18 +98,6 @@
             </div>
         </div>
         
-        <!-- Opções de Perfil -->
-        <h5>Op&ccedil;&otilde;es de Perfil</h5>
-
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" name="flexSwitchCheckChecked" {% if user.is_staff %}checked{% endif %}>
-            <label class="form-check-label ms-2" for="flexSwitchCheckChecked">Staff</label>
-        </div>
-
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" name="flexSwitchCheckDefault" {% if user.is_active %}checked{% endif %}>
-            <label class="form-check-label ms-2" for="flexSwitchCheckDefault">Ativo</label>
-        </div>
 
         <!-- Action Buttons Section -->
         <div class="mt-3">
