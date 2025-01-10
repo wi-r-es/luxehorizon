@@ -1,13 +1,14 @@
 {% extends "layouts/base_with_sidebar.html" %}
 
-{% block title %}hot&eacute;is{% endblock %}
+{% block title %}Hotéis{% endblock %}
 
 {% block main_content %}
-<div class="container my-4">
-    <h1>Hot&eacute;is</h1>
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="container my-5">
+    <h1 class="text-center mb-4">Hotéis</h1>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <!-- Add Button -->
-        <a href="{% url 'hotel_add' %}" class="btn btn-primary">
+        <a href="{% url 'hotel_add' %}" class="btn btn-success btn-lg">
             <i class="bi bi-plus-circle"></i> Adicionar Hotel
         </a>
         
@@ -18,72 +19,52 @@
         </form>
     </div>
 
-    <!-- Bootstrap Table -->
+    <!-- Hotels Table -->
     <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
+        <table class="table table-bordered table-hover shadow-sm rounded">
+            <thead class="bg-dark text-light">
                 <tr>
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=h_name&order={% if sort == 'h_name' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                    <th class="text-center">
+                        <a href="?q={{ request.GET.q }}&sort=h_name&order={% if sort == 'h_name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
                             Nome
                             {% if sort == 'h_name' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                             {% endif %}
                         </a>
                     </th>
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=stars&order={% if sort == 'stars' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                    <th class="text-center">
+                        <a href="?q={{ request.GET.q }}&sort=stars&order={% if sort == 'stars' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
                             Estrelas
                             {% if sort == 'stars' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                             {% endif %}
                         </a>
                     </th>
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=city&order={% if sort == 'city' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                    <th class="text-center">
+                        <a href="?q={{ request.GET.q }}&sort=city&order={% if sort == 'city' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
                             Cidade
                             {% if sort == 'city' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                             {% endif %}
                         </a>
                     </th>
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=room_count&order={% if sort == 'room_count' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            N&#186; Quartos
+                    <th class="text-center">
+                        <a href="?q={{ request.GET.q }}&sort=room_count&order={% if sort == 'room_count' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
+                            Nº Quartos
                             {% if sort == 'room_count' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                             {% endif %}
                         </a>
                     </th>
-                    <th>
-                        <a href="?q={{ request.GET.q }}&sort=total_value&order={% if sort == 'total_value' and order == 'asc' %}desc{% else %}asc{% endif %}">
-                            Total de Fatura&ccedil;&atilde;o &#40;&#8364;&#41;
+                    <th class="text-center">
+                        <a href="?q={{ request.GET.q }}&sort=total_value&order={% if sort == 'total_value' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
+                            Faturação Total (€)
                             {% if sort == 'total_value' %}
-                                {% if order == 'asc' %}
-                                    <i class="bi bi-arrow-up"></i>
-                                {% else %}
-                                    <i class="bi bi-arrow-down"></i>
-                                {% endif %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                             {% endif %}
                         </a>
-                    </th>
-                    <th>A&ccedil;&otilde;es</th>                
+                    </th class="text-center">
+                    <th class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -93,16 +74,24 @@
                     <td class="text-center">{{ hotel.stars }}</td>
                     <td>{{ hotel.city }}</td>
                     <td class="text-center">{{ hotel.room_count }}</td>
-                    <td class="text-end">{{ hotel.total_value|default:0 }} &#8364;</td>
+                    <td class="text-end">{{ hotel.total_value|default:0 }} €</td>
                     <td class="text-center">
-                        <a href="{% url 'room_list' hotel.id %}" class="btn btn-sm btn-primary"><i class="bi bi-list"></i> Quartos</a>
-                        <a href="{% url 'hotel_edit' hotel.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar</a>
-                        <a href="{% url 'delete_hotel' hotel.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Apagar</a>
+                        <a href="{% url 'room_list' hotel.id %}" class="btn btn-sm btn-primary" title="Ver Quartos">
+                            <i class="bi bi-list"></i> Quartos
+                        </a>
+                        <a href="{% url 'hotel_edit' hotel.id %}" class="btn btn-sm btn-warning" title="Editar">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a href="{% url 'delete_hotel' hotel.id %}" class="btn btn-sm btn-danger" title="Apagar">
+                            <i class="bi bi-trash"></i> Apagar
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">N&atilde;o h&aacute; hot&eacute;is para mostrar.</td>
+                    <td colspan="6" class="text-center text-muted">
+                        Não há hotéis disponíveis para exibição.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
