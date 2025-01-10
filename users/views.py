@@ -14,6 +14,7 @@ from .forms import UserForm
 from django.db import connection
 from django.contrib.auth.hashers import make_password
 from django import forms
+from .models import AccPermission
 
 def hash_password(password):
     return make_password(password)
@@ -40,7 +41,85 @@ class RegisterForm(forms.Form):
 
         return cleaned_data
     
-def register_or_edit_user(request, user_id=None):
+def register_user(request, user_id=None):
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+        operation = "editar"
+    else:
+        user = None
+        operation = "adicionar"
+
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            try:
+                # Dados do formulário
+                first_name = form.cleaned_data['first_name']
+                last_name = form.cleaned_data['last_name']
+                email = form.cleaned_data['email']
+                nif = form.cleaned_data['nif']
+                phone = form.cleaned_data['phone']
+                address = form.cleaned_data.get('full_address', '')
+                postal_code = form.cleaned_data.get('postal_code', '')
+                city = form.cleaned_data.get('city', '')
+
+                if operation == "adicionar":
+                    password = form.cleaned_data['password']
+                    hashed_password = hash_password(password)
+
+                    # Criar novo utilizador
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            CALL sp_register_user(
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            )
+                        """, [
+                            first_name, last_name, email, hashed_password, nif, phone, 
+                            address, postal_code, city, 'C', None, True, False, False
+                        ])
+                else:
+                    # Atualizar utilizador existente
+                    user.first_name = first_name
+                    user.last_name = last_name
+                    user.email = email
+                    user.nif = nif
+                    user.phone = phone
+                    user.full_address = address
+                    user.postal_code = postal_code
+                    user.city = city
+                    user.save()
+
+                messages.success(
+                    request,
+                    f"{'Utilizador adicionado com sucesso!' if operation == 'adicionar' else 'Utilizador atualizado com sucesso!'}"
+                )
+                return redirect('../../')
+
+            except Exception as e:
+                messages.error(request, f"Ocorreu um erro: {str(e)}")
+        else:
+            messages.error(request, "Por favor, corrija os erros abaixo.")
+    else:
+        # Pré-popular o formulário no modo de edição
+        initial_data = {
+            'first_name': user.first_name if user else '',
+            'last_name': user.last_name if user else '',
+            'email': user.email if user else '',
+            'nif': user.nif if user else '',
+            'phone': user.phone if user else '',
+            'full_address': user.full_address if user else '',
+            'postal_code': user.postal_code if user else '',
+            'city': user.city if user else '',
+        }
+        form = RegisterForm(initial=initial_data)
+
+    return render(request, 'users/register.html', {
+        'form': form,
+        'operation': operation,
+        'user': user,
+    })
+
+def edit_user(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)
         operation = "editar"
@@ -243,10 +322,23 @@ def users_form(request, user_id=None):
         if form.is_valid():
             new_user = form.save(commit=False)
 
-            # Atualizar os campos is_staff e is_active
-            new_user.is_staff = 'is_staff_switch' in request.POST
-            new_user.is_active = 'is_active_switch' in request.POST
+            # Atualizar o role do usuário com base na combobox
+            role_id = request.POST.get('role')
+            if role_id:
+                try:
+                    role = AccPermission.objects.get(id=role_id)
+                    new_user.role = role
+                    new_user.is_staff = role.perm_level >= 2  # Defina a lógica para is_staff
+                except AccPermission.DoesNotExist:
+                    messages.error(request, "Permissão selecionada é inválida.")
+                    return render(request, 'users/users_form.html', {
+                        'form': form,
+                        'operation': operation,
+                        'user': user or {},
+                        'roles': AccPermission.objects.all(),
+                    })
 
+            new_user.is_active = 'is_active_switch' in request.POST
             new_user.save()
             messages.success(request, f"{'Utilizador adicionado' if user is None else 'Utilizador atualizado'} com sucesso!")
             return redirect('users_list')
@@ -255,12 +347,14 @@ def users_form(request, user_id=None):
     else:
         form = UserForm(instance=user)
 
+    roles = AccPermission.objects.all()
+
     return render(request, 'users/users_form.html', {
         'form': form,
         'operation': operation,
         'user': user or {},
+        'roles': roles,
     })
-
 
 # Apagar utilizador
 def delete_user(request, user_id):
