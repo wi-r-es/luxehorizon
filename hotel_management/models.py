@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Func
 from hotel_management.fields import PostgreSQLEnumField
+from users.models import User
 
 class RoomViewType(models.TextChoices):
     POOL = 'P', 'Piscina'
@@ -95,3 +96,14 @@ class RoomCommodity(models.Model):
 
     def __str__(self):
         return f"{self.commodity} in Room {self.room.room_number} of {self.room.hotel.h_name}"
+    
+
+class HotelEmployees(models.Model):
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name="employeeshotel")
+    employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="hotelemployees")
+
+    class Meta:
+        db_table = 'management.hotel_employee'
+
+    def __str__(self):
+        return f"Employee ID {self.employee.id} works at {self.hotel.id} ID"

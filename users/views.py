@@ -15,6 +15,7 @@ from django.db import connection
 from django.contrib.auth.hashers import make_password
 from django import forms
 from .models import AccPermission
+from hotel_management.models import HotelEmployees
 
 def hash_password(password):
     return make_password(password)
@@ -77,6 +78,7 @@ def register_user(request, user_id=None):
                             first_name, last_name, email, hashed_password, nif, phone, 
                             address, postal_code, city, 'C', None, True, False, False
                         ])
+
                 else:
                     # Atualizar utilizador existente
                     user.first_name = first_name
@@ -343,6 +345,13 @@ def users_form(request, user_id=None):
 
             new_user.is_active = 'is_active_switch' in request.POST
             new_user.save()
+
+            # Retrieve the ID of the newly created or updated user
+            new_user_id = new_user.id
+
+            # Additional logic for staff users
+            #if new_user.is_staff:
+                #new_entry = HotelEmployees.create(form.hotel_id, new_user_id) #TODO
 
             # Exibir alerta Sweetify
             sweetify.success(
