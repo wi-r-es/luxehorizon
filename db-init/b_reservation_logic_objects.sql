@@ -74,7 +74,7 @@ BEGIN
     END IF;
 
     -- Calculate final price
-    total_price := (nights * (room_base_price + season_rate)) * guests;
+    total_price := (nights * (room_base_price + season_rate));
 
     -- Create new reservation
     INSERT INTO "reserves.reservation" (client_id, begin_date, end_date, status, total_value, season_id)
