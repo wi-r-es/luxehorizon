@@ -31,7 +31,7 @@ Then run:
 
 `docker-compose up --build`
 
-## To restart the build the database has to be cleared, to do so
+## To restart the build and clear the database
 `docker-compose down -v`
 
 
