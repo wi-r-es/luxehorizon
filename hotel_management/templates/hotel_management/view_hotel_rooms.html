@@ -41,20 +41,20 @@
                         <h5 class="card-text mb-3">Quarto Nº {{ room.room_number }}</h5>
                         <p class="card-text mb-2">
                             <strong>Capacidade:</strong> 
-                            {% if room.capacity == "S" %}
+                            {% if room.room_type.room_capacity == "Single" %}
                                 Single
-                            {% elif room.capacity == "D" %}
+                            {% elif room.room_type.room_capacity == "Double" %}
                                 Double
-                            {% elif room.capacity == "T" %}
+                            {% elif room.room_type.room_capacity == "Triple" %}
                                 Triple
-                            {% elif room.capacity == "Q" %}
+                            {% elif room.room_type.room_capacity == "Quad" %}
                                 Quad
-                            {% elif room.capacity == "K" %}
+                            {% elif room.room_type.room_capacity == "King" %}
                                 King
-                            {% elif room.capacity == "F" %}
+                            {% elif room.room_type.room_capacity == "Family" %}
                                 Family
                             {% else %}
-                                {{ room.capacity }} pessoas
+                                {{ room.room_type.room_capacity }} 
                             {% endif %}
                         </p>
                         <p class="card-text mb-2">

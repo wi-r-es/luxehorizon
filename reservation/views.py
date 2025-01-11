@@ -5,6 +5,9 @@ from django.http import JsonResponse
 from .models import Reservation, RoomReservation, Guest, Season
 from hotel_management.models import Room
 from .forms import SeasonForm
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
+from django.db.models import Q  
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -50,6 +53,85 @@ def my_reservations(request):
 
     return render(request, 'reservations/my_reservations.html', {'reservations': reservation_list})
 
+def all_reservations(request):
+    # Fetch all reservations
+    reservations = Reservation.objects.prefetch_related('room_reservations__room__hotel')
+
+    # Filtrar por pesquisa (se fornecido na requisição)
+    search_query = request.GET.get('q', '')
+    if search_query:
+        reservations = reservations.filter(
+            Q(status__icontains=search_query) |
+            Q(begin_date__icontains=search_query) |
+            Q(end_date__icontains=search_query) |
+            Q(room_reservations__room__hotel__h_name__icontains=search_query) |
+            Q(room_reservations__room__room_number__icontains=search_query) |
+            Q(client__first_name__icontains=search_query) |
+            Q(client__last_name__icontains=search_query) |
+            Q(client__nif__icontains=search_query)
+        ).distinct()
+
+    # Filtrar por mês (se fornecido na requisição)
+    selected_month = request.GET.get('month')
+    if selected_month:
+        reservations = reservations.filter(begin_date__month=selected_month)
+
+    # Obter lista de meses disponíveis
+    months = (
+        reservations.annotate(month=TruncMonth('begin_date'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
+    # Preparar lista de meses para a combobox
+    month_choices = [{'value': m['month'].month, 'name': m['month'].strftime('%B'), 'count': m['count']} for m in months]
+
+    reservation_list = []
+
+    for reservation in reservations:
+        # Verificar associações com quartos
+        if reservation.room_reservations.exists():
+            room_details = ", ".join(
+                [f"Room {rr.room.room_number} at {rr.room.hotel.h_name}" for rr in reservation.room_reservations.all()]
+            )
+            first_room_reservation = reservation.room_reservations.first()
+            hotel_rating = first_room_reservation.room.hotel.stars if first_room_reservation else 0
+        else:
+            room_details = "No rooms associated"
+            hotel_rating = 0
+
+        try:
+            nights = (reservation.end_date - reservation.begin_date).days
+        except (TypeError, AttributeError):
+            nights = 0
+
+        reservation_list.append({
+            'id': reservation.id,
+            'client': reservation.client.first_name + ' ' + reservation.client.last_name,
+            'nif': reservation.client.nif,
+            'title': room_details,
+            'check_in': reservation.begin_date,
+            'check_out': reservation.end_date,
+            'nights': nights,
+            'price': reservation.total_value,
+            'tax_inclusive': True,
+            'hotel_rating': hotel_rating,
+            'status': reservation.status,
+        })
+
+    has_actions = any(reservation['status'] != 'CC' for reservation in reservation_list)
+
+    return render(
+        request,
+        'reservations/list_resertions_employee.html',
+        {
+            'reservations': reservation_list,
+            'has_actions': has_actions,
+            'months': month_choices,
+            'selected_month': selected_month,
+        }
+    )
 
 def reservation_page(request, room_id):
 
@@ -109,26 +191,6 @@ def confirm_reservation(request):
 
             return redirect('my_reservations')
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
-
-def cancel_reservation(request):
-    if request.method == "POST":
-        try:
-            # Extrair o ID da reserva do formulário
-            reservation_id = int(request.POST.get("reservation_id"))
-
-            # Chamar o procedimento armazenado no banco de dados
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    CALL sp_cancel_reservation(%s);
-                """, [reservation_id])
-
-            # Redirecionar para a página de reservas com uma mensagem de sucesso
-            return redirect('my_reservations')
-        except Exception as e:
-            # Caso ocorra um erro, renderizar a página com uma mensagem de erro
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
