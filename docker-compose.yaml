@@ -24,11 +24,13 @@ services:
     restart: always
     volumes:
       - mongodb_data:/data/db
+      - ./config/mongod.conf:/etc/mongod.conf
     ports:
       - "27018:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    command: ["mongod", "--config", "/etc/mongod.conf"]
     healthcheck:
       disable: true
 
