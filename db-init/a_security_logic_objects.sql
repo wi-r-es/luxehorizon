@@ -76,7 +76,7 @@ EXECUTE FUNCTION trg_insert_user_password_dictionary();
                                                                                                                                                                    
 */
 -- Log user login
-CREATE OR REPLACE FUNCTION fn_track_user_login() --tested but need improvement
+CREATE OR REPLACE FUNCTION fn_track_user_login() --tested 
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO "sec.user_login_audit" (
@@ -89,9 +89,10 @@ END;
 $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_track_user_login ON "hr.users";
 CREATE TRIGGER trg_track_user_login
-AFTER INSERT OR UPDATE ON "hr.users"
+AFTER UPDATE
+ON "hr.users"
 FOR EACH ROW
-WHEN (NEW.utp = 'F') -- Optional: for employees only
+WHEN (OLD.last_login IS DISTINCT FROM NEW.last_login)
 EXECUTE FUNCTION fn_track_user_login();
 
 /*

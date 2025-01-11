@@ -238,7 +238,7 @@ def reservation_page(request, room_id):
     }
     return render(request, 'reservations/reservation_page.html', context)
 
-def confirm_reservation(request):
+def confirm_reservation(request): #TODO
     if request.method == "POST":
         try:
             # Receber os parâmetros do corpo da requisição

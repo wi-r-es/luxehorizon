@@ -4,13 +4,16 @@ from hotel_management.fields import PostgreSQLEnumField
 
 class RoomViewType(models.TextChoices):
     POOL = 'P', 'Piscina'
-    SEA = 'M', 'Mar'
-    MOUNTAIN = 'S', 'Serra'
+    MOUNTAIN = 'M', 'MOUNTAIN'
     NONE = 'N', 'Nenhuma'
+    CITY = 'C', 'CITY'
+    OCEAN = 'O', 'OCEAN'
+    GARDEN = 'G', 'GARDEN'
 
 class RoomQualityType(models.TextChoices):
-    LOW = 'B', 'Baixa'
-    SUPERIOR = 'S', 'Superior'
+    STANDARD = 'S', 'STANDARD'
+    DELUXE = 'D', 'DELUXE'
+    PREMIUM = 'P', 'PREMIUM'
 
 class CapacityType(models.TextChoices):
     SINGLE = 'S', 'Single'
