@@ -6,3 +6,4 @@ pymongo==4.10.1
 python-decouple==3.8
 sqlparse==0.5.1
 typing_extensions==4.12.2
+sweetify==2.3.1
