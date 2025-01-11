@@ -6,3 +6,8 @@ TUDO O QUE FOI FEITO COM PROCEDURES E FUNCIONA
 -- Create Room
 -- Create Season // não foi por procedures
 -- Update Season // não foi por procedures
+-- Create Commodity
+-- Update Commodity
+-- Delete Commodity
+-- Link Commodity With Room
+-- Create Room
