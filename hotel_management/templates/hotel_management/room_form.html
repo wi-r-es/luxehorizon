@@ -18,49 +18,81 @@
         {% endif %}
     </h1>
     
-    <form method="post" novalidate>
-        {% csrf_token %}
-        
-        <!-- Número do Quarto -->
-        <div class="mb-3">
-            {{ form.room_number.label_tag }}
-            {{ form.room_number }}
-            {% if form.room_number.errors %}
-                <div class="text-danger">{{ form.room_number.errors.0 }}</div>
-            {% endif %}
-        </div>
+    <div class="row mt-4">
+        <!-- Formulário -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+                
+            <div class="col-md-6">
+                <!-- Número do Quarto -->
+                <div class="mb-3">
+                    {{ form.room_number.label_tag }}
+                    {{ form.room_number }}
+                    {% if form.room_number.errors %}
+                        <div class="text-danger">{{ form.room_number.errors.0 }}</div>
+                    {% endif %}
+                </div>
 
-        <!-- Tipo do Quarto -->
-        <div class="mb-3">
-            {{ form.room_type.label_tag }}
-            {{ form.room_type }}
-            {% if form.room_type.errors %}
-                <div class="text-danger">{{ form.room_type.errors.0 }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- Preço Base -->
-        <div class="mb-3">
-            {{ form.base_price.label_tag }}
-            {{ form.base_price }}
-            {% if form.base_price.errors %}
-                <div class="text-danger">{{ form.base_price.errors.0 }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- Estado do Quarto -->
-        <div class="mb-3">
-            {{ form.condition.label_tag }}
-            {{ form.condition }}
-            {% if form.condition.errors %}
-                <div class="text-danger">{{ form.condition.errors.0 }}</div>
-            {% endif %}
-        </div>
-        
-        <button type="submit" class="btn btn-primary">
-            {% if room.id %}Guardar Alterações{% else %}Guardar{% endif %}
-        </button>
-        <a href="{% url 'room_list' hotel.id %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+                <!-- Tipo do Quarto -->
+                <div class="mb-3">
+                    {{ form.room_type.label_tag }}
+                    {{ form.room_type }}
+                    {% if form.room_type.errors %}
+                        <div class="text-danger">{{ form.room_type.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Preço Base -->
+                <div class="mb-3">
+                    {{ form.base_price.label_tag }}
+                    {{ form.base_price }}
+                    {% if form.base_price.errors %}
+                        <div class="text-danger">{{ form.base_price.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Estado do Quarto -->
+                <div class="mb-3">
+                    {{ form.condition.label_tag }}
+                    {{ form.condition }}
+                    {% if form.condition.errors %}
+                        <div class="text-danger">{{ form.condition.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Lista de Comodidades -->
+            <div class="col-md-6">
+                <div>
+                    <h3>Comodidades Disponíveis</h3>
+                    <div class="row">
+                        {% for commodity in commodities %}
+                        <div class="col-6 col-sm-4 col-md-6 col-lg-4 mb-2">
+                            <input 
+                                type="checkbox" 
+                                name="commodities" 
+                                value="{{ commodity.id }}" 
+                                id="commodity_{{ commodity.id }}" 
+                                class="form-check-input"
+                                {% if commodity.id in selected_commodities %}checked{% endif %}
+                            >
+                            <label for="commodity_{{ commodity.id }}" class="form-check-label">
+                                {{ commodity.details }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if commodities_errors %}
+                        <div class="text-danger">{{ commodities_errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Save and Cancel Buttons -->
+            <button type="submit" class="btn btn-primary">
+                {% if room.id %}Guardar Alterações{% else %}Guardar{% endif %}
+            </button>
+            <a href="{% url 'room_list' hotel.id %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
 </div>
 {% endblock %}

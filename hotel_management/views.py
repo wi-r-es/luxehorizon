@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Hotel, Room, Commodity
+from .models import Hotel, Room, Commodity, RoomCommodity, RoomType
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
 from .forms import HotelForm, RoomForm, CommodityForm
 from django.contrib import messages
@@ -113,7 +113,7 @@ def room_list(request, hotel_id):
 
     if type_name:   
         rooms = rooms.filter(type__type_initials__icontains=type_name)   
-
+    
     return render(request, 'hotel_management/hotel_rooms.html', {
         'hotel': hotel,
         'rooms': rooms,
@@ -122,20 +122,46 @@ def room_list(request, hotel_id):
 def create_room(request, hotel_id):
     # Obtém o hotel ou retorna 404 se não existir
     hotel = get_object_or_404(Hotel, id=hotel_id)
+    commodities = Commodity.objects.all()
 
     if request.method == 'POST':
         form = RoomForm(request.POST)
+        selected_commodities = request.POST.getlist('commodities')
+
         if form.is_valid():
-            # Cria um quarto sem salvar imediatamente no banco
-            new_room = form.save(commit=False)
-            # Associa o quarto ao hotel
-            new_room.hotel = hotel
-            new_room.save()
+            room_type_id = request.POST.get('room_type')
+            room_type = RoomType.objects.get(id=room_type_id).type_initials or ''
+            room_number = form.cleaned_data.get('room_number')
+            base_price = form.cleaned_data.get('base_price')
+            condition = form.cleaned_data.get('condition')
+
+            # Creating a new commodity
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    CALL sp_add_room(%s,%s,%s,%s,%s);
+                """, [hotel_id, room_type, room_number, base_price, condition])
+            messages.success(request, "Comodidade adicionada com sucesso!")
+
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT MAX(id) FROM "room_management.room";')
+                room_id = cursor.fetchone()[0]
+
+                print('room_id')
+                print(room_id)
+            
+            with connection.cursor() as cursor:
+                for commodity_id in selected_commodities:
+                    cursor.execute("""
+                        CALL sp_link_commodity_to_room(%s, %s);
+                    """, [room_id, commodity_id])
+
             return redirect('room_list', hotel_id=hotel.id)  # Redireciona para a lista de quartos
     else:
         form = RoomForm()
 
     return render(request, 'hotel_management/room_form.html', {
+        'commodities': commodities,
+        'selected_commodities': [],
         'form': form,
         'hotel': hotel,
         'room': None,  # Define como None, já que o quarto ainda não existe
@@ -143,15 +169,31 @@ def create_room(request, hotel_id):
 
 def edit_room(request, hotel_id, room_id):
     room = get_object_or_404(Room, id=room_id, hotel_id=hotel_id)
+    commodities = Commodity.objects.all()
+    selected_commodities = list(RoomCommodity.objects.filter(room_id=room_id).values_list('commodity_id', flat=True)) or []
+
     if request.method == 'POST':
         form = RoomForm(request.POST, instance=room)
+        selected_commodities = request.POST.getlist('commodities')
+
         if form.is_valid():
-            form.save()
+            updated_room = form.save()
+
+            RoomCommodity.objects.filter(room_id=updated_room.id).delete()
+
+            room_id = updated_room.id
+            with connection.cursor() as cursor:
+                for commodity_id in selected_commodities:
+                    cursor.execute("""
+                        CALL sp_link_commodity_to_room(%s, %s);
+                    """, [room_id, commodity_id])
             return redirect('room_list', hotel_id=hotel_id)
     else:
         form = RoomForm(instance=room)
 
     return render(request, 'hotel_management/room_form.html', {
+        'commodities': commodities,
+        'selected_commodities': selected_commodities,
         'form': form,
         'hotel': room.hotel,  
         'room': room,
@@ -373,7 +415,6 @@ def commodity_form(request, commodity_id=None):
     })
 
 def commodity_delete(request, commodity_id):
-    commodity = get_object_or_404(Commodity, id=commodity_id)
     with connection.cursor() as cursor:
         cursor.execute("""
             CALL sp_delete_commodity(%s);
