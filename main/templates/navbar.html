@@ -49,7 +49,7 @@
                             </a>
                         {% endif %}
                         {% if request.user.role.perm_level == 3 %}
-                            <a class="dropdown-item d-flex align-items-center" href="{% url 'employee_dash' %}">
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'list_reservations_employee' %}">
                                 <i class="bi bi-speedometer2 mr-2"></i> Serviços
                             </a>
                         {% endif %}
