@@ -96,9 +96,9 @@ WSGI_APPLICATION = 'luxehorizon.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'NAME': config('POSTGRES_DB'),
+        'USER': config('POSTGRES_USER'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
         'HOST': config('DB_HOST', 'db'),  # Use 'db' as default from .env
         'PORT': config('DB_PORT','5432'),
         'OPTIONS': {

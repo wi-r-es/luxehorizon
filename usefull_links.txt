@@ -1,0 +1,3 @@
+
+#Sweet alerts
+https://github.com/Atrox/sweetify-django?tab=readme-ov-file  

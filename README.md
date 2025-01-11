@@ -1,6 +1,7 @@
 
 # ON HOST MACHINE
 ## First run
+NEED to set DH_HOST on .env
 python run.py
 
 ## Consequent runs

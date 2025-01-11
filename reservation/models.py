@@ -99,9 +99,9 @@ class Guest(models.Model):
     full_name = models.CharField(max_length=100)
     cc_pass = models.CharField(max_length=20, verbose_name="CC or Passport")
     phone = models.CharField(max_length=20)
-    full_address = models.CharField(max_length=160)
-    postal_code = models.CharField(max_length=8)
-    city = models.CharField(max_length=100)
+    full_address = models.CharField(max_length=160, null=True)
+    postal_code = models.CharField(max_length=8, null=True)
+    city = models.CharField(max_length=100, null=True)
 
     class Meta:
         db_table = 'reserves.guest'
