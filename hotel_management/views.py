@@ -130,7 +130,7 @@ def create_room(request, hotel_id):
 
         if form.is_valid():
             room_type_id = request.POST.get('room_type')
-            room_type = RoomType.objects.get(id=room_type_id).type_initials or ''
+            room_type = RoomType.objects.get(id=room_type_id).type_initials or ''   #TODO
             room_number = form.cleaned_data.get('room_number')
             base_price = form.cleaned_data.get('base_price')
             condition = form.cleaned_data.get('condition')

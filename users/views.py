@@ -309,6 +309,8 @@ def users_list(request):
         'order': order,
     })
 
+import sweetify
+
 def users_form(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)
@@ -329,6 +331,7 @@ def users_form(request, user_id=None):
                     role = AccPermission.objects.get(id=role_id)
                     new_user.role = role
                     new_user.is_staff = role.perm_level >= 2  # Defina a lógica para is_staff
+                    new_user.utp = 'F' if role.perm_level <= 3 else 'C'
                 except AccPermission.DoesNotExist:
                     messages.error(request, "Permissão selecionada é inválida.")
                     return render(request, 'users/users_form.html', {
@@ -340,7 +343,14 @@ def users_form(request, user_id=None):
 
             new_user.is_active = 'is_active_switch' in request.POST
             new_user.save()
-            messages.success(request, f"{'Utilizador adicionado' if user is None else 'Utilizador atualizado'} com sucesso!")
+
+            # Exibir alerta Sweetify
+            sweetify.success(
+                request,
+                f"{'Utilizador adicionado' if user is None else 'Utilizador atualizado'} com sucesso!",
+                text="Os dados foram salvos corretamente.",
+                button="Fechar" # persistent nao fecha o alerta
+            )
             return redirect('users_list')
         else:
             messages.error(request, "Erro ao processar o formulário.")

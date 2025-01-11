@@ -33,8 +33,8 @@ class RoomForm(forms.ModelForm):
         widgets = {
             'condition': forms.Select(choices=[
                 (0, 'Disponível'),          # Available
-                (1, 'Sujo'),               # Dirty
-                (2, 'Em Manutenção'),      # Under Maintenance
+                (2, 'Sujo'),               # Dirty
+                (3, 'Em Manutenção'),      # Under Maintenance
             ]),
         }
         labels = {

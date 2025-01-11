@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'hotel_management',
     'reservation',
     'dashboard',
+    'sweetify',
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -57,6 +58,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # This is used for static files during development (optional)
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# possible options: 'sweetalert', 'sweetalert2' - default is 'sweetalert2'
+SWEETIFY_SWEETALERT_LIBRARY = 'sweetalert2'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -96,9 +100,9 @@ WSGI_APPLICATION = 'luxehorizon.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'NAME': config('POSTGRES_DB'),
+        'USER': config('POSTGRES_USER'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
         'HOST': config('DB_HOST', 'db'),  # Use 'db' as default from .env
         'PORT': config('DB_PORT','5432'),
         'OPTIONS': {
