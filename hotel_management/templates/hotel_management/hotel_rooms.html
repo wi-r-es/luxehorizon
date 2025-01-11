@@ -43,9 +43,9 @@
                     <td class="text-center">
                         {% if room.condition == 0 %}
                             <span class="text-success">Disponível</span>
-                        {% elif room.condition == 1 %}
-                            <span class="text-warning">Sujo</span>
                         {% elif room.condition == 2 %}
+                            <span class="text-warning">Sujo</span>
+                        {% elif room.condition == 3 %}
                             <span class="text-danger">Em Manutenção</span>
                         {% else %}
                             <span class="text-muted">Desconhecido</span>

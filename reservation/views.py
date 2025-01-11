@@ -165,12 +165,12 @@ def payment(request):
             reservation_id = int(request.POST.get("reservation_id"))
             
             # Atualizar o campo invoice_status para acionar o trigger
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    UPDATE "finance.invoice"
-                    SET invoice_status = TRUE
-                    WHERE reservation_id = %s;
-                """, [reservation_id])
+            #with connection.cursor() as cursor:
+            #    cursor.execute("""
+            #       UPDATE "finance.invoice"
+            #        SET invoice_status = TRUE
+            #        WHERE reservation_id = %s;
+            #    """, [reservation_id])
 
             with connection.cursor() as cursor:
                 cursor.execute('SELECT id FROM "finance.invoice" WHERE reservation_id = %s;', [reservation_id])
@@ -247,6 +247,8 @@ def confirm_reservation(request):
             checkin = request.POST.get("checkin")  # Formato: YYYY-MM-DD
             checkout = request.POST.get("checkout")  # Formato: YYYY-MM-DD
             guests = int(request.POST.get("guests"))
+
+            # verificacao se quer pagar agora ou depois
             payment_method_id = 1 # Método de pagamento padrão (credit card)
 
             # Chamar o procedimento no banco de dados
