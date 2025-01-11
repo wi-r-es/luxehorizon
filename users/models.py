@@ -90,13 +90,6 @@ class Client(User):
     class Meta:
         db_table = "hr.u_client"
 
-class Employee(User):
-   # role = models.ForeignKey(AccPermission, on_delete=models.CASCADE)
-    #social_security = models.IntegerField()
-
-    class Meta:
-        db_table = "hr.u_employee"
-
 class UserPasswordsDictionary(models.Model):
     id = models.AutoField(primary_key=True) 
     user = models.ForeignKey(
