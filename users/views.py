@@ -15,7 +15,8 @@ from django.db import connection
 from django.contrib.auth.hashers import make_password
 from django import forms
 from .models import AccPermission
-from hotel_management.models import HotelEmployees
+from hotel_management.models import HotelEmployees, Hotel
+import sweetify
 
 def hash_password(password):
     return make_password(password)
@@ -311,8 +312,6 @@ def users_list(request):
         'order': order,
     })
 
-import sweetify
-
 def users_form(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)
@@ -348,11 +347,27 @@ def users_form(request, user_id=None):
 
             # Retrieve the ID of the newly created or updated user
             new_user_id = new_user.id
+            hotel_id = request.POST.get('hotel')
 
-            # Additional logic for staff users
-            #if new_user.is_staff:
-                #new_entry = HotelEmployees.create(form.hotel_id, new_user_id) #TODO
-
+            # Adicionar na tabela management.hotel_employee se perm_level != 4
+            if role.perm_level != 444:
+                hotel_id = request.POST.get('hotel')
+                if hotel_id:
+                    try:
+                        hotel = Hotel.objects.get(id=hotel_id)
+                        # Inserir o usuário na tabela management.hotel_employee
+                        HotelEmployees.objects.create(hotel=hotel, employee=new_user)
+                    except Hotel.DoesNotExist:
+                        sweetify.error(request, "Hotel selecionado é inválido.")
+                        messages.error(request, "Hotel selecionado é inválido.")
+                        return render(request, 'users/users_form.html', {
+                            'form': form,
+                            'operation': operation,
+                            'user': user or {},
+                            'roles': AccPermission.objects.all(),
+                            'hotels': Hotel.objects.all(),
+                        })
+                    
             # Exibir alerta Sweetify
             sweetify.success(
                 request,
@@ -367,12 +382,14 @@ def users_form(request, user_id=None):
         form = UserForm(instance=user)
 
     roles = AccPermission.objects.all()
+    hotels = Hotel.objects.all()
 
     return render(request, 'users/users_form.html', {
         'form': form,
         'operation': operation,
         'user': user or {},
         'roles': roles,
+        'hotels': hotels,
     })
 
 # Apagar utilizador

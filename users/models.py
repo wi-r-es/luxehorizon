@@ -5,10 +5,10 @@ from django.utils import timezone
 
 class AccPermission(models.Model):
     PERMISSION_LEVELS = (
-        (0, 'None'),
-        (1, 'Admin'),
+        (1, 'Administrator'),
         (2, 'Manager'),
-        (3, 'Funcionário'),
+        (3, 'Employee'),
+        (444, 'None'),
     )
 
     perm_description = models.CharField(max_length=100)

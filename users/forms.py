@@ -65,7 +65,7 @@ class UserForm(forms.ModelForm):
         model = User
         fields = [
             'first_name', 'last_name', 'email', 'phone', 'nif',
-            'full_address', 'postal_code', 'city','is_staff', 'is_active',
+            'full_address', 'postal_code', 'city', 'social_security', 'is_staff', 'is_active',
         ]
         labels = {
             'first_name': 'Primeiro Nome',
@@ -76,6 +76,7 @@ class UserForm(forms.ModelForm):
             'full_address': 'Morada',
             'postal_code': 'Código Postal',
             'city': 'Cidade',
+            'social_security': 'Segurança Social',
         }
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primeiro Nome'}),
@@ -86,4 +87,5 @@ class UserForm(forms.ModelForm):
             'full_address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Morada'}),
             'postal_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código Postal'}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Cidade'}),
+            'social_security': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segurança Social'}),
         }

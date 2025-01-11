@@ -67,18 +67,47 @@
 
         <h5>Opções de Perfil</h5>
 
-        <div class="form-group">
-            <label for="id_role">Role</label>
-            <select class="form-control" id="id_role" name="role">
-                {% for role in roles %}
-                    <option value="{{ role.id }}" 
-                        {% if user.role.id == role.id %}selected{% endif %}>
-                        {{ role.perm_description }}
-                    </option>
-                {% endfor %}
-            </select>
+        <!-- Lista de Roles e Hotéis -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="id_role">Role</label>
+                    <select class="form-control" id="id_role" name="role">
+                        {% for role in roles %}
+                            {% if role.perm_description != "Administrator" %}
+                                <option value="{{ role.id }}" 
+                                    {% if user.role.id == role.id %}selected{% endif %} data-perm-level="{{ role.perm_level }}">
+                                    {{ role.perm_description }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6" id="hotel-container">
+                <div class="form-group">
+                    <label for="id_hotel">Hotéis Disponíveis</label>
+                    <select class="form-control" id="id_hotel" name="hotel">
+                        {% for hotel in hotels %}
+                            <option value="{{ hotel.id }}" data-perm-level="{{ hotel.perm_level }}">
+                                {{ hotel.h_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
         </div>
-        
+
+        <!-- Social Security Number conditionally displayed -->
+        <div class="row" id="social-security-container" {% if user.role.perm_level == 444 %}style="display:none;"{% endif %}>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="id_ss">Nº Segurança Social</label>
+                    {{ form.social_security }}
+                </div>
+            </div>
+        </div>
+
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="is_active_switch" name="is_active_switch" 
                    {% if form.instance.is_active %}checked{% endif %}>
@@ -96,4 +125,30 @@
         </div>
     </form>
 </div>
+
+<script type="text/javascript" src="ejs_production.js"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('id_role');
+        const hotelContainer = document.getElementById('hotel-container');
+        
+        // Function to show/hide hotel options based on the selected role's perm_level
+        function toggleHotelVisibility() {
+            const selectedRole = roleSelect.options[roleSelect.selectedIndex];
+            const permLevel = selectedRole.getAttribute('data-perm-level');
+
+            if (permLevel === '444') {
+                hotelContainer.style.display = 'none'; // Hide hotel selection if perm_level is 444
+                document.getElementById('social-security-container').style.display = 'none'; // Hide Social Security if perm_level is 444
+            } else {
+                hotelContainer.style.display = 'block'; // Show hotel selection if perm_level is not 444
+                document.getElementById('social-security-container').style.display = 'block'; // Show Social Security
+            }
+        }
+
+        // Run the function on page load and when the role is changed
+        toggleHotelVisibility();
+        roleSelect.addEventListener('change', toggleHotelVisibility);
+    });
+</script>
 {% endblock %}

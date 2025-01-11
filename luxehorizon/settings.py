@@ -116,7 +116,7 @@ MONGO_DB_URI = (
     + config("MONGO_INITDB_ROOT_USERNAME")
     + ":"
     + config("MONGO_INITDB_ROOT_PASSWORD")
-    + "@mongodb:27017"
+    + "@localhost:27017"
 )
 MONGO_DB_NAME = "luxehorizon"
 
