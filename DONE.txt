@@ -11,3 +11,10 @@ TUDO O QUE FOI FEITO COM PROCEDURES E FUNCIONA
 -- Delete Commodity
 -- Link Commodity With Room
 -- Create Room
+
+-- Dashboard Employee:
+- Lista Reservas
+- Pagamentos com procedure
+- Check-in com procedure
+- Check-out com procedure
+- Pagamentos, check-in e check-out usam os procedures para inserir no finance.invoice e finance.payments, atualizam o estado e condições corretamente
