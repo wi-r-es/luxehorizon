@@ -120,7 +120,7 @@ def all_reservations(request):
             'status': reservation.status,
         })
 
-    has_actions = any(reservation['status'] != 'CC' for reservation in reservation_list)
+    has_actions = any(reservation['status'] not in ['CC', 'CO'] for reservation in reservation_list)
 
     return render(
         request,
@@ -132,6 +132,71 @@ def all_reservations(request):
             'selected_month': selected_month,
         }
     )
+
+def reservation_details(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+    nights = (reservation.end_date - reservation.begin_date).days
+    return render(request, 'reservations/check_in.html', {'reservation': reservation, 'nights': nights})
+
+def check_in(request, reservation_id):
+    print(reservation_id)
+            
+    # Chamar o procedimento armazenado no banco de dados
+    with connection.cursor() as cursor:
+        cursor.execute("""CALL sp_check_in(%s);""", [reservation_id])
+
+    # Redirecionar para a página de reservas com uma mensagem de sucesso
+    return redirect('list_reservations_employee')
+
+def check_out(request, reservation_id):
+    print(reservation_id)
+            
+    # Chamar o procedimento armazenado no banco de dados
+    with connection.cursor() as cursor:
+        cursor.execute("""CALL sp_check_out(%s);""", [reservation_id])
+
+    # Redirecionar para a página de reservas com uma mensagem de sucesso
+    return redirect('list_reservations_employee')
+
+def payment(request):
+    if request.method == "POST":
+        try:
+            # Extrair o ID da reserva do formulário
+            reservation_id = int(request.POST.get("reservation_id"))
+            
+            # Atualizar o campo invoice_status para acionar o trigger
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE "finance.invoice"
+                    SET invoice_status = TRUE
+                    WHERE reservation_id = %s;
+                """, [reservation_id])
+
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT id FROM "finance.invoice" WHERE reservation_id = %s;', [reservation_id])
+                _invoice_id = cursor.fetchone()[0]
+                print('_invoice_id', _invoice_id)
+
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT total_value FROM "reserves.reservation" WHERE id = %s;', [reservation_id])
+                _payment_amount = cursor.fetchone()[0]
+                print('_payment_amount', _payment_amount)
+
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT payment_method_id FROM "finance.invoice" WHERE id = %s;', [_invoice_id])
+                _payment_method_id = cursor.fetchone()[0]
+                print('_payment_method_id', _payment_method_id)
+
+            with connection.cursor() as cursor:
+                cursor.execute("""CALL sp_add_payment(%s, %s, %s);""", [_invoice_id, _payment_amount, _payment_method_id])
+            
+            # Redirecionar para a página de reservas com uma mensagem de sucesso
+            return redirect('list_reservations_employee')
+        except Exception as e:
+            # Caso ocorra um erro, renderizar a página com uma mensagem de erro
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
 
 def reservation_page(request, room_id):
 
@@ -182,12 +247,20 @@ def confirm_reservation(request):
             checkin = request.POST.get("checkin")  # Formato: YYYY-MM-DD
             checkout = request.POST.get("checkout")  # Formato: YYYY-MM-DD
             guests = int(request.POST.get("guests"))
+            payment_method_id = 1 # Método de pagamento padrão (credit card)
 
             # Chamar o procedimento no banco de dados
             with connection.cursor() as cursor:
                 cursor.execute("""
                     CALL sp_create_reservation(%s, %s, %s, %s, %s);
                 """, [user_id, room_id, checkin, checkout, guests])
+
+                cursor.execute('SELECT MAX(id) FROM "reserves.reservation"')
+                reservation_id = cursor.fetchone()[0]
+
+                cursor.execute("""
+                    CALL sp_generate_invoice(%s, %s, %s);
+                """, [reservation_id, payment_method_id, None])
 
             return redirect('my_reservations')
         except Exception as e:

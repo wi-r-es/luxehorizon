@@ -57,15 +57,20 @@
                     <td class="text-end">{{ reservation.price }} €</td>
                     <td class="text-center">{{ reservation.hotel_rating }}</td>
                     <td class="text-center">{{ reservation.status }}</td>
-                    {% if has_actions and reservation.status != 'CC' %}
+                    {% if has_actions and reservation.status != 'CC' or reservation.status != 'CO' %}
                 <td class="text-center">
                     {% if reservation.status == 'P' %}
-                    <a href="" class="btn btn-sm btn-primary" title="Detalhes">
-                        <i class="bi bi-info-circle"></i> Check-in
+                    <a href="{% url 'reservation_details' reservation.id %}" class="btn btn-sm btn-primary" title="Detalhes">
+                        <i class="bi bi-info-circle"></i> Pagar
                     </a>
                     {% endif %}
                     {% if reservation.status == 'C' %}
-                    <a href="" class="btn btn-sm btn-warning" title="Editar">
+                    <a href="{% url 'check_in' reservation.id %}" class="btn btn-sm btn-primary" title="Check-in">
+                        <i class="bi bi-info-circle"></i> Check-in
+                    </a>
+                    {% endif %}
+                    {% if reservation.status == 'CI' %}
+                    <a href="{% url 'check_out' reservation.id %}" class="btn btn-sm btn-warning" title="Check-out">
                         <i class="bi bi-pencil"></i> Check-out
                     </a>
                     {% endif %}

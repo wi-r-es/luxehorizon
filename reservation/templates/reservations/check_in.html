@@ -1,0 +1,70 @@
+{% extends "layouts/base_with_sidebar_employee.html" %}
+
+{% block title %}Detalhes da Reserva{% endblock %}
+
+{% block main_content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Detalhes da Reserva</h1>
+
+    <div class="card shadow-sm p-4">
+        <h3 class="card-title mb-3">Reserva #{{ reservation.id }}</h3>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Hotel</h5>
+                <p>{{ reservation.room_reservations.first.room.hotel.h_name }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Room Number</h5>
+                <p>{{ reservation.room_reservations.first.room.room_number }}</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Cliente</h5>
+                <p>{{ reservation.client.first_name }} {{ reservation.client.last_name }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Contacto</h5>
+                <p>{{ reservation.client.phone }}</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Número de Hóspedes</h5>
+                <p>{{ reservation.guests }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Preço por Noite</h5>
+                <p>{{ reservation.room_reservations.first.room.base_price }} € * ( {{ nights }} noites * {{ reservation.guests }} hóspedes )</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Data de Check-in</h5>
+                <p>{{ reservation.begin_date|date:"d/m/Y" }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Data de Check-out</h5>
+                <p>{{ reservation.end_date|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h5>Total a Pagar</h5>
+                <p><strong>{{ reservation.total_value }} €</strong></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <form method="post" action="{% url 'payment' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-credit-card"></i> Pagar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
