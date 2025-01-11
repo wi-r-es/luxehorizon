@@ -18,6 +18,20 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:6
+    container_name: luxe_horizon_mongodb
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    healthcheck:
+      disable: true
+
   backend:
     build: 
       context: .
@@ -52,4 +66,5 @@ services:
 volumes:
   static_volume:
   data:
+  mongodb_data:
   #db-init:

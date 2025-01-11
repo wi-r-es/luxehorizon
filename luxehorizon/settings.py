@@ -107,6 +107,14 @@ DATABASES = {
     }
 }
 
+MONGO_DB_URI = (
+    "mongodb://"
+    + config("MONGO_INITDB_ROOT_USERNAME")
+    + ":"
+    + config("MONGO_INITDB_ROOT_PASSWORD")
+    + "@mongodb:27017"
+)
+MONGO_DB_NAME = "luxehorizon"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
