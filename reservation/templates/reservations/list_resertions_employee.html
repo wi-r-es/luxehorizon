@@ -31,12 +31,13 @@
         <table class="table table-bordered table-hover shadow-sm rounded">
             <thead class="bg-dark text-light">
                 <tr>
+                    <th class="text-center">Nome</th>
+                    <th class="text-center">NIF</th>
                     <th class="text-center">Título</th>
                     <th class="text-center">Check-in</th>
                     <th class="text-center">Check-out</th>
                     <th class="text-center">Noites</th>
                     <th class="text-center">Preço (€)</th>
-                    <th class="text-center">Não Reembolsável</th>
                     <th class="text-center">Classificação do Hotel</th>
                     <th class="text-center">Estado</th>
                     {% if has_actions %}
@@ -47,18 +48,13 @@
             <tbody>
                 {% for reservation in reservations %}
                 <tr>
+                    <td>{{ reservation.client }}</td>
+                    <td class="text-center">{{ reservation.nif }}</td>
                     <td>{{ reservation.title }}</td>
-                    <td class="text-center">{{ reservation.check_in }}</td>
-                    <td class="text-center">{{ reservation.check_out }}</td>
+                    <td class="text-center">{{ reservation.check_in|date:"d/m/Y" }}</td>
+                    <td class="text-center">{{ reservation.check_out|date:"d/m/Y" }}</td>
                     <td class="text-center">{{ reservation.nights }}</td>
                     <td class="text-end">{{ reservation.price }} €</td>
-                    <td class="text-center">
-                        {% if reservation.non_refundable %}
-                            <i class="bi bi-x-circle text-danger"></i>
-                        {% else %}
-                            <i class="bi bi-check-circle text-success"></i>
-                        {% endif %}
-                    </td>
                     <td class="text-center">{{ reservation.hotel_rating }}</td>
                     <td class="text-center">{{ reservation.status }}</td>
                     {% if has_actions and reservation.status != 'CC' %}

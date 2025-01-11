@@ -7,6 +7,7 @@ from hotel_management.models import Room
 from .forms import SeasonForm
 from django.db.models.functions import TruncMonth
 from django.db.models import Count
+from django.db.models import Q  
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -56,6 +57,20 @@ def all_reservations(request):
     # Fetch all reservations
     reservations = Reservation.objects.prefetch_related('room_reservations__room__hotel')
 
+    # Filtrar por pesquisa (se fornecido na requisição)
+    search_query = request.GET.get('q', '')
+    if search_query:
+        reservations = reservations.filter(
+            Q(status__icontains=search_query) |
+            Q(begin_date__icontains=search_query) |
+            Q(end_date__icontains=search_query) |
+            Q(room_reservations__room__hotel__h_name__icontains=search_query) |
+            Q(room_reservations__room__room_number__icontains=search_query) |
+            Q(client__first_name__icontains=search_query) |
+            Q(client__last_name__icontains=search_query) |
+            Q(client__nif__icontains=search_query)
+        ).distinct()
+
     # Filtrar por mês (se fornecido na requisição)
     selected_month = request.GET.get('month')
     if selected_month:
@@ -75,8 +90,6 @@ def all_reservations(request):
     reservation_list = []
 
     for reservation in reservations:
-        refundable = getattr(reservation, 'is_refundable', lambda: False)()
-
         # Verificar associações com quartos
         if reservation.room_reservations.exists():
             room_details = ", ".join(
@@ -95,13 +108,14 @@ def all_reservations(request):
 
         reservation_list.append({
             'id': reservation.id,
+            'client': reservation.client.first_name + ' ' + reservation.client.last_name,
+            'nif': reservation.client.nif,
             'title': room_details,
             'check_in': reservation.begin_date,
             'check_out': reservation.end_date,
             'nights': nights,
             'price': reservation.total_value,
             'tax_inclusive': True,
-            'non_refundable': not refundable,
             'hotel_rating': hotel_rating,
             'status': reservation.status,
         })
