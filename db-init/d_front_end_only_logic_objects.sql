@@ -7,21 +7,27 @@
  ██████  ███████    ██    ███████ ██   ██   ████   ██   ██ ██ ███████ ██   ██ ██████  ███████ ███████ ███████ ██   ██  ██████   ██████  ██      ██ ███████ 
                                                                                                                                                            
 */
-CREATE OR REPLACE FUNCTION fn_get_available_rooms(
+CREATE OR REPLACE FUNCTION fn_get_available_rooms( --wotking
     _begin_date DATE,
     _end_date DATE
 ) RETURNS TABLE (
-    room_id INT,
-    room_number INT,
-    hotel_id INT,
+    room_id BIGINT,          
+    room_number INT,         
+    hotel_id BIGINT,        
     base_price NUMERIC(10, 2),
     capacity "room_capacity_type"
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT r.id, r.room_number, r.hotel_id, r.base_price, r.capacity
+    SELECT 
+        r.id AS room_id, 
+        r.room_number, 
+        r.hotel_id, 
+        r.base_price, 
+        rt.room_capacity AS capacity
     FROM "room_management.room" r
-    WHERE r.condition = 0 
+    INNER JOIN "room_management.room_types" rt ON r.room_type_id = rt.id
+    WHERE r.condition = 0  -- Only available rooms
       AND NOT EXISTS (
           SELECT 1
           FROM "reserves.room_reservation" rr
@@ -33,6 +39,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
 /*
 ███████ ██ ███    ██ ██████          ██████  ███████ ███████ ███████ ██████  ██    ██  █████  ████████ ██  ██████  ███    ██         ██████  ██    ██         ██ ██████  
 ██      ██ ████   ██ ██   ██         ██   ██ ██      ██      ██      ██   ██ ██    ██ ██   ██    ██    ██ ██    ██ ████   ██         ██   ██  ██  ██          ██ ██   ██ 
@@ -41,15 +48,15 @@ $$ LANGUAGE plpgsql;
 ██      ██ ██   ████ ██████  ███████ ██   ██ ███████ ███████ ███████ ██   ██   ████   ██   ██    ██    ██  ██████  ██   ████ ███████ ██████     ██    ███████ ██ ██████  
                                                                                                                                                                          
 */
-CREATE OR REPLACE FUNCTION fn_find_reservation_by_id(
-    _reservation_id INT
+CREATE OR REPLACE FUNCTION fn_find_reservation_by_id( --working
+    _reservation_id BIGINT -
 ) RETURNS TABLE (
-    reservation_id INT,
-    client_id INT,
+    reservation_id BIGINT,       
+    client_id BIGINT,           
     begin_date DATE,
     end_date DATE,
     total_value NUMERIC(10, 2),
-    STATUS CHAR(2)
+    status VARCHAR(2)            
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -58,6 +65,7 @@ BEGIN
     WHERE r.id = _reservation_id;
 END;
 $$ LANGUAGE plpgsql;
+
 
 
 
