@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container"> 
+        <h1>Avaliaç&otilde;es do Hotel {{hotel_nome}}</h1>
+        
+        {% if reviews == empty %}
+            <div class="alert alert-warning" role="alert">
+                Nenhuma avaliaç&atilde;o encontrada.
+            </div>
+        {% else %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Data</th>
+                        <th>Avalia&ccedil;&atilde;o</th>
+                        <th>Coment&aacute;rio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                        <tr>
+                            <td>{{ review.nome }}</td>
+                            <td>{{ review.date }}</td>
+                            <td> 
+                                <div>{% for _ in "x"|rjust:review.rating %}⭐{% endfor %}</div>
+                                <div>({{review.rating}})</div>
+                            </td>
+                            <td>{{ review.review }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">
+                            <div class="center">
+                                M&eacute;dia: {{media}}
+                            </div>
+                        </td>
+                    </tr>
+            </table>
+        {% endif %}
+        <div class="center">
+            <button class="btn btn-primary" onclick="window.history.back()">Voltar</button>
+        </div>
+    </div>
+{% endblock %}

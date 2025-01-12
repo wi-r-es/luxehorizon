@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container my-5">
     <!-- My Reservations Section -->
-    <h2 class="mb-4">My Reservations</h2>
+    <h2 class="mb-4">As minhas reservas</h2>
     <div class="row">
         {% with 0 as active_count %}
         {% for reservation in reservations %}
@@ -31,7 +31,10 @@
                     </p>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="#" class="btn btn-primary btn-sm">View Room Details</a>
+                    <a href="#" class="btn btn-primary btn-sm">Ver Detalhes do Quarto</a>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'review:reservation_review' reservation_id=reservation.id %}" class="btn btn-info">Fazer Avalia&cedil;&atilde;o</a>
                 </div>
                 <div class="card-footer text-center">
                     <form method="POST" action="{% url 'cancel_reservation' %}" class="d-inline">

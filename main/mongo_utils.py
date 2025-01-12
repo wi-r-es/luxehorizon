@@ -3,7 +3,7 @@ from luxehorizon.db_mongo import db
 
 # Insere uma review na vase de dados
 def insert_review(user_id, hotel_id, reservation_id, rating, review_text):
-    collection = db['review']
+    collection = db['reviews']
 
     review_document = {
         "userId": user_id,
@@ -18,9 +18,14 @@ def insert_review(user_id, hotel_id, reservation_id, rating, review_text):
 
     return result.inserted_id
 
+def get_review_by_reservation_id(reservation_id):
+    collection = db['reviews']
+    review = collection.find_one({"reservationId": reservation_id})
+    return review
+
 # Atualiza uma review na base de dados
 def update_review(review_id, rating, review_text):
-    collection = db['review']
+    collection = db['reviews']
     review = collection.find_one({"_id": review_id})
 
     if review is None:
@@ -35,34 +40,57 @@ def update_review(review_id, rating, review_text):
 
 # Apaga uma review da base de dados
 def delete_review(review_id):
-    collection = db['review']
+    collection = db['reviews']
     result = collection.delete_one({"_id": review_id})
     
     return result.deleted_count > 0
 
 # retorna as reviews de um determinado hotel
 def get_hotel_reviews(hotel_id):
-    collection = db['review']
-    reviews = collection.find({"hotelId": hotel_id})
+    collection = db['reviews']
+    reviews = list(collection.find({"hotelId": hotel_id}))
     return reviews
 
 # devolve a review feita por um utilizador a uma reserva
 def get_reservation_review(reservation_id):
-    collection = db['review']
+    collection = db['reviews']
     review = collection.find_one({"reservationId": reservation_id})
     return review
 
 # calcula a média de reviews de um hotel
 def get_average_rating(hotel_id):
-    collection = db['review']
-    reviews = collection.find({"hotelId": hotel_id})
-    total_rating = 0
-    count = 0
-    for review in reviews:
-        total_rating += review['rating']
-        count += 1
-
-    if count == 0:
+    collection = db['reviews']
+    
+    pipeline = [
+        {"$match": {"hotelId": hotel_id}},  
+        {"$addFields": {
+            "rating": {"$toDouble": "$rating"} 
+        }},
+        {"$group": {
+            "_id": "$hotelId",
+            "average_rating": {"$avg": "$rating"}  
+        }}
+    ]
+    
+    result = list(collection.aggregate(pipeline))
+    
+    if result:
+        return result[0].get('average_rating', 0)
+    else:
         return 0
-
-    return total_rating / count
+    
+# retorna o número de reviews de um hotel
+def get_number_of_reviews(hotel_id):
+    collection = db['reviews']
+    
+    pipeline = [
+        {"$match": {"hotelId": hotel_id}},  
+        {"$count": "number_of_reviews"}
+    ]
+    
+    result = list(collection.aggregate(pipeline))
+    
+    if result:
+        return result[0].get('number_of_reviews', 0)
+    else:
+        return 0

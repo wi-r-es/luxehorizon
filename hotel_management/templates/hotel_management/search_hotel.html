@@ -94,7 +94,10 @@
                                 <div>
                                     <p class="card-text">A partir de: <strong>{{ hotel.min_price }}€</strong></p>
                                 </div>
-                                <a href="{% url 'search_rooms' %}?hotel_id={{ hotel.id }}&checkin={{ request.GET.checkin }}&checkout={{ request.GET.checkout }}&guests={{ request.GET.guests }}" class="btn btn-primary">Reservar</a>
+                                <div>
+                                    <a href="{% url 'review:hotel_reviews' hotel_id=hotel.id %}" class="btn btn-info">Avaliações ({{hotel.num_reviews}})</a>
+                                    <a href="{% url 'search_rooms' %}?hotel_id={{ hotel.id }}&checkin={{ request.GET.checkin }}&checkout={{ request.GET.checkout }}&guests={{ request.GET.guests }}" class="btn btn-primary">Reservar</a>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ from django.http import Http404
 from django.db.models import Min
 from django.db import connection
 from hotel_management.models import HotelEmployees, Hotel
+from main.mongo_utils import get_number_of_reviews
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -315,6 +316,11 @@ def search_results(request):
 
     # Debugging
     print("Query ORM:", hotels.query)
+
+    for hotel in hotels:
+        num_rev = get_number_of_reviews(hotel.id)
+        print("Num Reviews:", num_rev)
+        hotel.num_reviews = num_rev
 
     return render(request, 'hotel_management/search_hotel.html', {
         'hotels': hotels,

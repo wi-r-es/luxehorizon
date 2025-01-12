@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import logging
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'reservation',
     'dashboard',
     'sweetify',
+    'review',
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -184,5 +186,15 @@ LOGGING = {
     'root': {
         'handlers': ['console'],
         'level': 'DEBUG',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG', 
+        },
+        'pymongo': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
     },
 }
