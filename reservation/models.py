@@ -44,8 +44,6 @@ class Season(models.Model):
             end = end.replace(year=end.year + 1)
         return start <= date_to_check <= end
 
-
-
 class Reservation(models.Model):
     PENDING = 'P'
     CONFIRMED = 'C'

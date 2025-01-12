@@ -3,7 +3,6 @@ from django.utils import timezone
 from users.models import User
 from reservation.models import Reservation
 
-
 class PaymentMethod(models.Model):
     descriptive = models.CharField(max_length=100, unique=True)
 

@@ -56,15 +56,42 @@
         </div>
         <div class="row">
             <div class="col-md-12 text-center">
-                <form method="post" action="{% url 'payment' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-credit-card"></i> Pagar
-                    </button>
-                </form>
+                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                    <i class="bi bi-credit-card"></i> Pagar
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal para selecionar o método de pagamento -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Selecione o Método de Pagamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'payment' %}">
+                {% csrf_token %}
+                <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">Método de Pagamento</label>
+                        <select id="paymentMethod" name="payment_method_id" class="form-select" required>
+                            {% for method in payment_methods %}
+                                <option value="{{ method.id }}">{{ method.descriptive }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Confirmar Pagamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

@@ -9,6 +9,8 @@ from django.db.models.functions import TruncMonth
 from django.db.models import Count
 from django.db.models import Q
 from hotel_management.models import HotelEmployees, Hotel
+from billing.models import PaymentMethod
+import sweetify
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -144,42 +146,53 @@ def all_reservations(request):
 
 def reservation_details(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id)
+    payment_methods = PaymentMethod.objects.all()   
     nights = (reservation.end_date - reservation.begin_date).days
-    return render(request, 'reservations/payment.html', {'reservation': reservation, 'nights': nights})
+    return render(request, 'reservations/payment.html', {'reservation': reservation, 'payment_methods': payment_methods, 'nights': nights})
 
 def check_in(request, reservation_id):
-    print(reservation_id)
-            
-    # Chamar o procedimento armazenado no banco de dados
-    with connection.cursor() as cursor:
-        cursor.execute("""CALL sp_check_in(%s);""", [reservation_id])
+    try:        
+        # Chamar o procedimento armazenado no banco de dados
+        with connection.cursor() as cursor:
+            cursor.execute("""CALL sp_check_in(%s);""", [reservation_id])
 
-    # Redirecionar para a página de reservas com uma mensagem de sucesso
-    return redirect('list_reservations_employee')
+        # Redirecionar para a página de reservas com uma mensagem de sucesso
+        sweetify.success(request, title='Check-in efetuado com sucesso!', icon='success', persistent='OK')
+        return redirect('list_reservations_employee')
+        
+    except Exception as e:
+        # Caso ocorra um erro, renderizar a página com uma mensagem de erro
+        sweetify.error(request, title='Erro ao efetuar o check-in!', icon='error', persistent='OK')
+        return JsonResponse({"error": str(e)}, status=400)
+
+
 
 def check_out(request, reservation_id):
-    print(reservation_id)
-            
-    # Chamar o procedimento armazenado no banco de dados
-    with connection.cursor() as cursor:
-        cursor.execute("""CALL sp_check_out(%s);""", [reservation_id])
+    try:
+        # Chamar o procedimento armazenado no banco de dados
+        with connection.cursor() as cursor:
+            cursor.execute("""CALL sp_check_out(%s);""", [reservation_id])
 
-    # Redirecionar para a página de reservas com uma mensagem de sucesso
-    return redirect('list_reservations_employee')
-
+        # Redirecionar para a página de reservas com uma mensagem de sucesso
+        sweetify.success(request, title='Check-out efetuado com sucesso!', icon='success', persistent='OK')
+        return redirect('list_reservations_employee')
+    except Exception as e:
+        # Caso ocorra um erro, renderizar a página com uma mensagem de erro
+        sweetify.error(request, title='Erro ao efetuar o check-out!', icon='error', persistent='OK')
+        return JsonResponse({"error": str(e)}, status=400)
+    
 def payment(request):
     if request.method == "POST":
         try:
             # Extrair o ID da reserva do formulário
             reservation_id = int(request.POST.get("reservation_id"))
-            
-            # Atualizar o campo invoice_status para acionar o trigger
-            #with connection.cursor() as cursor:
-            #    cursor.execute("""
-            #       UPDATE "finance.invoice"
-            #        SET invoice_status = TRUE
-            #        WHERE reservation_id = %s;
-            #    """, [reservation_id])
+            payment_method_id = int(request.POST.get("payment_method_id"))
+            print("metodo pagamento", payment_method_id)
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    CALL sp_generate_invoice(%s, %s, %s);
+                """, [reservation_id, payment_method_id, None])
 
             with connection.cursor() as cursor:
                 cursor.execute('SELECT id FROM "finance.invoice" WHERE reservation_id = %s;', [reservation_id])
@@ -200,9 +213,11 @@ def payment(request):
                 cursor.execute("""CALL sp_add_payment(%s, %s, %s);""", [_invoice_id, _payment_amount, _payment_method_id])
             
             # Redirecionar para a página de reservas com uma mensagem de sucesso
+            sweetify.success(request, title='Pagamento efetuado com sucesso!', icon='success', persistent='OK')
             return redirect('list_reservations_employee')
         except Exception as e:
             # Caso ocorra um erro, renderizar a página com uma mensagem de erro
+            sweetify.error(request, title='Erro ao efetuar o pagamento!', icon='error', persistent='OK')
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
