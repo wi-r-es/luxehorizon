@@ -24,7 +24,7 @@ def hotel_list(request):
         total_value_sum=Sum('room_reservations__price_reservation')
     ).values('total_value_sum')
 
-    # agrega os resultados
+    # Agrega os resultados dos hotéis
     hotels = Hotel.objects.annotate(
         room_count=Count('room'),   
         total_value=Subquery(reservation_total_value[:1])   
@@ -35,11 +35,11 @@ def hotel_list(request):
         total_value=Subquery(reservation_total_value[:1])
     )
 
-    # aplica a ordenação
+    # Aplica a ordenação
     hotels = hotels.order_by(sort_field)
     hotel_employee = HotelEmployees.objects.filter(employee=request.user)
 
-    # mostrar apenas os hotéis associados ao funcionário
+    # Filtra os hotéis associados ao funcionário logado
     if hotel_employee:
         hotels = hotels.filter(id=hotel_employee[0].hotel.id)
 
@@ -117,6 +117,34 @@ def room_list(request, hotel_id):
     sort = request.GET.get('sort', 'room_number')  # Define a ordenação inicial por número do quarto
     order = request.GET.get('order', 'asc')  # Define a direção de ordenação
 
+    rooms = Room.objects.filter(hotel=hotel)
+
+    if type_name:
+        rooms = rooms.filter(type__type_initials__icontains=type_name)
+
+    # Determina o campo de ordenação e a ordem
+    sort_field = sort if order == 'asc' else f'-{sort}'
+
+    # Ordena os quartos com base no campo e direção
+    rooms = rooms.order_by(sort_field)
+
+    return render(request, 'hotel_management/hotel_rooms.html', {
+        'hotel': hotel,
+        'rooms': rooms,
+        'sort': sort,
+        'order': order,
+    })
+
+def all_room_list(request):
+    # Recupera o hotel associado ao funcionário logado
+    hotel_employee = get_object_or_404(HotelEmployees, employee=request.user)
+    hotel = hotel_employee.hotel  # Hotel associado ao usuário logado
+
+    type_name = request.GET.get('type_initials', '')  # Filtro por tipo de quarto
+    sort = request.GET.get('sort', 'room_number')  # Define a ordenação inicial por número do quarto
+    order = request.GET.get('order', 'asc')  # Define a direção de ordenação
+
+    # Filtra os quartos com base no hotel associado ao usuário logado
     rooms = Room.objects.filter(hotel=hotel)
 
     if type_name:
