@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.db import connection
 from utils.funcs import hash_password
-from hotel_management.models import HotelEmployees
+from hotel_management.models import HotelEmployees, Hotel
 from users.models import User
 from utils.hotels import hotels, commodities, room_commodities
 from utils.create_admin import create_super_admin
@@ -95,6 +95,7 @@ class Command(BaseCommand):
                     {stars}
                 );
                 """)
+                self.stdout.write(f"Hotel---> {name} added .")
             ## MANAGERS
             hashed_password = hash_password('admin')
             for i, (hotel_name, _, _, city, _) in enumerate(hotels, start=1):

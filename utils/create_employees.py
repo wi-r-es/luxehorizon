@@ -1,6 +1,6 @@
 from utils.hotels import hotels
 from utils.funcs import hash_password
-from hotel_management.models import HotelEmployees
+from hotel_management.models import HotelEmployees, Hotel
 from users.models import User
 hashed_password = hash_password('12345')
 def create_employees(cursor, self):
@@ -57,7 +57,7 @@ def create_employees(cursor, self):
     cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
-    HotelEmployees.objects.create(hotel=hotel_var, employee=hotel_var)
+    HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[0]} added with user ID {new_user_id} and linked to hotel ID {1}.")
 
     cursor.execute("""
@@ -143,29 +143,38 @@ def create_employees(cursor, self):
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[1]} added with user ID {new_user_id} and linked to hotel ID {2}.")
 
-    cursor.execute("""
-        CALL sp_register_user(
-            'Mel',
-            'Gibson',
-            'mel.gibson@example.com',
-            %s,
-            '222222223',
-            '222222223',
-            '123 Example Street',
-            '3500-678',
-            'Example City',
-            'F',
-            250250256
-        );
-    """, [hashed_password])
+    try: 
+        cursor.execute("""
+            CALL sp_register_user(
+                'Mel',
+                'Gibson',
+                'mel.gibson@example.com',
+                %s,
+                '222222223',
+                '222222223',
+                '123 Example Street',
+                '3500-678',
+                'Example City',
+                'F',
+                250250256
+            );
+        """, [hashed_password])
+    except Exception as e:
+        self.stdout.write(f"Error during registration for Mel Gibson: {e}")
+        raise
+
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'mel.gibson@example.com';
     """)
-    new_user_id = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    if result is None:
+        raise ValueError("Failed to fetch user ID for Mel Gibson. Ensure the user was successfully registered.")
+    
+    new_user_id = result[0]
     # Update the Role to employee Level
     cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
-    new_user = User.objects.get(id=new_user_id)
+    #new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[1]} added with user ID {new_user_id} and linked to hotel ID {2}.")
