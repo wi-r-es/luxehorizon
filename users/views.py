@@ -298,10 +298,28 @@ def users_list(request):
     # Campo de ordenação e ordem
     sort_field = sort if order == 'asc' else f'-{sort}'
 
-    # Filtrar usuários
-    users = User.objects.filter(
-        Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query)
-    ).order_by(sort_field) if query else User.objects.all().order_by(sort_field)
+    # Obter o perm_level do usuário atual
+    user_perm_level = request.user.role.perm_level
+
+    # Filtrar usuários com base no perm_level
+    if user_perm_level == 1:  # Administrador
+        users = User.objects.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query)
+        ).order_by(sort_field) if query else User.objects.all().order_by(sort_field)
+    elif user_perm_level == 2:  # Manager
+        # Exibir apenas usuários com permissão de "Employee" ou "None"
+        users = User.objects.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query),
+            role__perm_description__in=["Manager", "Employee", "None"]
+        ).order_by(sort_field) if query else User.objects.filter(role__perm_description__in=["Manager", "Employee", "None"]).order_by(sort_field)
+    elif user_perm_level == 3:  # Employee
+        # Exibir apenas usuários com permissão de "None"
+        users = User.objects.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query),
+            role__perm_description="None"
+        ).order_by(sort_field) if query else User.objects.filter(role__perm_description="None").order_by(sort_field)
+    else:
+        users = User.objects.none()  # Nenhum usuário se o perm_level não for reconhecido
 
     return render(request, 'users/users_list.html', {
         'users': users,
@@ -309,7 +327,6 @@ def users_list(request):
         'sort': sort,
         'order': order,
     })
-
 def users_form(request, user_id=None):
     user = get_object_or_404(User, id=user_id) if user_id else None
     operation = "editar" if user_id else "adicionar"

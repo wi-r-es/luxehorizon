@@ -6,60 +6,55 @@
     <!-- Lateral Navigation -->
     <nav class="col-md-2 col-lg-2 d-md-block bg-dark text-light sidebar">
       <div class="position-sticky">
-        <h4 class="sidebar-heading text-center py-3">Painel de Administra&ccedil;&atilde;o</h4>
-        <ul class="nav flex-column">
-          <li class="nav-item">
-            <a class="nav-link text-light" aria-current="page" href="{% url 'admin_dashboard' %}">
-              <i class="bi bi-pie-chart-fill"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-light" aria-current="page" href="{% url 'hotel_list' %}">
-              <i class="bi bi-building-fill"></i> Hot&eacute;is
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-light" aria-current="page" href="{% url 'users_list' %}">
-              <i class="bi bi-building-fill"></i> Utilizadores
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-light" aria-current="page" href="{% url 'seasons_list' %}">
-              <i class="bi bi-building-fill"></i> Temporadas
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-light" aria-current="page" href="{% url 'commodities_list' %}">
-              <i class="bi bi-building-fill"></i> Comodidades
-            </a>
-          </li>
-          {% comment %} <!-- Accordion Section 2 -->
-          <li class="nav-item">
-            <a class="nav-link text-light d-flex justify-content-between" data-bs-toggle="collapse" href="#menu2" role="button" aria-expanded="false" aria-controls="menu2">
-              <span><i class="bi bi-folder"></i> Section 2</span> <i class="bi bi-chevron-down"></i>
-            </a>
-            <div class="collapse ms-3" id="menu2">
-              <ul class="list-unstyled">
-                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 2.1</a></li>
-                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 2.2</a></li>
-                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 2.3</a></li>
-              </ul>
-            </div>
-          </li>
-          <!-- Accordion Section 3 -->
-          <li class="nav-item">
-            <a class="nav-link text-light d-flex justify-content-between" data-bs-toggle="collapse" href="#menu3" role="button" aria-expanded="false" aria-controls="menu3">
-              <span><i class="bi bi-folder"></i> Section 3</span> <i class="bi bi-chevron-down"></i>
-            </a>
-            <div class="collapse ms-3" id="menu3">
-              <ul class="list-unstyled">
-                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.1</a></li>
-                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.2</a></li>
-                <li><a class="nav-link text-light" href="#"><i class="bi bi-file-earmark"></i> Link 3.3</a></li>
-              </ul>
-            </div>
-          </li> {% endcomment %}
-        </ul>
+        {% if user.role.perm_level == 3 %}
+          <h4 class="sidebar-heading text-center py-3">Painel de Funcionário</h4>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'list_reservations_employee' %}">
+                <i class="bi bi-building-fill"></i> Reservas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'users_list' %}">
+                <i class="bi bi-building-fill"></i> Clientes
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'commodities_list' %}">
+                <i class="bi bi-building-fill"></i> Quartos
+              </a>
+            </li>
+          </ul>
+        {% else %}
+          <h4 class="sidebar-heading text-center py-3">Painel de Administração</h4>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'admin_dashboard' %}">
+                <i class="bi bi-pie-chart-fill"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'hotel_list' %}">
+                <i class="bi bi-building-fill"></i> Hotéis
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'users_list' %}">
+                <i class="bi bi-building-fill"></i> Utilizadores
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'seasons_list' %}">
+                <i class="bi bi-building-fill"></i> Temporadas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'commodities_list' %}">
+                <i class="bi bi-building-fill"></i> Comodidades
+              </a>
+            </li>
+          </ul>
+        {% endif %}
       </div>
     </nav>
 
