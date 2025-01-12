@@ -49,7 +49,7 @@ $$ LANGUAGE plpgsql;
                                                                                                                                                                          
 */
 CREATE OR REPLACE FUNCTION fn_find_reservation_by_id( --working
-    _reservation_id BIGINT -
+    _reservation_id BIGINT 
 ) RETURNS TABLE (
     reservation_id BIGINT,       
     client_id BIGINT,           

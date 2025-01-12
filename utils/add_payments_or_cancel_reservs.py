@@ -15,5 +15,11 @@ def add_payments_or_cancel_reservs(cursor, self):
             self.stdout.write(f"Cancelled reservation ID {reservation_id}.")
         else:
             # Add a payment
-            cursor.execute(f"CALL sp_add_payment({reservation_id}, {total_value:.2f}, 1);")
+            cursor.execute(f"""
+                CALL sp_add_payment(
+                    _invoice_id := {reservation_id}, 
+                    _payment_amount := {total_value:.2f}, 
+                    _payment_method_id := 1
+                );
+            """)    
             self.stdout.write(f"Added payment for reservation ID {reservation_id}: Amount {total_value:.2f}.")
