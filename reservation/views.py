@@ -7,7 +7,8 @@ from hotel_management.models import Room
 from .forms import SeasonForm
 from django.db.models.functions import TruncMonth
 from django.db.models import Count
-from django.db.models import Q  
+from django.db.models import Q
+from hotel_management.models import HotelEmployees, Hotel
 
 def my_reservations(request):
     # Fetch reservations for the logged-in user
@@ -54,8 +55,16 @@ def my_reservations(request):
     return render(request, 'reservations/my_reservations.html', {'reservations': reservation_list})
 
 def all_reservations(request):
-    # Fetch all reservations
-    reservations = Reservation.objects.prefetch_related('room_reservations__room__hotel')
+    # Buscar o hotel associado ao funcionário
+    hotel_employee = HotelEmployees.objects.filter(employee=request.user).first()
+    print(hotel_employee)
+    # Se o usuário não estiver associado a nenhum hotel, retorna uma resposta vazia
+    if not hotel_employee:
+        return render(request, 'reservations/list_resertions_employee.html', {'reservations': []})
+
+    # Fetch reservations associated with the hotel
+    reservations = Reservation.objects.prefetch_related('room_reservations__room__hotel')\
+                                      .filter(room_reservations__room__hotel=hotel_employee.hotel)
 
     # Filtrar por pesquisa (se fornecido na requisição)
     search_query = request.GET.get('q', '')

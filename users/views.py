@@ -327,6 +327,7 @@ def users_list(request):
         'sort': sort,
         'order': order,
     })
+
 def users_form(request, user_id=None):
     user = get_object_or_404(User, id=user_id) if user_id else None
     operation = "editar" if user_id else "adicionar"
