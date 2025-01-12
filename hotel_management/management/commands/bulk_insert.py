@@ -148,19 +148,28 @@ class Command(BaseCommand):
                 self.stdout.write(f"Added Commodity: {commodity}")
 
             # Fetch all rooms and their type initials
-            cursor.execute("SELECT id, room_type FROM room_management.room;")
+            cursor.execute('SELECT id, room_type_id FROM "room_management.room";')
             rooms = cursor.fetchall()
 
+            # Fetch all room types for mapping initials
+            cursor.execute('SELECT id, type_initials FROM "room_management.room_types";')
+            room_types = {row[0]: row[1] for row in cursor.fetchall()}  # {room_type_id: type_initials}
+
             # Link commodities to rooms based on type
-            for room_id, room_type in rooms:
-                room_key = room_type[:2] if room_type.startswith('PH') else room_type[0]  # Handle 'PH' for PENTHOUSE
+            for room_id, room_type_id in rooms:
+                # Get the type initials for the room
+                room_type_initials = room_types.get(room_type_id)
+
+                # Determine the room key for commodity mapping
+                room_key = room_type_initials[:2] if room_type_initials.startswith('PH') else room_type_initials[0]  # Handle "P" for Penthouse
                 commodity_ids = room_commodities.get(room_key, [])  # Get commodities for the room type
 
                 for commodity_id in commodity_ids:
+                    # Use the stored procedure to link the commodity to the room
                     cursor.execute(f"""
                     CALL sp_link_commodity_to_room({room_id}, {commodity_id});
                     """)
-                    self.stdout.write(f"Linked Commodity ID {commodity_id} to Room ID {room_id} (Type {room_type})")
+                    self.stdout.write(f"Linked Commodity ID {commodity_id} to Room ID {room_id} (Type {room_type_initials})")
 
             # # Update Room Status
             # for room_id in range(1, 11):
@@ -169,11 +178,13 @@ class Command(BaseCommand):
             # Create Reservations
             create_reservations(cursor, self)
 
+            # Generate Invoices
+            generate_invoices(cursor, self)
+
             # Add Payments or cancel
             add_payments_or_cancel_reservs(cursor, self)
 
-            # Generate Invoices
-            generate_invoices(cursor, self)
+            
 
             self.stdout.write(self.style.SUCCESS("Bulk insert completed successfully."))
 

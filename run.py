@@ -22,6 +22,7 @@ def main():
         "python manage.py load_sql_logic_objs",
         "python manage.py init_seasons",
         "python manage.py init_payment_methods",
+        "python manage.py bulk_insert",
         "python manage.py runserver 127.0.0.1:8000"
     ]
 

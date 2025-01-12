@@ -2,7 +2,7 @@ import random
 
 def add_payments_or_cancel_reservs(cursor, self):
     # Fetch all reservations with their total value
-    cursor.execute("SELECT id, total_value FROM reserves.reservation;")
+    cursor.execute('SELECT id, total_value FROM "reserves.reservation";')
     reservations = cursor.fetchall()  # List of tuples: (reservation_id, total_value)
 
     # Process each reservation

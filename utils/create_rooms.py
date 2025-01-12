@@ -58,16 +58,16 @@ def create_rooms(cursor, self):
     for hotel_id in range(1, 6):  # For each hotel
         for _ in range(10):  # Create 10 rooms per hotel
             # Generate random room configurations
-            view_code = random.choice(list(room_configs['views'].values()))
-            quality_code = random.choice(list(room_configs['qualities'].values()))
-            capacity_code = random.choice(list(room_configs['capacity'].values()))
+            view_full_name, view_code = random.choice(list(room_configs['views'].items()))
+            quality_full_name, quality_code = random.choice(list(room_configs['qualities'].items()))
+            capacity_full_name, capacity_code = random.choice(list(room_configs['capacity'].items()))
             type_initials = f"{view_code}{quality_code}{capacity_code}"
 
             # Calculate the base price based on configurations
             base_price = (
-                base_prices['views'][view_code] +
-                base_prices['qualities'][quality_code] +
-                base_prices['capacity'][capacity_code]
+                base_prices['views'][view_full_name] +
+                base_prices['qualities'][quality_full_name] +
+                base_prices['capacity'][capacity_full_name]
             )
 
             # Generate random room number

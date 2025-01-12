@@ -35,3 +35,9 @@ Then run:
 `docker-compose down -v`
 
 
+## Complete clean build commands
+docker-compose down -v --remove-orphans
+docker-compose build --no-cache
+docker-compose up --force-recreate
+
+
