@@ -34,26 +34,6 @@ class Command(BaseCommand):
             else:
                 self.stdout.write('Permissions already exist')
 
-            # Add any additional initialization here
-            # For example, create an admin employee if needed:
-            """
-            if not Employee.objects.filter(email='admin@example.com').exists():
-                admin_employee = Employee.objects.create(
-                    email='admin@example.com',
-                    first_name='Admin',
-                    last_name='User',
-                    role=AccPermission.objects.get(perm_level=1),
-                    social_security=12345678,
-                    nif='123456789',
-                    phone='123456789',
-                    full_address='Admin Street 1',
-                    postal_code='12345',
-                    city='Admin City'
-                )
-                admin_employee.set_password('admin123')
-                admin_employee.save()
-                self.stdout.write(self.style.SUCCESS('Created admin employee'))
-            """
 
             self.stdout.write(self.style.SUCCESS('Database initialization completed successfully'))
 

@@ -23,6 +23,7 @@ class CapacityType(models.TextChoices):
     QUAD = 'Q', 'Quad'
     KING = 'K', 'King'
     FAMILY = 'F', 'Family'
+    PENTHOUSE = 'P', 'Penthouse'
 
 class Hotel(models.Model):
     h_name = models.CharField(max_length=100)

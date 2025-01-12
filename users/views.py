@@ -17,9 +17,7 @@ from django import forms
 from .models import AccPermission
 from hotel_management.models import HotelEmployees, Hotel
 import sweetify
-
-def hash_password(password):
-    return make_password(password)
+from utils.funcs import hash_password
 
 class RegisterForm(forms.Form):
     first_name = forms.CharField(max_length=100)

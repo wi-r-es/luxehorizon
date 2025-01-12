@@ -35,6 +35,7 @@ class Command(BaseCommand):
                 'QUAD': 'Q',
                 'KING': 'K',
                 'FAMILY': 'F',
+                'PENTHOUSE': 'P',
             },
         }
 

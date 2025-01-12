@@ -39,7 +39,8 @@ class Migration(migrations.Migration):
                         'TRIPLE',
                         'QUAD',
                         'KING',
-                        'FAMILY'
+                        'FAMILY',
+                        'PENTHOUSE'
                     );
                 END IF;
             END
