@@ -276,8 +276,6 @@ def update_profile(request):
         user.city = request.POST.get('city')
         user.social_security = request.POST.get('social_security')
 
-        # Atualizar switches (is_staff e is_active)
-        # user.is_staff = 'flexSwitchCheckChecked' in request.POST  # Switch checked = True
         # user.is_active = 'flexSwitchCheckDefault' in request.POST  # Switch checked = True
 
         # Atualizar informações de Employee
@@ -285,7 +283,7 @@ def update_profile(request):
             user.employee.social_security = request.POST.get('social_security')
 
         user.save()  # Salvar alterações
-        messages.success(request, "Perfil atualizado com sucesso.")
+        sweetify.success(request, f"Utilizador {'adicionado' if not user else 'atualizado'} com sucesso!")
         return redirect('/')
 
     return render(request, 'users/profile.html', {'user': request.user})
@@ -310,8 +308,8 @@ def users_list(request):
         # Exibir apenas usuários com permissão de "Employee" ou "None"
         users = User.objects.filter(
             Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query),
-            role__perm_description__in=["Manager", "Employee", "None"]
-        ).order_by(sort_field) if query else User.objects.filter(role__perm_description__in=["Manager", "Employee", "None"]).order_by(sort_field)
+            role__perm_description__in=["Employee", "None"]
+        ).order_by(sort_field) if query else User.objects.filter(role__perm_description__in=["Employee", "None"]).order_by(sort_field)
     elif user_perm_level == 3:  # Employee
         # Exibir apenas usuários com permissão de "None"
         users = User.objects.filter(
@@ -329,27 +327,51 @@ def users_list(request):
     })
 
 def users_form(request, user_id=None):
-    user = get_object_or_404(User, id=user_id) if user_id else None
-    operation = "editar" if user_id else "adicionar"
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+        operation = "editar"
+    else:
+        user = None
+        operation = "adicionar"
 
     if request.method == 'POST':
+        print("POST recebido!")
         form = UserForm(request.POST, instance=user)
+
+        # Handle role selection for dynamic field validation
+        role_id = request.POST.get('role')
+        role = None
+        if role_id:
+            try:
+                role = AccPermission.objects.get(id=role_id)
+            except AccPermission.DoesNotExist:
+                messages.error(request, "Permissão selecionada é inválida.")
+                return render_form(request, form, operation, user)
+
+        # Adjust `social_security` field requirement dynamically
+        if role and role.perm_level == 444:
+            form.fields['social_security'].required = False
+
         if form.is_valid():
+            print("Formulário válido!")
             new_user = form.save(commit=False)
 
             # Atualizar role
-            role = form.cleaned_data.get('role')
             if role:
                 new_user.role = role
-                new_user.is_staff = role.is_staff_based_on_perm()
-                new_user.utp = role.utp_based_on_perm()
+                new_user.utp = 'F' if role.perm_level <= 3 else 'C'
 
+            # Handle `social_security` field
+            if role and role.perm_level == 444:
+                new_user.social_security = None  # Clear social_security for roles with perm_level 444
+
+            # Atualizar status ativo
             new_user.is_active = 'is_active_switch' in request.POST
             new_user.save()
 
-            # Atualizar hotel_employee
-            hotel_id = form.cleaned_data.get('hotel')
-            if role.perm_level != 444 and hotel_id:
+            # Atualizar hotel_employee, se necessário
+            hotel_id = request.POST.get('hotel')
+            if role and role.perm_level != 444 and hotel_id:
                 try:
                     hotel = Hotel.objects.get(id=hotel_id)
                     HotelEmployees.objects.get_or_create(hotel=hotel, employee=new_user)
@@ -357,9 +379,17 @@ def users_form(request, user_id=None):
                     sweetify.error(request, "Hotel selecionado é inválido.")
                     return render_form(request, form, operation, user)
 
-            sweetify.success(request, f"Utilizador {'adicionado' if not user else 'atualizado'} com sucesso!")
+            # Exibir mensagem de sucesso com Sweetify
+            sweetify.success(
+                request,
+                f"{'Utilizador adicionado' if user is None else 'Utilizador atualizado'} com sucesso!",
+                text="Os dados foram salvos corretamente.",
+                button="Fechar"
+            )
             return redirect('users_list')
         else:
+            print("Erros no formulário:", form.errors)
+            sweetify.error(request, "Erro ao processar o formulário.")
             messages.error(request, "Erro ao processar o formulário.")
     else:
         form = UserForm(instance=user)
@@ -367,18 +397,22 @@ def users_form(request, user_id=None):
     return render_form(request, form, operation, user)
 
 def render_form(request, form, operation, user):
-    roles = AccPermission.objects.all()
-    hotels = Hotel.objects.all()
-    hotel_employee = HotelEmployees.objects.filter(employee=request.user)
-    user = User.objects.get(id=request.user.id)
+    # Obter roles e hotéis de acordo com o perm_level do usuário atual
     user_perm_level = request.user.role.perm_level
-    
+
+    # Lógica para determinar as roles baseadas no perm_level
     if user_perm_level == 1:  # Administrador
         roles = AccPermission.objects.all()
     elif user_perm_level == 2:  # Gestor
         roles = AccPermission.objects.filter(perm_description__in=["Employee", "None"])
     elif user_perm_level == 3:  # Cliente
         roles = AccPermission.objects.filter(perm_description="None")
+    else:
+        roles = AccPermission.objects.none()  # Caso não exista perm_level
+
+    # Obter hotéis e hotel_employee
+    hotels = Hotel.objects.all()
+    hotel_employee = HotelEmployees.objects.filter(employee=request.user)
 
     return render(request, 'users/users_form.html', {
         'form': form,

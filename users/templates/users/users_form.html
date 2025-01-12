@@ -10,9 +10,8 @@
         {% endif %}
     </h1>
     <hr>
-    <form method="post" action="{% if operation == 'editar' %}{% url 'users_edit' user.id %}{% else %}{% url 'users_add' %}{% endif %}">
+    <form method="POST" action="{% if operation == 'editar' %}{% url 'users_edit' user.id %}{% else %}{% url 'users_add' %}{% endif %}">
         {% csrf_token %}
-
         
         <!-- <div class="form-group">
             <label for="id_role">ID Role: </label>
@@ -131,29 +130,32 @@
     </form>
 </div>
 
-<script type="text/javascript" src="ejs_production.js"></script>
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const roleSelect = document.getElementById('id_role');
         const hotelContainer = document.getElementById('hotel-container');
-        
-        // Function to show/hide hotel options based on the selected role's perm_level
-        function toggleHotelVisibility() {
+        const socialSecurityContainer = document.getElementById('social-security-container');
+        const socialSecurityInput = document.getElementById('id_social_security');
+
+        // Function to show/hide hotel and social security fields
+        function toggleFieldsVisibility() {
             const selectedRole = roleSelect.options[roleSelect.selectedIndex];
             const permLevel = selectedRole.getAttribute('data-perm-level');
-
+            
             if (permLevel === '444') {
-                hotelContainer.style.display = 'none'; // Hide hotel selection if perm_level is 444
-                document.getElementById('social-security-container').style.display = 'none'; // Hide Social Security if perm_level is 444
+                hotelContainer.style.display = 'none'; // Hide hotel selection
+                socialSecurityContainer.style.display = 'none'; // Hide social security field
+                socialSecurityInput.required = false; // Remove the required attribute
             } else {
-                hotelContainer.style.display = 'block'; // Show hotel selection if perm_level is not 444
-                document.getElementById('social-security-container').style.display = 'block'; // Show Social Security
+                hotelContainer.style.display = 'block'; // Show hotel selection
+                socialSecurityContainer.style.display = 'block'; // Show social security field
+                socialSecurityInput.required = true; // Add the required attribute
             }
         }
 
         // Run the function on page load and when the role is changed
-        toggleHotelVisibility();
-        roleSelect.addEventListener('change', toggleHotelVisibility);
+        toggleFieldsVisibility();
+        roleSelect.addEventListener('change', toggleFieldsVisibility);
     });
 </script>
 {% endblock %}

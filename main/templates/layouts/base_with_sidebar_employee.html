@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Lateral Navigation -->
+    <nav class="col-md-2 col-lg-2 d-md-block bg-dark text-light sidebar">
+      <div class="position-sticky">
+        <h4 class="sidebar-heading text-center py-3">Painel de Funcionário</h4>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-light" aria-current="page" href="{% url 'list_reservations_employee' %}">
+              <i class="bi bi-building-fill"></i> Reservas
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light" aria-current="page" href="{% url 'users_list' %}">
+              <i class="bi bi-building-fill"></i> Clientes
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light" aria-current="page" href="{% url 'commodities_list' %}">
+              <i class="bi bi-building-fill"></i> Quartos
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
+        {% block main_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
