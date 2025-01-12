@@ -7,6 +7,7 @@
     <h1 class="text-center mb-4">Hotéis</h1>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <!-- Mostrar o botão apenas se user.role.perm_level for igual a 1 (Administrator) -->
+        {{ user.role.perm_level }}
         {% if user.role.perm_level == 1 %}
         <!-- Add Button -->
         <a href="{% url 'hotel_add' %}" class="btn btn-success btn-lg">

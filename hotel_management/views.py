@@ -38,7 +38,6 @@ def hotel_list(request):
     # aplica a ordenação
     hotels = hotels.order_by(sort_field)
     hotel_employee = HotelEmployees.objects.filter(employee=request.user)
-    print(hotel_employee)
 
     # mostrar apenas os hotéis associados ao funcionário
     if hotel_employee:

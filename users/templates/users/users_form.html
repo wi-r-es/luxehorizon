@@ -10,9 +10,16 @@
         {% endif %}
     </h1>
     <hr>
-
     <form method="post" action="{% if operation == 'editar' %}{% url 'users_edit' user.id %}{% else %}{% url 'users_add' %}{% endif %}">
         {% csrf_token %}
+
+        
+        <!-- <div class="form-group">
+            <label for="id_role">ID Role: </label>
+                {{ user.role.id }}
+            <label for="id_perm">Perm Level: </label>
+                {{ user.role.perm_level }}
+        </div> -->
 
         <div class="row">
             <div class="col-md-6">
@@ -74,12 +81,10 @@
                     <label for="id_role">Role</label>
                     <select class="form-control" id="id_role" name="role">
                         {% for role in roles %}
-                            {% if role.perm_description != "Administrator" %}
                                 <option value="{{ role.id }}" 
                                     {% if user.role.id == role.id %}selected{% endif %} data-perm-level="{{ role.perm_level }}">
                                     {{ role.perm_description }}
                                 </option>
-                            {% endif %}
                         {% endfor %}
                     </select>
                 </div>
