@@ -145,7 +145,7 @@ def all_reservations(request):
 def reservation_details(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id)
     nights = (reservation.end_date - reservation.begin_date).days
-    return render(request, 'reservations/check_in.html', {'reservation': reservation, 'nights': nights})
+    return render(request, 'reservations/payment.html', {'reservation': reservation, 'nights': nights})
 
 def check_in(request, reservation_id):
     print(reservation_id)
