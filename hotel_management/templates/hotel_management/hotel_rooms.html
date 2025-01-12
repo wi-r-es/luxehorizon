@@ -24,10 +24,24 @@
         <table class="table table-bordered table-hover shadow-sm rounded">
             <thead class="bg-dark text-light">
                 <tr>
-                    <th class="text-center">Número</th>
+                    <th class="text-center">
+                        <a href="?hotel_id={{ hotel.id }}&type_initials={{ request.GET.type_initials }}&sort=room_number&order={% if sort == 'room_number' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
+                            Número
+                            {% if sort == 'room_number' %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
                     <th class="text-center">Tipo</th>
                     <th class="text-center">Capacidade</th>
-                    <th class="text-end">Preço Base (€)</th>
+                    <th class="text-end">
+                        <a href="?hotel_id={{ hotel.id }}&type_initials={{ request.GET.type_initials }}&sort=base_price&order={% if sort == 'base_price' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-white">
+                            Preço Base (€)
+                            {% if sort == 'base_price' %}
+                                <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
                     <th class="text-center">Condição</th>
                     <th class="text-center">Ações</th>
                 </tr>

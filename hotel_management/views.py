@@ -7,6 +7,7 @@ from reservation.models import RoomReservation, Reservation
 from django.http import Http404
 from django.db.models import Min
 from django.db import connection
+from hotel_management.models import HotelEmployees, Hotel
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -36,6 +37,12 @@ def hotel_list(request):
 
     # aplica a ordenação
     hotels = hotels.order_by(sort_field)
+    hotel_employee = HotelEmployees.objects.filter(employee=request.user)
+    print(hotel_employee)
+
+    # mostrar apenas os hotéis associados ao funcionário
+    if hotel_employee:
+        hotels = hotels.filter(id=hotel_employee[0].hotel.id)
 
     return render(request, 'hotel_management/hotels.html', {
         'hotels': hotels,
@@ -106,17 +113,27 @@ def delete_hotel(request, hotel_id):
             return render(request, 'hotel_management/confirm_delete.html', {'hotel': hotel})
         
 def room_list(request, hotel_id):
-    hotel = get_object_or_404(Hotel, id=hotel_id)   
-    type_name = request.GET.get('type_initials', '')   
+    hotel = get_object_or_404(Hotel, id=hotel_id)
+    type_name = request.GET.get('type_initials', '')
+    sort = request.GET.get('sort', 'room_number')  # Define a ordenação inicial por número do quarto
+    order = request.GET.get('order', 'asc')  # Define a direção de ordenação
 
-    rooms = Room.objects.filter(hotel=hotel)   
+    rooms = Room.objects.filter(hotel=hotel)
 
-    if type_name:   
-        rooms = rooms.filter(type__type_initials__icontains=type_name)   
-    
+    if type_name:
+        rooms = rooms.filter(type__type_initials__icontains=type_name)
+
+    # Determina o campo de ordenação e a ordem
+    sort_field = sort if order == 'asc' else f'-{sort}'
+
+    # Ordena os quartos com base no campo e direção
+    rooms = rooms.order_by(sort_field)
+
     return render(request, 'hotel_management/hotel_rooms.html', {
         'hotel': hotel,
         'rooms': rooms,
+        'sort': sort,
+        'order': order,
     })
 
 def create_room(request, hotel_id):

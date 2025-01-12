@@ -232,15 +232,13 @@ def profile_view(request):
     # Retrieve the user and check if they're a client or an employee
     user = request.user
     user_type = "Client" if user.utp == User.CLIENT else "Employee"
-    
+
     # Fetch related employee/client and role information
-    role = None
-    social_security = None
-    if user_type == "Employee":
-        employee = Employee.objects.get(pk=user.pk)
-        role = employee.role.perm_description
-        social_security = employee.social_security
-    
+    role = AccPermission.objects.get(id=user.role_id, perm_description=user.role.perm_description ,perm_level=user.role.perm_level)
+    print("id", user.role_id)
+    print("perm level", role.perm_level)
+    print("perm_desc", role.perm_description)
+
     # Retrieve password history
     password_history = UserPasswordsDictionary.objects.filter(user=user).order_by('-valid_from')
 
@@ -248,7 +246,6 @@ def profile_view(request):
         'user': user,
         'user_type': user_type,
         'role': role,
-        'social_security': social_security,
         'password_history': password_history,
     }
     return render(request, 'users/profile.html', context)
@@ -277,6 +274,7 @@ def update_profile(request):
         user.full_address = request.POST.get('full_address')
         user.postal_code = request.POST.get('postal_code')
         user.city = request.POST.get('city')
+        user.social_security = request.POST.get('social_security')
 
         # Atualizar switches (is_staff e is_active)
         # user.is_staff = 'flexSwitchCheckChecked' in request.POST  # Switch checked = True

@@ -21,6 +21,13 @@
         <div class="row">
             <div class="col-12">
                 <h3>Informa&ccedil;&atilde;o b&aacute;sica</h3>
+                <!-- Role Info -->
+                <!-- <div class="form-group">
+                    <label for="id_role">Nivel</label>
+                    <input type="text" class="form-control" id="id_role" name="role" value="{{ user.role.perm_level }}" readonly>
+                    <label for="id_role">Descricao</label>
+                    <input type="text" class="form-control" id="role_desc" name="role_desc" value="{{ user.role.perm_description }}" readonly>
+                </div> -->
             </div>
 
             <!-- Primeiro Nome e Último Nome -->
@@ -96,8 +103,24 @@
                     <input type="text" class="form-control" id="id_city" name="city" value="{{ user.city }}">
                 </div>
             </div>
+            {% if user.role.perm_level != 444 %}
+            <!-- Número de Cartão de Cidadão -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="social_security">Cartão de Cidadão</label>
+                    <input type="text" class="form-control" id="id_social_security" name="social_security" value="{{ user.social_security }}">
+                </div>
+            </div>
+            {% else %}
+            <!-- Se o perm_level for 4, o campo social_security fica oculto -->
+            <div class="col-md-6" style="display:none;">
+                <div class="form-group">
+                    <label for="social_security">Cartão de Cidadão</label>
+                    <input type="text" class="form-control" id="id_social_security" name="social_security" value="{{ user.social_security }}">
+                </div>
+            </div>
+            {% endif %}
         </div>
-        
 
         <!-- Action Buttons Section -->
         <div class="mt-3">
