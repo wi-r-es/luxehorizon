@@ -187,14 +187,14 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'DEBUG',
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG', 
-        },
-        'pymongo': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-    },
+    # 'loggers': {
+    #     'django': {
+    #         'handlers': ['console'],
+    #         'level': 'DEBUG', 
+    #     },
+    #     'pymongo': {
+    #         'handlers': ['console'],
+    #         'level': 'DEBUG',
+    #     },
+    # },
 }
