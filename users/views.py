@@ -208,41 +208,44 @@ def edit_user(request, user_id=None):
 class CustomLoginView(LoginView):
     form_class = CustomLoginForm
     template_name = 'users/login.html'
-    redirect_authenticated_user = True
-    next_page = reverse_lazy('check_login')
+    redirect_authenticated_user = False
+    next_page = reverse_lazy('index')
 
     def form_valid(self, form):
         email = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
+        print("email:", email)
+        print("password:", password)
 
         user = authenticate(request=self.request, username=email, password=password)
         if user is None:
             messages.error(self.request, 'Credenciais inválidas')
             return self.form_invalid(form)
 
-        # Verifica o valor de last_login antes de realizar o login
         user_from_db = User.objects.filter(pk=user.pk).values('last_login').first()
         first_login = user_from_db['last_login'] is None
-        print("first_login (antes do login):", first_login)
+        print("first_login:", first_login)
 
-        # Salva o estado de first_login na sessão
+        # Salva o estado de primeiro login na sessão para o template
         self.request.session['first_login'] = first_login
+        print("first_login (da sessão):", self.request.session['first_login'])
 
         login(self.request, user)
-        return redirect(self.next_page)
 
-@method_decorator(login_required, name='dispatch')
-class CheckLoginView(View):
-    template_name = 'users/check_login.html'
-
-    def get(self, request, *args, **kwargs):
-        first_login = self.request.session.pop('first_login', False)
-        print("first_login (da sessão):", first_login)
-
+        # Exibir a modal se for o primeiro login
         if first_login:
-            messages.info(request, "Este é seu primeiro login. Por favor, altere sua senha.")
-        
-        return render(request, self.template_name, {'first_login': first_login})
+            return self.render_to_response(self.get_context_data(first_login=first_login))
+
+        # Redirecionar para a página principal após logins subsequentes
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['first_login'] = self.request.session.pop('first_login', False)
+        return context
+
+    def get_success_url(self):
+        return self.next_page
 
 @login_required
 def change_password(request):
