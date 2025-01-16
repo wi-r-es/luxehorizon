@@ -1,3 +1,7 @@
+from django.contrib.auth import authenticate, login
+import logging
+from django.views import View
+from django.utils.decorators import method_decorator
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
@@ -18,6 +22,9 @@ from .models import AccPermission
 from hotel_management.models import HotelEmployees, Hotel
 import sweetify
 from utils.funcs import hash_password
+
+# Configura o logger para o módulo atual
+logger = logging.getLogger(__name__)
 
 class RegisterForm(forms.Form):
     first_name = forms.CharField(max_length=100)
@@ -200,29 +207,69 @@ def edit_user(request, user_id=None):
 
 class CustomLoginView(LoginView):
     form_class = CustomLoginForm
-    template_name = 'users/login.html'   
+    template_name = 'users/login.html'
     redirect_authenticated_user = True
-    next_page = reverse_lazy('index')  # Default redirection for other users
+    next_page = reverse_lazy('check_login')
 
     def form_valid(self, form):
-        user = form.cleaned_data.get('user')
+        email = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
+
+        user = authenticate(request=self.request, username=email, password=password)
+        if user is None:
+            messages.error(self.request, 'Credenciais inválidas')
+            return self.form_invalid(form)
+
+        # Verifica o valor de last_login antes de realizar o login
+        user_from_db = User.objects.filter(pk=user.pk).values('last_login').first()
+        first_login = user_from_db['last_login'] is None
+        print("first_login (antes do login):", first_login)
+
+        # Salva o estado de first_login na sessão
+        self.request.session['first_login'] = first_login
+
+        login(self.request, user)
+        return redirect(self.next_page)
+
+@method_decorator(login_required, name='dispatch')
+class CheckLoginView(View):
+    template_name = 'users/check_login.html'
+
+    def get(self, request, *args, **kwargs):
+        first_login = self.request.session.pop('first_login', False)
+        print("first_login (da sessão):", first_login)
+
+        if first_login:
+            messages.info(request, "Este é seu primeiro login. Por favor, altere sua senha.")
         
-        # Validate password and user existence
-        if user and check_password(password, user.hashed_password):
-            login(self.request, user)
+        return render(request, self.template_name, {'first_login': first_login})
 
-            # Redirect based on roles: Admin & Employee
-            if user.utp != User.CLIENT: 
-                return redirect('admin_dashboard') 
-            
-            # Redirect to default next page
-            return redirect(self.get_success_url())
-        else:
-            # Handle invalid credentials
-            messages.error(self.request, "Invalid credentials")
-            return redirect('login')
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        user_id = request.user.id
 
+        if new_password != confirm_password:
+            messages.error(request, "As passwords não coincidem.")
+            return redirect('check_login')
+
+        new_hashed_password = make_password(new_password)
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    CALL sp_change_password(%s, %s)
+                """, [user_id, new_hashed_password])
+            messages.success(request, "Password alterada com sucesso. Por favor, faça login novamente.")
+            print("Password alterada com sucesso.")
+        except Exception as e:
+            logger.error(f"Erro ao alterar senha: {str(e)}")
+            messages.error(request, "Ocorreu um erro ao alterar a senha. Por favor, tente novamente.")
+            print("Erro ao alterar senha:", e)
+        return redirect('login')
+    
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('index')
 
@@ -362,6 +409,13 @@ def users_form(request, user_id=None):
             # Handle `social_security` field
             if role and role.perm_level == 444:
                 new_user.social_security = None  # Clear social_security for roles with perm_level 444
+
+            # Definir senha padrão ao adicionar um novo usuário
+            if operation == "adicionar":
+                default_password = "12345"
+                hashed_password = hash_password(default_password)
+                new_user.password = default_password
+                new_user.hashed_password = hashed_password
 
             # Atualizar status ativo
             new_user.is_active = 'is_active_switch' in request.POST

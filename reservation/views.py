@@ -165,8 +165,6 @@ def check_in(request, reservation_id):
         sweetify.error(request, title='Erro ao efetuar o check-in!', icon='error', persistent='OK')
         return JsonResponse({"error": str(e)}, status=400)
 
-
-
 def check_out(request, reservation_id):
     try:
         # Chamar o procedimento armazenado no banco de dados

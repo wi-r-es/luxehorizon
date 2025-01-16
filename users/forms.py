@@ -48,17 +48,9 @@ class CustomLoginForm(AuthenticationForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
     def clean(self):
+        # Não precisamos mais autenticar aqui, pois será feito na CustomLoginView
         cleaned_data = super().clean()
-        email = cleaned_data.get('username')  # Use 'username' because that's how AuthenticationForm expects it
-        password = cleaned_data.get('password')
-
-        user = authenticate(request=self.request, username=email, password=password)
-        if user is None:
-            raise forms.ValidationError('Invalid login credentials')
-
-        cleaned_data['user'] = user
         return cleaned_data
-
 
 class UserForm(forms.ModelForm):
     class Meta:
