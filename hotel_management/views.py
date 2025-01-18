@@ -9,6 +9,7 @@ from django.db.models import Min
 from django.db import connection
 from hotel_management.models import HotelEmployees, Hotel
 from main.mongo_utils import get_number_of_reviews
+import sweetify
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -75,12 +76,12 @@ def hotel_form(request, hotel_id=None):
                         data['city'], data['email'], data['telephone'],
                         data.get('details', ''), data.get('stars', 0)
                     ])
-                messages.success(request, "Hotel added successfully!")
+                sweetify.success(request, title='Success', text='Hotel adicionado com sucesso!', persistent='Ok')
                 return redirect('hotel_list')
             except Exception as e:
-                messages.error(request, f"An error occurred: {str(e)}")
+                sweetify.error(request, title='Error', text='Ocorreu um erro ao adicionar o hotel.', persistent='Ok')
         else:
-            messages.error(request, "Please correct the errors below.")
+            sweetify.error(request, title='Error', text='Ocorreu um erro ao adicionar o hotel.', persistent='Ok')
     else:
         form = HotelForm(instance=hotel)
 
@@ -100,13 +101,13 @@ def delete_hotel(request, hotel_id):
 
     if reservations_exist:
         # Mensagem de erro caso existam reservas associadas ao hotel
-        messages.error(request, "Não é possível apagar este hotel, pois existem reservas associadas aos quartos.")
+        sweetify.error(request, title='Error', text='Não é possível apagar este hotel, pois existem reservas associadas aos quartos.', persistent='Ok')
         return redirect('hotel_list')   
     else:
         # Se nao existirem reservas associadas ao hotel, apaga o hotel
         if request.method == 'POST':
             hotel.delete()
-            messages.success(request, "Hotel Apagado com sucesso!")
+            sweetify.success(request, title='Success', text='Hotel apagado com sucesso!', persistent='Ok')
             return redirect('hotel_list')
         else:
             # Mensagem de confirmação de apagar hotel
@@ -185,7 +186,7 @@ def create_room(request, hotel_id):
                 cursor.execute("""
                     CALL sp_add_room(%s,%s,%s,%s,%s);
                 """, [hotel_id, room_type, room_number, base_price, condition])
-            messages.success(request, "Comodidade adicionada com sucesso!")
+            sweetify.success(request, title='Success', text='Quarto adicionado com sucesso!', persistent='Ok')
 
             with connection.cursor() as cursor:
                 cursor.execute('SELECT MAX(id) FROM "room_management.room";')
@@ -253,13 +254,13 @@ def delete_room(request, hotel_id, room_id):
 
     if reservations_exist:
         # If there are reservations, show an error message
-        messages.error(request, "Não é possível apagar este quarto, pois existem reservas associadas.")
+        sweetify.error(request, title='Error', text='Não é possível apagar este quarto, pois existem reservas associadas.', persistent='Ok')
         return redirect('room_list', hotel_id=hotel_id)  # Redirect back to room list for the hotel
     else:
         # If there are no reservations, proceed with deletion
         if request.method == 'POST':
             room.delete()
-            messages.success(request, "Quarto apagado com sucesso!")
+            sweetify.success(request, title='Success', text='Quarto apagado com sucesso!', persistent='Ok')
             return redirect('room_list', hotel_id=hotel_id)  # Redirect to room list for the hotel
         else:
             # Render confirmation page
@@ -443,18 +444,18 @@ def commodity_form(request, commodity_id=None):
                     cursor.execute("""
                         CALL sp_create_commodity(%s);
                     """, [details])
-                messages.success(request, "Comodidade adicionada com sucesso!")
+                sweetify.success(request, title='Success', text='Comodidade adicionada com sucesso!', persistent='Ok')
             else:
                 # Update the existing commodity
                 with connection.cursor() as cursor:
                     cursor.execute("""
                         CALL sp_update_commodity(%s,%s);
                     """, [commodity_id, details])
-                messages.success(request, "Comodidade atualizada com sucesso!")
+                sweetify.success(request, title='Success', text='Comodidade atualizada com sucesso!', persistent='Ok')
 
             return redirect('commodities_list')
         else:
-            messages.error(request, "Erro ao processar o formulário.")
+            sweetify.error(request, title='Error', text='Ocorreu um erro ao adicionar a comodidade.', persistent='Ok')
     else:
         form = CommodityForm(instance=commodity)
 
@@ -469,5 +470,5 @@ def commodity_delete(request, commodity_id):
         cursor.execute("""
             CALL sp_delete_commodity(%s);
         """, [commodity_id])
-    messages.success(request, "Comodidade removida com sucesso!")
+    sweetify.success(request, title='Success', text='Comodidade removida com sucesso!', persistent='Ok')
     return redirect('commodities_list')
