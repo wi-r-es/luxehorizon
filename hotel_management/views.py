@@ -2,7 +2,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Hotel, Room, Commodity, RoomCommodity, RoomType
 from django.db.models import Q, Count, Sum, OuterRef, Subquery
 from .forms import HotelForm, RoomForm, CommodityForm
-from django.contrib import messages
 from reservation.models import RoomReservation, Reservation
 from django.http import Http404
 from django.db.models import Min
@@ -90,6 +89,25 @@ def hotel_form(request, hotel_id=None):
         'heading': heading
     })
 
+def edit_hotel(request, hotel_id):
+    hotel = get_object_or_404(Hotel, id=hotel_id)
+    heading = "Editar Hotel"
+
+    if request.method == 'POST':
+        form = HotelForm(request.POST, instance=hotel)
+        if form.is_valid():
+            form.save()  # Salva os dados diretamente no banco de dados
+            sweetify.success(request, title='Success', text='Hotel editado com sucesso!', persistent='Ok')
+            return redirect('hotel_list')
+        else:
+            sweetify.error(request, title='Error', text='Ocorreu um erro ao editar o hotel.', persistent='Ok')
+    else:
+        form = HotelForm(instance=hotel)
+
+    return render(request, 'hotel_management/hotel_form.html', {
+        'form': form,
+        'heading': heading
+    })
 
 # View para apagar um hotel
 def delete_hotel(request, hotel_id):
