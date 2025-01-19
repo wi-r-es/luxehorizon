@@ -15,8 +15,24 @@
         {% endfor %}
     {% endif %}
 
+    {% if files %}
+    <div class="mb-4">
+        <h5>Existing Files:</h5>
+        <div class="d-flex flex-wrap">
+            {% for file in files %}
+                <div class="card me-3 mb-3" style="width: 150px;">
+                    <img src="{% url 'serve_image' file_id=file.id_str %}" class="card-img-top" alt="{{ file.filename }}">
+                    <div class="card-body p-2">
+                        <p class="card-text text-truncate" title="{{ file.filename }}">{{ file.filename }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Form Section -->
-    <form method="post" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
         <div class="mb-3">
             {{ form.h_name.label_tag }}
@@ -52,6 +68,13 @@
         <div class="mb-3">
             {{ form.stars.label_tag }}
             {{ form.stars }}
+        </div>
+        <div class="mb-3">
+            {{ form.file.label_tag }}
+            {{ form.file }}
+            {% if form.file.errors %}
+                <div class="text-danger">{{ form.file.errors.0 }}</div>
+            {% endif %}
         </div>
         <div class="d-flex justify-content-start">
             <button type="submit" class="btn btn-primary me-2">Guardar</button>

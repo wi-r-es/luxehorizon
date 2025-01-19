@@ -2,9 +2,18 @@ from django import forms
 from .models import Hotel, Room, RoomType, Commodity
 
 class HotelForm(forms.ModelForm):
+    file = forms.FileField(
+        required=False,  # Make the file optional
+        label="Upload File",  # Label for the file field
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Hotel
-        fields = ['h_name', 'full_address', 'postal_code', 'city', 'email', 'telephone', 'details', 'stars']
+        fields = [
+            'h_name', 'full_address', 'postal_code', 'city', 
+            'email', 'telephone', 'details', 'stars'
+        ]
         labels = {
             'h_name': 'Nome do Hotel',
             'full_address': 'Morada',
@@ -25,6 +34,7 @@ class HotelForm(forms.ModelForm):
             'details': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalhes'}),
             'stars': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
         }
+
 
 class RoomForm(forms.ModelForm):
     class Meta:

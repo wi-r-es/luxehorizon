@@ -8,7 +8,11 @@ from django.http import Http404
 from django.db.models import Min
 from django.db import connection
 from hotel_management.models import HotelEmployees, Hotel
-from main.mongo_utils import get_number_of_reviews
+from luxehorizon.db_mongo import db
+from main.mongo_utils import get_number_of_reviews, get_files_by_postgres_id, upload_file_with_metadata
+from bson import ObjectId
+from django.http import HttpResponse
+import gridfs
 
 def hotel_list(request):
     query = request.GET.get('q', '')
@@ -55,6 +59,9 @@ def hotel_form(request, hotel_id=None):
     if hotel_id:
         # Fetch the hotel by ID for editing
         hotel = get_object_or_404(Hotel, id=hotel_id)
+        files = get_files_by_postgres_id(hotel_id)
+        for file in files:
+            file.id_str = str(file._id)
         heading = "Editar Hotel"
     else:
         # Initialize a new hotel for addition
@@ -62,12 +69,14 @@ def hotel_form(request, hotel_id=None):
         heading = "Adicionar Hotel"
 
     if request.method == 'POST':
-        form = HotelForm(request.POST, instance=hotel)
+        # Include request.FILES to handle file uploads
+        form = HotelForm(request.POST, request.FILES, instance=hotel)
         if form.is_valid():
-            # Extract cleaned data from the form
             data = form.cleaned_data
+            uploaded_file = request.FILES.get('file')  
+            
             try:
-                with connection.cursor() as cursor:
+                with connection.cursor() as cursor: 
                     cursor.execute("""
                         CALL sp_add_hotel(%s, %s, %s, %s, %s, %s, %s, %s)
                     """, [
@@ -75,19 +84,30 @@ def hotel_form(request, hotel_id=None):
                         data['city'], data['email'], data['telephone'],
                         data.get('details', ''), data.get('stars', 0)
                     ])
+
+                # Handle the uploaded file (Save to MongoDB or filesystem)
+                if uploaded_file:
+                    fileup = upload_file_with_metadata(uploaded_file, uploaded_file.name, hotel_id)
+                    if not fileup:
+                        messages.error(request, "Erro ao fazer upload do arquivo.")
+                        return redirect('hotel_list')
+
                 messages.success(request, "Hotel added successfully!")
                 return redirect('hotel_list')
+
             except Exception as e:
                 messages.error(request, f"An error occurred: {str(e)}")
         else:
             messages.error(request, "Please correct the errors below.")
     else:
         form = HotelForm(instance=hotel)
-
+    print(files)
     return render(request, 'hotel_management/hotel_form.html', {
         'form': form,
-        'heading': heading
+        'heading': heading, 
+        'files': files
     })
+
 
 
 # View para apagar um hotel
@@ -471,3 +491,12 @@ def commodity_delete(request, commodity_id):
         """, [commodity_id])
     messages.success(request, "Comodidade removida com sucesso!")
     return redirect('commodities_list')
+
+def serve_image(request, file_id):
+    # Get the file object from MongoDB using GridFS
+    fs = gridfs.GridFS(db)  # Make sure 'db' is your MongoDB connection
+    file = fs.get(ObjectId(file_id))  # Get the file by its ObjectId
+
+    # Set appropriate content type for images
+    response = HttpResponse(file.read(), content_type="image/jpeg")  # Adjust content type if necessary
+    return response

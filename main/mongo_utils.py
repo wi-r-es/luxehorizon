@@ -1,5 +1,9 @@
 from datetime import datetime
 from luxehorizon.db_mongo import db
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+import gridfs
 
 # Insere uma review na vase de dados
 def insert_review(user_id, hotel_id, reservation_id, rating, review_text):
@@ -94,3 +98,23 @@ def get_number_of_reviews(hotel_id):
         return result[0].get('number_of_reviews', 0)
     else:
         return 0
+    
+def upload_file_with_metadata(file, filename, postgres_id):
+    #collection = db['ficheiros']
+    fs = gridfs.GridFS(db)
+    metadata = {
+        "postgres_id": postgres_id
+    }
+    file_id = fs.put(file, filename=filename, metadata=metadata)
+    return file_id
+
+def get_files_by_postgres_id(postgres_id):
+    fs = gridfs.GridFS(db)  # Initialize GridFS
+    files = []
+    try:
+        # Query GridFS for files matching the given Postgres ID in metadata
+        for grid_out in fs.find({"metadata.postgres_id": postgres_id}):
+            files.append(grid_out)
+    except Exception as e:
+        print(f"Error retrieving files for Postgres ID {postgres_id}: {e}")
+    return files
