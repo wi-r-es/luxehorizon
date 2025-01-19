@@ -7,11 +7,7 @@ from django.http import Http404
 from django.db.models import Min
 from django.db import connection
 from hotel_management.models import HotelEmployees, Hotel
-from luxehorizon.db_mongo import db
-from main.mongo_utils import get_number_of_reviews, get_files_by_postgres_id, upload_file_with_metadata
-from bson import ObjectId
-from django.http import HttpResponse
-import gridfs
+from main.mongo_utils import get_number_of_reviews, get_files_by_postgres_id, upload_file_with_metadata, get_cover_image
 import sweetify
 
 def hotel_list(request):
@@ -367,7 +363,14 @@ def search_results(request):
 
     for hotel in hotels:
         num_rev = get_number_of_reviews(hotel.id)
-        print("Num Reviews:", num_rev)
+        file = get_cover_image(hotel.id)
+
+        if file is not None:
+            # Convert the GridFS file ID to a string
+            file.id_str = str(file._id)
+            hotel.cover_picture = file
+        else:
+            hotel.cover_picture = None
         hotel.num_reviews = num_rev
 
     return render(request, 'hotel_management/search_hotel.html', {
@@ -519,12 +522,3 @@ def commodity_delete(request, commodity_id):
         """, [commodity_id])
     sweetify.success(request, title='Success', text='Comodidade removida com sucesso!', persistent='Ok')
     return redirect('commodities_list')
-
-def serve_image(request, file_id):
-    # Get the file object from MongoDB using GridFS
-    fs = gridfs.GridFS(db)  # Make sure 'db' is your MongoDB connection
-    file = fs.get(ObjectId(file_id))  # Get the file by its ObjectId
-
-    # Set appropriate content type for images
-    response = HttpResponse(file.read(), content_type="image/jpeg")  # Adjust content type if necessary
-    return response

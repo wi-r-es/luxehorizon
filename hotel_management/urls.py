@@ -17,6 +17,5 @@ urlpatterns = [
     path('commodities/', views.commodity_list, name='commodities_list'),
     path('commodities/add/', views.commodity_form, name='commodities_add'),
     path('commodities/edit/<int:commodity_id>/', views.commodity_form, name='commodities_edit'),
-    path('commodities/<int:commodity_id>/delete/', views.commodity_delete, name='commodities_delete'), 
-    path('image/<str:file_id>/', views.serve_image, name='serve_image')
+    path('commodities/<int:commodity_id>/delete/', views.commodity_delete, name='commodities_delete')
 ]

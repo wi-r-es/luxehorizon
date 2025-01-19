@@ -79,7 +79,11 @@
             <div class="card mb-3">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="https://placehold.co/300x230" class="img-fluid rounded-start" alt="Hotel Image">
+                        {% if hotel.cover_picture is None %}
+                            <img src="https://placehold.co/300x230" class="img-fluid rounded-start" alt="Hotel Image">
+                        {% else %}
+                            <img src="{% url 'main:serve_image' file_id=hotel.cover_picture.id_str %}" class="img-fluid rounded-start" alt="Hotel Image" style="width: 300px; height: 230px;">
+                        {% endif %}
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">

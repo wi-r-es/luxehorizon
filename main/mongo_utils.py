@@ -109,12 +109,16 @@ def upload_file_with_metadata(file, filename, postgres_id):
     return file_id
 
 def get_files_by_postgres_id(postgres_id):
-    fs = gridfs.GridFS(db)  # Initialize GridFS
+    fs = gridfs.GridFS(db)   
     files = []
     try:
-        # Query GridFS for files matching the given Postgres ID in metadata
         for grid_out in fs.find({"metadata.postgres_id": postgres_id}):
             files.append(grid_out)
     except Exception as e:
         print(f"Error retrieving files for Postgres ID {postgres_id}: {e}")
     return files
+
+def get_cover_image(hotel_id): 
+    fs = gridfs.GridFS(db)
+    cover_image = fs.find_one({"metadata.postgres_id": hotel_id})
+    return cover_image

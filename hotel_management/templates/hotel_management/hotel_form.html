@@ -59,7 +59,7 @@
         <div class="d-flex flex-wrap">
             {% for file in files %}
                 <div class="card me-4 mb-4" style="width: 200px;">
-                    <img src="{% url 'serve_image' file_id=file.id_str %}" class="card-img-top" alt="{{ file.filename }}">
+                    <img src="{% url 'main:serve_image' file_id=file.id_str %}" class="card-img-top" alt="{{ file.filename }}">
                     <div class="card-body p-2">
                         <p class="card-text text-truncate" title="{{ file.filename }}">{{ file.filename }}</p>
                     </div>
