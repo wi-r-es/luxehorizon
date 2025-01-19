@@ -6,7 +6,6 @@ from django.contrib.auth import login
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from .forms import RegisterForm, CustomLoginForm
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
@@ -97,16 +96,14 @@ def register_user(request, user_id=None):
                     user.city = city
                     user.save()
 
-                messages.success(
-                    request,
-                    f"{'Utilizador adicionado com sucesso!' if operation == 'adicionar' else 'Utilizador atualizado com sucesso!'}"
-                )
+                sweetify.success(request, f"{'Utilizador adicionado com sucesso!' if operation == 'adicionar' else 'Utilizador atualizado com sucesso!'}")
                 return redirect('../../')
 
             except Exception as e:
-                messages.error(request, f"Ocorreu um erro: {str(e)}")
+                
+                sweetify.error(request, f"Ocorreu um erro: {str(e)}")
         else:
-            messages.error(request, "Por favor, corrija os erros abaixo.")
+            sweetify.error(request, "Por favor, corrija os erros abaixo.")
     else:
         # Pré-popular o formulário no modo de edição
         initial_data = {
@@ -175,16 +172,13 @@ def edit_user(request, user_id=None):
                     user.city = city
                     user.save()
 
-                messages.success(
-                    request,
-                    f"{'Utilizador adicionado com sucesso!' if operation == 'adicionar' else 'Utilizador atualizado com sucesso!'}"
-                )
+                sweetify.success(request, f"{'Utilizador adicionado com sucesso!' if operation == 'adicionar' else 'Utilizador atualizado com sucesso!'}")
                 return redirect('users_list')
 
             except Exception as e:
-                messages.error(request, f"Ocorreu um erro: {str(e)}")
+                sweetify.error(request, f"Ocorreu um erro: {str(e)}")
         else:
-            messages.error(request, "Por favor, corrija os erros abaixo.")
+            sweetify.error(request, "Por favor, corrija os erros abaixo.")
     else:
         # Pré-popular o formulário no modo de edição
         initial_data = {
@@ -214,21 +208,17 @@ class CustomLoginView(LoginView):
     def form_valid(self, form):
         email = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
-        print("email:", email)
-        print("password:", password)
 
         user = authenticate(request=self.request, username=email, password=password)
         if user is None:
-            messages.error(self.request, 'Credenciais inválidas')
+            sweetify.error(self.request, 'Credenciais inválidas')
             return self.form_invalid(form)
 
         user_from_db = User.objects.filter(pk=user.pk).values('last_login').first()
         first_login = user_from_db['last_login'] is None
-        print("first_login:", first_login)
 
         # Salva o estado de primeiro login na sessão para o template
         self.request.session['first_login'] = first_login
-        print("first_login (da sessão):", self.request.session['first_login'])
 
         login(self.request, user)
 
@@ -237,6 +227,7 @@ class CustomLoginView(LoginView):
             return self.render_to_response(self.get_context_data(first_login=first_login))
 
         # Redirecionar para a página principal após logins subsequentes
+        sweetify.success(self.request, "Login efetuado com sucesso!")
         return redirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -245,6 +236,7 @@ class CustomLoginView(LoginView):
         return context
 
     def get_success_url(self):
+        sweetify.success(self.request, "Login efetuado com sucesso!")
         return self.next_page
 
 @login_required
@@ -255,7 +247,7 @@ def change_password(request):
         user_id = request.user.id
 
         if new_password != confirm_password:
-            messages.error(request, "As passwords não coincidem.")
+            sweetify.error(request, "As passwords não coincidem.")
             return redirect('check_login')
 
         new_hashed_password = make_password(new_password)
@@ -265,11 +257,11 @@ def change_password(request):
                 cursor.execute("""
                     CALL sp_change_password(%s, %s)
                 """, [user_id, new_hashed_password])
-            messages.success(request, "Password alterada com sucesso. Por favor, faça login novamente.")
+            sweetify.success(request, "Password alterada com sucesso. Por favor, faça login novamente.")
             print("Password alterada com sucesso.")
         except Exception as e:
             logger.error(f"Erro ao alterar senha: {str(e)}")
-            messages.error(request, "Ocorreu um erro ao alterar a senha. Por favor, tente novamente.")
+            sweetify.error(request, "Ocorreu um erro ao alterar a senha. Por favor, tente novamente.")
             print("Erro ao alterar senha:", e)
         return redirect('login')
     
@@ -307,10 +299,10 @@ def update_profile(request):
         new_password = request.POST.get('password')
         if old_password and new_password:  # Se o utilizador pretende mudar a password
             if not user.check_password(old_password):
-                messages.error(request, "A password antiga está incorreta.")
+                sweetify.error(request, "A password antiga está incorreta.")
                 return render(request, 'users/profile.html', {'user': user})
             if old_password == new_password:
-                messages.error(request, "A nova password não pode ser igual à antiga.")
+                sweetify.error(request, "A nova password não pode ser igual à antiga.")
                 return render(request, 'users/profile.html', {'user': user})
             user.set_password(new_password)  # Define a nova password
 
@@ -383,7 +375,6 @@ def users_form(request, user_id=None):
         operation = "adicionar"
 
     if request.method == 'POST':
-        print("POST recebido!")
         form = UserForm(request.POST, instance=user)
 
         # Handle role selection for dynamic field validation
@@ -393,7 +384,7 @@ def users_form(request, user_id=None):
             try:
                 role = AccPermission.objects.get(id=role_id)
             except AccPermission.DoesNotExist:
-                messages.error(request, "Permissão selecionada é inválida.")
+                sweetify.error(request, "Permissão selecionada é inválida.")
                 return render_form(request, form, operation, user)
 
         # Adjust `social_security` field requirement dynamically
@@ -401,7 +392,6 @@ def users_form(request, user_id=None):
             form.fields['social_security'].required = False
 
         if form.is_valid():
-            print("Formulário válido!")
             new_user = form.save(commit=False)
 
             # Atualizar role
@@ -445,7 +435,6 @@ def users_form(request, user_id=None):
         else:
             print("Erros no formulário:", form.errors)
             sweetify.error(request, "Erro ao processar o formulário.")
-            messages.error(request, "Erro ao processar o formulário.")
     else:
         form = UserForm(instance=user)
 
@@ -484,7 +473,7 @@ def delete_user(request, user_id):
 
     if request.method == 'POST':
         user.delete()
-        messages.success(request, "Utilizador apagado com sucesso!")
+        sweetify.success(request, "Utilizador apagado com sucesso!")
         return redirect('users_list')
     else:
         return render(request, 'users/confirm_delete.html', {'user': user})

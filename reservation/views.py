@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from django.db import connection
 from django.http import JsonResponse
 from .models import Reservation, RoomReservation, Guest, Season
@@ -369,10 +368,10 @@ def season_form(request, season_id=None):
         if form.is_valid():
             new_season = form.save(commit=False)
             new_season.save()
-            messages.success(request, f"{'Temporada adicionada' if season is None else 'Temporada atualizada'} com sucesso!")
+            sweetify.success(request, title='Sucesso!', text=f"{'Temporada adicionada' if season is None else 'Temporada atualizada'} com sucesso!", icon='success', persistent='OK')
             return redirect('seasons_list')
         else:
-            messages.error(request, "Erro ao processar o formulário.")
+            sweetify.error(request, title='Erro!', text='Por favor, corrija os erros abaixo.', icon='error', persistent='OK')
     else:
         form = SeasonForm(instance=season)
 

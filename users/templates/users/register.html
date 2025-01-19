@@ -15,14 +15,6 @@
         <div class="form-wrapper">
             <h2 class="text-center mb-4">Registo</h2>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-
             <form method="post" action="{% url 'register' %}">
                 {% csrf_token %}
 
