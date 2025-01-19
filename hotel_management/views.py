@@ -101,7 +101,7 @@ def hotel_form(request, hotel_id=None):
             sweetify.error(request, title='Error', text='Ocorreu um erro ao adicionar o hotel.', persistent='Ok')
     else:
         form = HotelForm(instance=hotel)
-    print(files)
+ 
     return render(request, 'hotel_management/hotel_form.html', {
         'form': form,
         'heading': heading, 
@@ -111,11 +111,20 @@ def hotel_form(request, hotel_id=None):
 def edit_hotel(request, hotel_id):
     hotel = get_object_or_404(Hotel, id=hotel_id)
     heading = "Editar Hotel"
+    files = get_files_by_postgres_id(hotel_id)
+    for file in files:
+        file.id_str = str(file._id)
 
     if request.method == 'POST':
         form = HotelForm(request.POST, instance=hotel)
         if form.is_valid():
+            uploaded_file = request.FILES.get('file')
             form.save()  # Salva os dados diretamente no banco de dados
+            if uploaded_file:
+                fileup = upload_file_with_metadata(uploaded_file, uploaded_file.name, hotel_id)
+                if not fileup:
+                    messages.error(request, "Erro ao fazer upload do arquivo.")
+                    return redirect('hotel_list')
             sweetify.success(request, title='Success', text='Hotel editado com sucesso!', persistent='Ok')
             return redirect('hotel_list')
         else:
@@ -125,7 +134,8 @@ def edit_hotel(request, hotel_id):
 
     return render(request, 'hotel_management/hotel_form.html', {
         'form': form,
-        'heading': heading
+        'heading': heading, 
+        'files':  files
     })
 
 # View para apagar um hotel
