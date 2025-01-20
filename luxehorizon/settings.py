@@ -95,6 +95,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'luxehorizon.wsgi.application'
 
+logging.getLogger('pymongo').setLevel(logging.WARNING)
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

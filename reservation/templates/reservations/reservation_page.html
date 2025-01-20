@@ -65,6 +65,60 @@
             </div>
         </div>
 
+        <!-- Botão para abrir a modal -->
+        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#guestsModal">
+            Adicionar Dados dos Hóspedes
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="guestsModal" tabindex="-1" aria-labelledby="guestsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="guestsModalLabel">Dados dos Hóspedes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Abas para os hóspedes -->
+                        <ul class="nav nav-tabs" id="guestsTabs" role="tablist">
+                            {% for i in guest_range %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {% if i == 1 %}active{% endif %}" id="guest-tab-{{ i }}" data-bs-toggle="tab" data-bs-target="#guest-{{ i }}" type="button" role="tab" aria-controls="guest-{{ i }}" aria-selected="true">Hóspede {{ i }}</button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                        <!-- Conteúdo das abas -->
+                        <div class="tab-content mt-3" id="guestsTabsContent">
+                            {% for i in guest_range %}
+                            <div class="tab-pane fade {% if i == 1 %}show active{% endif %}" id="guest-{{ i }}" role="tabpanel" aria-labelledby="guest-tab-{{ i }}">
+                                <form id="guestForm_{{ i }}" class="guestForm">
+                                    <div class="mb-3">
+                                        <label for="guest_name_{{ i }}" class="form-label">Nome do Hóspede</label>
+                                        <input type="text" class="form-control" id="guest_name_{{ i }}" name="guest_name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="guest_cc_{{ i }}" class="form-label">Cartão de Cidadão</label>
+                                        <input type="text" class="form-control" id="guest_cc_{{ i }}" name="guest_cc" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="guest_phone_{{ i }}" class="form-label">Telefone</label>
+                                        <input type="text" class="form-control" id="guest_phone_{{ i }}" name="guest_phone" required>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-success" onclick="saveGuests()">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário principal -->
         <form method="POST" action="{% url 'confirm_reservation' %}">
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{ user_id }}">
@@ -73,12 +127,50 @@
             <input type="hidden" name="checkin" value="{{ checkin }}">
             <input type="hidden" name="checkout" value="{{ checkout }}">
             <input type="hidden" name="guests" value="{{ guests }}">
+            <input type="hidden" name="guests_data" id="guestsData">
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <button type="submit" class="btn btn-success btn-lg">Confirmar Reserva</button>
+                    <button type="submit" class="btn btn-success btn-lg" id="confirmButton" disabled>Confirmar Reserva</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    function saveGuests() {
+        const guestsData = [];
+        const forms = document.querySelectorAll(".guestForm");
+        let allFilled = true;
+
+        forms.forEach((form) => {
+            const name = form.querySelector('[name="guest_name"]').value;
+            const cc = form.querySelector('[name="guest_cc"]').value;
+            const phone = form.querySelector('[name="guest_phone"]').value;
+
+            if (!name || !cc || !phone) {
+                allFilled = false;
+            } else {
+                guestsData.push({ name, cc, phone });
+            }
+        });
+
+        if (allFilled) {
+            // Salva os dados dos hóspedes no campo oculto
+            document.getElementById("guestsData").value = JSON.stringify(guestsData);
+
+            // Habilita o botão de confirmação
+            document.getElementById("confirmButton").disabled = false;
+
+            // Fecha a modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('guestsModal'));
+            modal.hide();
+
+            // Exibe mensagem de sucesso
+            alert("Dados dos hóspedes salvos com sucesso!");
+        } else {
+            alert("Por favor, preencha todos os campos dos hóspedes antes de salvar.");
+        }
+    }
+</script>
 {% endblock %}

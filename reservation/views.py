@@ -1,13 +1,14 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection
 from django.http import JsonResponse
-from .models import Reservation, RoomReservation, Guest, Season
+from .models import Reservation, Guest, Season
 from hotel_management.models import Room
 from .forms import SeasonForm
 from django.db.models.functions import TruncMonth
 from django.db.models import Count
 from django.db.models import Q
-from hotel_management.models import HotelEmployees, Hotel
+from hotel_management.models import HotelEmployees
 from billing.models import PaymentMethod
 import sweetify
 
@@ -220,11 +221,10 @@ def payment(request):
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
 
 def reservation_page(request, room_id):
-
     hotel_id = request.GET.get('hotel_id')
     checkin = request.GET.get('checkin')
     checkout = request.GET.get('checkout')
-    guests = request.GET.get('guests')
+    guests = int(request.GET.get('guests', 1))
     
     # Busca os dados do quarto pelo room_id
     room = get_object_or_404(Room, id=room_id)
@@ -247,6 +247,7 @@ def reservation_page(request, room_id):
         'checkin': checkin,
         'checkout': checkout,
         'guests': guests,
+        'guest_range': range(1, guests + 1),
         'user_id': user_id,  
         'user_name': user_name,
         'user_last_name': user_last_name,
@@ -259,7 +260,7 @@ def reservation_page(request, room_id):
     }
     return render(request, 'reservations/reservation_page.html', context)
 
-def confirm_reservation(request): #TODO
+def confirm_reservation(request):
     if request.method == "POST":
         try:
             # Receber os parâmetros do corpo da requisição
@@ -269,24 +270,41 @@ def confirm_reservation(request): #TODO
             checkout = request.POST.get("checkout")  # Formato: YYYY-MM-DD
             guests = int(request.POST.get("guests"))
 
-            # verificacao se quer pagar agora ou depois
-            payment_method_id = 1 # Método de pagamento padrão (credit card)
+            # Hóspedes enviados como JSON
+            guests_data = request.POST.get("guests_data")
+            guests_list = json.loads(guests_data)  # Converter JSON para lista de hóspedes
+            print(guests_list)
+            # Verificação se quer pagar agora ou depois
+            payment_method_id = 1  # Método de pagamento padrão (cartão de crédito)
 
-            # Chamar o procedimento no banco de dados
+            # Iniciar transação
             with connection.cursor() as cursor:
+                # Criar a reserva
                 cursor.execute("""
                     CALL sp_create_reservation(%s, %s, %s, %s, %s);
                 """, [user_id, room_id, checkin, checkout, guests])
 
+                # Obter o ID da reserva criada
                 cursor.execute('SELECT MAX(id) FROM "reserves.reservation"')
                 reservation_id = cursor.fetchone()[0]
 
+                # Adicionar os hóspedes na base de dados
+                for guest in guests_list:
+                    cursor.execute("""
+                        INSERT INTO "reserves.guest" (reservation_id, full_name, cc_pass, phone)
+                        VALUES (%s, %s, %s, %s);
+                    """, [reservation_id, guest['name'], guest['cc'], guest['phone']])
+
+                # Gerar a fatura
                 cursor.execute("""
                     CALL sp_generate_invoice(%s, %s, %s);
                 """, [reservation_id, payment_method_id, None])
 
+            sweetify.success(request, title='Reserva efetuada com sucesso!', icon='success', persistent='OK')
             return redirect('my_reservations')
+
         except Exception as e:
+            sweetify.error(request, title='Erro ao efetuar a reserva!', icon='error', persistent='OK')
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Método não suportado. Use POST."}, status=405)
