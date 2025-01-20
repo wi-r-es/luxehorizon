@@ -38,7 +38,6 @@
                     <th class="text-center">Check-out</th>
                     <th class="text-center">Noites</th>
                     <th class="text-center">Preço (€)</th>
-                    <th class="text-center">Classificação do Hotel</th>
                     <th class="text-center">Estado</th>
                     {% if has_actions %}
                     <th class="text-center">Ações</th>
@@ -55,7 +54,6 @@
                     <td class="text-center">{{ reservation.check_out|date:"d/m/Y" }}</td>
                     <td class="text-center">{{ reservation.nights }}</td>
                     <td class="text-end">{{ reservation.price }} €</td>
-                    <td class="text-center">{{ reservation.hotel_rating }}</td>
                     <td class="text-center">{{ reservation.status }}</td>
                     {% if has_actions and reservation.status != 'CC' or reservation.status != 'CO' %}
                 <td class="text-center">

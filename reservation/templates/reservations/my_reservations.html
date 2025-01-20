@@ -28,10 +28,6 @@
                         {% if reservation.tax_inclusive %}
                             <small class="text-muted">(including taxes and fees)</small>
                         {% endif %}
-                    </p>
-                </div>
-                <div class="card-footer text-center">
-                    <a href="#" class="btn btn-primary btn-sm">Ver Detalhes do Quarto</a>
                 </div>
                 <div class="card-footer text-center">
                     <a href="{% url 'review:reservation_review' reservation_id=reservation.id %}" class="btn btn-info">Fazer Avalia&cedil;&atilde;o</a>

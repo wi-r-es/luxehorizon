@@ -203,7 +203,7 @@ class CustomLoginView(LoginView):
     form_class = CustomLoginForm
     template_name = 'users/login.html'
     redirect_authenticated_user = False
-    next_page = reverse_lazy('index')
+    next_page = reverse_lazy('main:index')
 
     def form_valid(self, form):
         email = form.cleaned_data.get('username')
@@ -248,7 +248,7 @@ def change_password(request):
 
         if new_password != confirm_password:
             sweetify.error(request, "As passwords não coincidem.")
-            return redirect('check_login')
+            return redirect('login')
 
         new_hashed_password = make_password(new_password)
 
@@ -258,15 +258,15 @@ def change_password(request):
                     CALL sp_change_password(%s, %s)
                 """, [user_id, new_hashed_password])
             sweetify.success(request, "Password alterada com sucesso. Por favor, faça login novamente.")
-            print("Password alterada com sucesso.")
         except Exception as e:
             logger.error(f"Erro ao alterar senha: {str(e)}")
             sweetify.error(request, "Ocorreu um erro ao alterar a senha. Por favor, tente novamente.")
-            print("Erro ao alterar senha:", e)
+        
+        sweetify.success(request, "Password alterada com sucesso. Por favor, faça login novamente.")
         return redirect('login')
-    
+
 class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy('index')
+    next_page = reverse_lazy('main:index')
 
 def profile_view(request):
     # Retrieve the user and check if they're a client or an employee
