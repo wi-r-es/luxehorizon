@@ -23,6 +23,7 @@ def main():
         "python manage.py init_seasons",
         "python manage.py init_payment_methods",
         "python manage.py bulk_insert",
+        "python manage.py populate_mongoDB",
         "python manage.py runserver 127.0.0.1:8000"
     ]
 
