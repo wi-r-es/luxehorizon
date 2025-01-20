@@ -2,32 +2,83 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2>Confirmar Reserva</h2>
+    <h2 class="text-center mb-4">Confirmar Reserva</h2>
 
-    <h5 class="mb-3">Dados Cliente:</h5>
-    <p><strong>Nome:</strong> {{ user_name }} {{ user_last_name }}</p>
-    <p><strong>Email:</strong> {{ user_email }}</p>
-    <p><strong>Telefone:</strong> {{ user_phone }}</p>
-    <p><strong>Morada:</strong> {{ user_address }}</p>
-    <p><strong>Código Postal:</strong> {{ user_postal_code }}</p>
-    <p><strong>Cidade:</strong> {{ user_city }}</p>
+    <div class="card shadow-sm p-4">
+        <h3 class="card-title mb-3">Dados do Cliente</h3>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Nome</h5>
+                <p>{{ user_name }} {{ user_last_name }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Email</h5>
+                <p>{{ user_email }}</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Telefone</h5>
+                <p>{{ user_phone }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Morada</h5>
+                <p>{{ user_address }}</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Código Postal</h5>
+                <p>{{ user_postal_code }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Cidade</h5>
+                <p>{{ user_city }}</p>
+            </div>
+        </div>
 
-    <h5 class="mb-3">Dados Hotel e Quarto:</h5>
-    <p><strong>Hotel:</strong> {{ hotel_name }}</p>
-    <p><strong>Quarto:</strong> {{ room.room_number }}</p>
-    <p><strong>Check-in:</strong> {{ checkin }}</p>
-    <p><strong>Check-out:</strong> {{ checkout }}</p>
-    <p><strong>Número de Hóspedes:</strong> {{ guests }}</p>
+        <h3 class="card-title mb-3">Dados da Reserva</h3>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Hotel</h5>
+                <p>{{ hotel_name }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Quarto</h5>
+                <p>{{ room.room_number }}</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Check-in</h5>
+                <p>{{ checkin }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Check-out</h5>
+                <p>{{ checkout }}</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Número de Hóspedes</h5>
+                <p>{{ guests }}</p>
+            </div>
+        </div>
 
-    <form method="POST" action="{% url 'confirm_reservation' %}">
-        {% csrf_token %}
-        <input type="hidden" name="user_id" value="{{ user_id }}">
-        <input type="hidden" name="room_id" value="{{ room.id }}">
-        <input type="hidden" name="hotel_id" value="{{ hotel_id }}">
-        <input type="hidden" name="checkin" value="{{ checkin }}">
-        <input type="hidden" name="checkout" value="{{ checkout }}">
-        <input type="hidden" name="guests" value="{{ guests }}">
-        <button type="submit" class="btn btn-success">Confirmar Reserva</button>
-    </form>
+        <form method="POST" action="{% url 'confirm_reservation' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ user_id }}">
+            <input type="hidden" name="room_id" value="{{ room.id }}">
+            <input type="hidden" name="hotel_id" value="{{ hotel_id }}">
+            <input type="hidden" name="checkin" value="{{ checkin }}">
+            <input type="hidden" name="checkout" value="{{ checkout }}">
+            <input type="hidden" name="guests" value="{{ guests }}">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <button type="submit" class="btn btn-success btn-lg">Confirmar Reserva</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
