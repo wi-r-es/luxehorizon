@@ -122,3 +122,18 @@ def get_cover_image(hotel_id):
     fs = gridfs.GridFS(db)
     cover_image = fs.find_one({"metadata.postgres_id": hotel_id})
     return cover_image
+
+def upload_file_init(file_path, filename, hotel_id):
+    try:
+        fs = gridfs.GridFS(db)
+        with open(file_path, 'rb') as file:
+            metadata = {"postgres_id": hotel_id, "filename": filename}
+            file_id = fs.put(file, filename=filename, metadata=metadata)
+            print(f"File {filename} uploaded with file_id {file_id} and metadata {metadata}")
+            return file_id
+    except FileNotFoundError:
+        print(f"Error: File {file_path} not found.")
+    except gridfs.errors.GridFSError as e:
+        print(f"Error uploading file to GridFS: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
