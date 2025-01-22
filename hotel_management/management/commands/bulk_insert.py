@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.db import connection
-from utils.funcs import hash_password
+from utils.funcs import hash_password, safe_execute
 from hotel_management.models import HotelEmployees, Hotel
 from users.models import User
 from utils.hotels import hotels, commodities, room_commodities
@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
             hashed_password = hash_password('password')
             # Add Users    - 1 Admin - 5 Managers (1 per hotel) - 3 employees por hotel - clients
-            cursor.execute("""
+            safe_execute(cursor, """
             CALL sp_register_user(
                 'John',
                 'Doe',
@@ -45,9 +45,11 @@ class Command(BaseCommand):
                 'Example City',
                 'C'
             );
-            """,[hashed_password])
+            """,[hashed_password],
+                success_message="User John Doe added.",
+                error_message="Error adding user John Doe")
 
-            cursor.execute("""
+            safe_execute(cursor, """
             CALL sp_register_user(
                 'John',
                 'NotDoe',
@@ -61,45 +63,52 @@ class Command(BaseCommand):
                 'F',
                 250250250
             );
-            """,[hashed_password])
+            """,[hashed_password],
+                success_message="User John NotDoe added.",
+                error_message="Error adding user John NotDoe")
 
             # FICTIONAL CLIENTS
             for i in range(1, 10):
-                cursor.execute(f"""
-                CALL sp_register_user(
-                    'Client{i}',
-                    'Test',
-                    'user{i}@example.com',
-                    '{hashed_password}',
-                    '999888777{i}',
-                    '987654320{i}',
-                    'Street {i}',
-                    '1000-{i}',
-                    'City{i}',
-                    'C'
-                );
-                """)
+                safe_execute(cursor, f"""
+                        CALL sp_register_user(
+                            'Client{i}',
+                            'Test',
+                            'user{i}@example.com',
+                            '{hashed_password}',
+                            '999888777{i}',
+                            '987654320{i}',
+                            'Street {i}',
+                            '1000-{i}',
+                            'City{i}',
+                            'C'
+                        );
+                        """,
+                        success_message=f"Client {i} added.",
+                        error_message=f"Error adding client {i}"
+                    )
 
             
             # Add Hotels
             for name, address, postal_code, city, stars in hotels:
-                cursor.execute(f"""
-                CALL sp_add_hotel(
-                    '{name}',
-                    '{address}',
-                    '{postal_code}',
-                    '{city}',
-                    'info@{name.lower().replace(" ", "")}.com',
-                    '123456789',
-                    'Description for {name}',
-                    {stars}
-                );
-                """)
-                self.stdout.write(f"Hotel---> {name} added .")
+                safe_execute(cursor, f"""
+                    CALL sp_add_hotel(
+                        '{name}',
+                        '{address}',
+                        '{postal_code}',
+                        '{city}',
+                        'info@{name.lower().replace(" ", "")}.com',
+                        '123456789',
+                        'Description for {name}',
+                        {stars}
+                    );
+                    """,
+                    success_message=f"Hotel {name} added.",
+                    error_message=f"Error adding hotel {name}")
+                #self.stdout.write(f"Hotel---> {name} added .")
             ## MANAGERS
             hashed_password = hash_password('admin')
             for i, (hotel_name, _, _, city, _) in enumerate(hotels, start=1):
-                cursor.execute(f"""
+                safe_execute(cursor, f"""
                     CALL sp_register_user(
                         'Manager',
                         '{hotel_name}',
@@ -113,21 +122,29 @@ class Command(BaseCommand):
                         'F',
                         {100000000 + i}
                     );
-                """)
-                cursor.execute(f"""
-                    SELECT id FROM "hr.users"
-                    WHERE email = 'manager{i}@{hotel_name.lower().replace(" ", "")}.com';
-                """)
-                new_user_id = cursor.fetchone()[0]
-                new_user = User.objects.get(id=new_user_id)
-                # Update the Role to Manager Level
-                cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 2);") 
-                hotel_var = Hotel.objects.get(id=i)
-                # Link the Manager to the Hotel
-                HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
+                    """,
+                    success_message=f"Manager for {hotel_name} added.",
+                    error_message=f"Error adding manager for {hotel_name}")
                 
-                self.stdout.write(f"Manager for {hotel_name} added with user ID {new_user_id} and linked to hotel ID {i}.")
+                try:
+                    cursor.execute(f"""
+                        SELECT id FROM "hr.users"
+                        WHERE email = '{email}';
+                    """)
+                    new_user_id = cursor.fetchone()[0]
+                    new_user = User.objects.get(id=new_user_id)
+                    hotel_var = Hotel.objects.get(id=i)
+                    HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
 
+                    # Update Role
+                    safe_execute(
+                        cursor,
+                        f"CALL sp_update_employee_role({new_user_id}, 2);",
+                        success_message=f"Role updated for manager of {hotel_name}.",
+                        error_message=f"Error updating role for manager of {hotel_name}"
+                    )
+                except Exception as e:
+                    self.stdout.write(f"Error linking manager for {hotel_name}: {e}")
             
 
 
@@ -138,14 +155,18 @@ class Command(BaseCommand):
 
 
             
-#here
+
             #Add Rooms
             create_rooms(cursor, self)
 
             # Add Commodities
             for commodity in commodities:
-                cursor.execute(f"CALL sp_create_commodity('{commodity}');")
-                self.stdout.write(f"Added Commodity: {commodity}")
+                safe_execute(
+                    cursor,
+                    f"CALL sp_create_commodity('{commodity}');",
+                    success_message=f"Commodity {commodity} added.",
+                    error_message=f"Error adding commodity {commodity}"
+                )
 
             # Fetch all rooms and their type initials
             cursor.execute('SELECT id, room_type_id FROM "room_management.room";')
@@ -166,10 +187,12 @@ class Command(BaseCommand):
 
                 for commodity_id in commodity_ids:
                     # Use the stored procedure to link the commodity to the room
-                    cursor.execute(f"""
-                    CALL sp_link_commodity_to_room({room_id}, {commodity_id});
-                    """)
-                    self.stdout.write(f"Linked Commodity ID {commodity_id} to Room ID {room_id} (Type {room_type_initials})")
+                    safe_execute(
+                        cursor,
+                        f"CALL sp_link_commodity_to_room({room_id}, {commodity_id});",
+                        success_message=f"Linked commodity {commodity_id} to room {room_id}.",
+                        error_message=f"Error linking commodity {commodity_id} to room {room_id}"
+                    )
 
             # # Update Room Status
             # for room_id in range(1, 11):

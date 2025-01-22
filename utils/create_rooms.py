@@ -1,5 +1,6 @@
 import random
 from utils.hotels import hotels
+from utils.funcs import safe_execute
 # Room configurations
 room_configs = {
     'views': {
@@ -74,13 +75,18 @@ def create_rooms(cursor, self):
             room_number = random.randint(100, 500)
 
             # Insert the room
-            cursor.execute(f"""
-            CALL sp_add_room(
-                {hotel_id},        -- Hotel ID
-                '{type_initials}', -- Type initials
-                {room_number},     -- Room number
-                {base_price:.2f},  -- Base price
-                0                  -- Initial condition (Available)
-            );
-            """)
-            self.stdout.write(f"Added Room: Hotel {hotel_id}, Type {type_initials}, Room {room_number}, Price {base_price:.2f}")    
+            safe_execute(
+                cursor,
+                f"""
+                CALL sp_add_room(
+                    {hotel_id},        -- Hotel ID
+                    '{type_initials}', -- Type initials
+                    {room_number},     -- Room number
+                    {base_price:.2f},  -- Base price
+                    0                  -- Initial condition (Available)
+                );
+                """,
+                success_message=f"Added Room: Hotel {hotel_id}, Type {type_initials}, Room {room_number}, Price {base_price:.2f}",
+                error_message=f"Error adding room {hotel_id} for hotel {room_number}"
+                )
+            #self.stdout.write(f"Added Room: Hotel {hotel_id}, Type {type_initials}, Room {room_number}, Price {base_price:.2f}")    
