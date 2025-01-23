@@ -17,13 +17,23 @@ class AdminEmployeeDashboardView(LoginRequiredMixin, TemplateView):
     # Call the stored procedures
         overview = self.call_stored_procedure('get_overview')[0]
         top_placements = self.call_stored_procedure('get_top_placements')
-        sales_data = self.call_stored_procedure('get_sales_over_time')
+        raw_sales_data = self.call_stored_procedure('get_sales_over_time')
 
         # Handle None values
         total_revenue = overview.get('total_revenue') or 0
         expected_guests = overview.get('expected_guests') or 0
         expected_clients = overview.get('expected_clients') or 0
-        
+
+        # Transform the data into the required format
+        sales_data = [
+            {"day": item["day"], "revenue": float(item["revenue"])}
+            for item in raw_sales_data
+            if "day" in item and "revenue" in item
+        ]
+
+        if not sales_data:
+            sales_data = []
+
         context = {
             "total_revenue": f"{total_revenue:,.2f} €",
             "expected_guests": f"{expected_guests + expected_clients:,}",
