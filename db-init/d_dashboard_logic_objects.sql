@@ -1,13 +1,15 @@
 -- FUNCTION TO GET OVERVIEW SECTION IN DASHBOARD
 CREATE OR REPLACE FUNCTION get_overview() --works
-RETURNS TABLE(total_revenue NUMERIC, expected_guests BIGINT) AS $$
+RETURNS TABLE(total_revenue NUMERIC, expected_guests BIGINT, expected_clients BIGINT) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
         SUM(total_value) AS total_revenue,
-        COUNT(DISTINCT client_id) AS expected_guests
-    FROM "reserves.reservation"
-    WHERE status = 'C'; -- Only confirmed reservations
+        COUNT(g.id) AS expected_guests,
+		(COUNT(r.client_id)-1) AS expected_clients
+    FROM "reserves.reservation" r
+    LEFT JOIN "reserves.guest" g ON r.id = g.reservation_id
+    WHERE r.status = 'C' AND r.begin_date >= CURRENT_DATE; -- Only confirmed reservations
 END;
 $$ LANGUAGE plpgsql;
 
