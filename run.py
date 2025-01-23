@@ -13,6 +13,7 @@ def run_command(command):
 
 def main():
     commands = [
+        "pip install -r requirements.txt",
         "python manage.py makemigrations",
         "python manage.py migrate users",
         "python manage.py migrate --noinput",
