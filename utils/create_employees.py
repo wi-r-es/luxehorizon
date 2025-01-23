@@ -1,12 +1,12 @@
 from utils.hotels import hotels
-from utils.funcs import hash_password
+from utils.funcs import hash_password, safe_execute
 from hotel_management.models import HotelEmployees, Hotel
 from users.models import User
 
 def create_employees(cursor, self):
     hashed_password = hash_password('12345')
     # HOTEL 1
-    cursor.execute("""
+    safe_execute(cursor, """
         CALL sp_register_user(
             'Alice',
             'Sinclair',
@@ -20,48 +20,65 @@ def create_employees(cursor, self):
             'F',
             250250251
         );
-    """, [hashed_password])
+    """, [hashed_password], 
+        success_message="User Alice Sinclair added.",
+        error_message="Error adding Alice Sinclair")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'alice.sinclair@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee")
     new_user = User.objects.get(id=new_user_id)
     hotel_var = Hotel.objects.get(id=1)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[0]} added with user ID {new_user_id} and linked to hotel ID {1}.")
 
-    cursor.execute("""
-        CALL sp_register_user(
-            'Bob',
-            'Johnson',
-            'bob.johnson@example.com',
-            %s,
-            '111111112',
-            '111111112',
-            '123 Example Street',
-            '3500-678',
-            'Example City',
-            'F',
-            250250252
-        );
-    """, [hashed_password])
+    safe_execute(
+        cursor,
+        """
+            CALL sp_register_user(
+                'Bob',
+                'Johnson',
+                'bob.johnson@example.com',
+                %s,
+                '111111112',
+                '111111112',
+                '123 Example Street',
+                '3500-678',
+                'Example City',
+                'F',
+                250250252
+            );
+        """, 
+        [hashed_password],
+        success_message="User Bob Johnson added.",
+        error_message="Error adding Bob Johnson")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'bob.johnson@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee")
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[0]} added with user ID {new_user_id} and linked to hotel ID {1}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Mary',
             'Carrie',
@@ -75,21 +92,31 @@ def create_employees(cursor, self):
             'F',
             250250253
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Mary Carrie added.",
+        error_message="Error adding Mary Carrie")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'mary.carrie@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[0]} added with user ID {new_user_id} and linked to hotel ID {1}.")
 
     # HOTEL 2
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Snoop',
             'Dog',
@@ -103,21 +130,31 @@ def create_employees(cursor, self):
             'F',
             250250254
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Snoop Dog added.",
+        error_message="Error adding Snoop Dog")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'snoop.dog@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     hotel_var = Hotel.objects.get(id=2)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[1]} added with user ID {new_user_id} and linked to hotel ID {2}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Fifty',
             'Cent',
@@ -131,14 +168,22 @@ def create_employees(cursor, self):
             'F',
             250250255
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Fifty Cent added.",
+        error_message="Error adding Fifty Cent")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'fifty.cent@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
@@ -183,7 +228,9 @@ def create_employees(cursor, self):
     
 
     # HOTEL 3
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Ambrosio',
             'Gilberto',
@@ -197,21 +244,31 @@ def create_employees(cursor, self):
             'F',
             250250257
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Ambrosio Gilberto added.",
+        error_message="Error adding Ambrosio Gilberto")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'ambrosio.gilberto@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     hotel_var = Hotel.objects.get(id=3)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[2]} added with user ID {new_user_id} and linked to hotel ID {3}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Simon',
             'Sixfinger',
@@ -225,20 +282,30 @@ def create_employees(cursor, self):
             'F',
             250250258
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Simon Sixfinger added.",
+        error_message="Error adding Simon Sixfinger")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'simon.sixfinger@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[2]} added with user ID {new_user_id} and linked to hotel ID {3}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Robin',
             'Mamassita',
@@ -252,21 +319,31 @@ def create_employees(cursor, self):
             'F',
             250250259
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Robin Mamassita added.",
+        error_message="Error adding Robin Mamassita")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'robin.mamassita@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[2]} added with user ID {new_user_id} and linked to hotel ID {3}.")
 
     # HOTEL 4
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Violet',
             'Green',
@@ -280,21 +357,31 @@ def create_employees(cursor, self):
             'F',
             250250260
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Violet Green added.",
+        error_message="Error adding Violet Green")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'violet.green@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     hotel_var = Hotel.objects.get(id=4)
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[3]} added with user ID {new_user_id} and linked to hotel ID {4}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Clover',
             'Morgan',
@@ -308,20 +395,30 @@ def create_employees(cursor, self):
             'F',
             250250261
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Clover Morgan added.",
+        error_message="Error adding Clover Morgan")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'clover.morgan@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[3]} added with user ID {new_user_id} and linked to hotel ID {4}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Goosey',
             'Maclain',
@@ -335,49 +432,69 @@ def create_employees(cursor, self):
             'F',
             250250262
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Goosey Maclain added.",
+        error_message="Error adding Goosey Maclain")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'goosey.maclain@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[3]} added with user ID {new_user_id} and linked to hotel ID {4}.")
 
     # HOTEL 5
-    cursor.execute("""
-        CALL sp_register_user(
-            'Deliah',
-            'Ishere',
-            'delilah.ishere@example.com',
-            %s,
-            '444444444',
-            '444444444',
-            '123 Example Street',
-            '3500-678',
-            'Example City',
-            'F',
-            250250263
-        );
-    """, [hashed_password])
+    safe_execute(
+        cursor, 
+        """
+            CALL sp_register_user(
+                'Deliah',
+                'Ishere',
+                'delilah.ishere@example.com',
+                %s,
+                '444444444',
+                '444444444',
+                '123 Example Street',
+                '3500-678',
+                'Example City',
+                'F',
+                250250263
+            );
+        """, 
+        [hashed_password],
+        success_message="User Deliah Ishere added.",
+        error_message="Error adding Deliah Ishere")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'delilah.ishere@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     hotel_var = Hotel.objects.get(id=5)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[4]} added with user ID {new_user_id} and linked to hotel ID {5}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Harper',
             'Ferrari',
@@ -391,20 +508,29 @@ def create_employees(cursor, self):
             'F',
             250250264
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Harper Ferrari added.",
+        error_message="Error adding Harper Ferrari")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'harper.ferrarit@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee")
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[4]} added with user ID {new_user_id} and linked to hotel ID {5}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Austin',
             'Elliot',
@@ -418,20 +544,29 @@ def create_employees(cursor, self):
             'F',
             250250265
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Austin Elliot added.",
+        error_message="Error adding Austin Elliot")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'austin.elliot@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee")
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
     self.stdout.write(f"Employee for {hotels[4]} added with user ID {new_user_id} and linked to hotel ID {5}.")
 
-    cursor.execute("""
+    safe_execute(
+        cursor, 
+        """
         CALL sp_register_user(
             'Dominic',
             'Bennet',
@@ -445,14 +580,22 @@ def create_employees(cursor, self):
             'F',
             250250266
         );
-    """, [hashed_password])
+        """, 
+        [hashed_password],
+        success_message="User Dominic Bennet added.",
+        error_message="Error adding Dominic Bennet")
     cursor.execute(f"""
         SELECT id FROM "hr.users"
         WHERE email = 'dominic.bennet@example.com';
     """)
     new_user_id = cursor.fetchone()[0]
     # Update the Role to employee Level
-    cursor.execute(f"CALL sp_update_employee_role({new_user_id}, 3);")
+    safe_execute(
+        cursor, 
+        f"CALL sp_update_employee_role({new_user_id}, 3);",
+        success_message=f"Role updated for Employee.",
+        error_message=f"Error updating role for Employee"
+    )
     new_user = User.objects.get(id=new_user_id)
     # Link the employee to the Hotel
     HotelEmployees.objects.create(hotel=hotel_var, employee=new_user)
