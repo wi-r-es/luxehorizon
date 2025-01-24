@@ -23,7 +23,7 @@
             </div>
             <!-- Número de Hóspedes -->
             <div class="form-group mr-2">
-                <input type="number" name="guests"  class="form-control" placeholder="Guests" aria-label="Number of guests" min="1" required>
+                <input type="number" name="guests" class="form-control" placeholder="Guests" aria-label="Number of guests" min="1" required>
             </div>
             <!-- Botão de Pesquisa -->
             <button type="submit" class="btn btn-primary">Search</button>
@@ -31,30 +31,39 @@
     </div>
 </section>
 
+<!-- Top 3 Hotels Section -->
 <section class="destinations my-5">
     <div class="container">
-        <h2>Explore Our Top Destinations</h2>
+        <h2>Explore Our Top Hotels</h2>
         <div class="row">
-            <div class="col-md-3">
-                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Australia">
-                <p>Australia</p>
+            {% for hotel in top_hotels %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center">
+                    {% if hotel.cover_picture is None %}
+                        <img src="https://placehold.co/300x230" class="card-img-top" alt="Hotel Image">
+                    {% else %}
+                        <img src="{% url 'main:serve_image' file_id=hotel.cover_picture.id_str %}" class="card-img-top" alt="Hotel Image" style="height: 230px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body text-start">
+                        <h3 class="card-title">{{ hotel.h_name }}</h3>
+                        <p class="card-text mb-2">Cidade: {{ hotel.city }}</p>
+                        <p class="card-text">
+                            {% for _ in "x"|rjust:hotel.stars %}⭐{% endfor %} 
+                            ( {{ hotel.stars }} estrelas )
+                        </p>
+                        <div class="text-end">
+                            <a href="{% url 'review:hotel_reviews' hotel_id=hotel.id %}" class="btn btn-info btn-sm">Avaliações</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Japan">
-                <p>Japan</p>
-            </div>
-            <div class="col-md-3">
-                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="New Zealand">
-                <p>New Zealand</p>
-            </div>
-            <div class="col-md-3">
-                <img src="https://via.placeholder.com/300x200" class="img-fluid" alt="Greece">
-                <p>Greece</p>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 
+
+<!-- Inspiration Section -->
 <section class="inspiration my-5">
     <div class="container">
         <h2>Get Inspired for Your Next Trip</h2>
