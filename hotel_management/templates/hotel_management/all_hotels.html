@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Sidebar and Results -->
+    <div class="row mt-4">
+        <section class="col-md-9">
+            <h5>{{ hotels|length }} hotels found</h5>
+            {% for hotel in hotels %}
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        {% if hotel.cover_picture is None %}
+                            <img src="https://placehold.co/300x230" class="img-fluid rounded-start" alt="Hotel Image">
+                        {% else %}
+                            <img src="{% url 'main:serve_image' file_id=hotel.cover_picture.id_str %}" class="img-fluid rounded-start" alt="Hotel Image" style="width: 300px; height: 230px;">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body text-start">
+                            <h4 class="card-text">{{ hotel.h_name }}</h4>
+                            <p class="card-text mb-2">Cidade: {{ hotel.city }}
+                            <p class="card-text mb-2">Morada: {{ hotel.full_address }}, {{ hotel.city }}</p>
+                            <p class="card-text">
+                                {% for _ in "x"|rjust:hotel.stars %}⭐{% endfor %} 
+                                ( {{ hotel.stars }} estrelas )
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-end"> 
+                                    <a href="{% url 'review:hotel_reviews' hotel_id=hotel.id %}" class="btn btn-info">Avaliações ({{hotel.num_reviews}})</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}

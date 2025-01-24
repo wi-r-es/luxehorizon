@@ -378,6 +378,90 @@ def search_results(request):
         'city': city,
     })
 
+def search_results(request):
+    print("Query Params search:", request.GET)
+    # Parâmetros do filtro
+    city = request.GET.get('city', '').strip()
+    budget_ranges = request.GET.getlist('budget_range')
+    min_budget = request.GET.get('min_budget', '').strip()
+    max_budget = request.GET.get('max_budget', '').strip()
+    ratings = request.GET.getlist('ratings')
+
+    if not city:
+        return render(request, 'hotel_management/list_hotels_rooms.html', {
+            'error': 'Please provide a city to search for available hotels.'
+        })
+
+    # Filtro inicial para a cidade
+    filters = Q(city__icontains=city)
+
+    # Filtros para orçamento
+    budget_queries = Q()
+    if budget_ranges:
+        for range_ in budget_ranges:
+            try:
+                min_b, max_b = map(int, range_.split('-'))
+                print("Range:", min_b, max_b)
+                budget_queries |= Q(hotelroom__base_price__gte=min_b, hotelroom__base_price__lte=max_b)
+            except ValueError:
+                continue  # Ignorar ranges inválidos
+
+    if min_budget:
+        try:
+            budget_queries &= Q(hotelroom__base_price__gte=int(min_budget))
+        except ValueError:
+            pass
+
+    if max_budget:
+        try:
+            budget_queries &= Q(hotelroom__base_price__lte=int(max_budget))
+        except ValueError:
+            pass
+
+    filters &= budget_queries
+
+    # Filtros para avaliações
+    if ratings:
+        filters &= Q(stars__in=[int(rating) for rating in ratings])
+
+    # Consultar usando os filtros acumulados
+    hotels = Hotel.objects.filter(filters).distinct().annotate(min_price=Min('room__base_price'))
+
+    # Debugging
+    print("Query ORM:", hotels.query)
+
+    for hotel in hotels:
+        num_rev = get_number_of_reviews(hotel.id)
+        file = get_cover_image(hotel.id)
+
+        if file is not None:
+            # Convert the GridFS file ID to a string
+            file.id_str = str(file._id)
+            hotel.cover_picture = file
+        else:
+            hotel.cover_picture = None
+        hotel.num_reviews = num_rev
+
+    return render(request, 'hotel_management/search_hotel.html', {
+        'hotels': hotels,
+        'city': city,
+    })
+    
+def all_hotels(request):
+    hotels = Hotel.objects.all()
+    for hotel in hotels:
+        file = get_cover_image(hotel.id)
+        if file is not None:
+            # Convert the GridFS file ID to a string
+            file.id_str = str(file._id)
+            hotel.cover_picture = file
+        else:
+            hotel.cover_picture = None
+
+    return render(request, 'hotel_management/all_hotels.html', {
+        'hotels': hotels,
+    })
+
 def search_rooms(request):
     print("Query Params:", request.GET)
 
