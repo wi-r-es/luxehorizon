@@ -41,3 +41,12 @@ docker-compose build --no-cache
 docker-compose up --force-recreate
 
 
+
+<!-- db.createUser({
+   user: "userName",
+   pwd: "password",
+   roles: [
+      { role: "userAdminAnyDatabase", db: "admin" },
+      { role: "readWriteAnyDatabase", db: "admin" }
+   ]
+}); -->
