@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 from .forms import RegisterForm, CustomLoginForm
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
-from .models import User, Client, Employee, AccPermission, UserPasswordsDictionary
+from .models import User, AccPermission, UserPasswordsDictionary
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import User
 from django.db.models import Q, Count, Sum, OuterRef, Subquery

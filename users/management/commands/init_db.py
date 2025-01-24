@@ -1,7 +1,7 @@
 # users/management/commands/init_db.py
 from django.core.management.base import BaseCommand
 from django.db import connection
-from users.models import Employee, Client, AccPermission
+from users.models import AccPermission
 
 class Command(BaseCommand):
     help = 'Initialize database with required data'

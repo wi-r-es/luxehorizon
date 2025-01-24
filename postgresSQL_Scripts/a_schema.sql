@@ -229,15 +229,6 @@ CREATE TABLE IF NOT EXISTS "hr.users"(
 -- FOR VALUES IN ('F');
 
 
-CREATE TABLE IF NOT EXISTS "hr.u_client" (
-    CHECK (utp = 'C')
-) INHERITS ("hr.users");
-CREATE TABLE IF NOT EXISTS "hr.u_employee" (
-    role_id             INT         NOT NULL        REFERENCES "sec.acc_permissions"(ID),
-    SOCIAL_SECURITY     INT         NOT NULL,
-    CHECK (utp = 'F')
-) INHERITS ("hr.users");
-
 
 
 
