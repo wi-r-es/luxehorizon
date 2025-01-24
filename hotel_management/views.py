@@ -101,7 +101,7 @@ def hotel_form(request, hotel_id=None):
     return render(request, 'hotel_management/hotel_form.html', {
         'form': form,
         'heading': heading, 
-        'files': files
+        'files': files if hotel_id else []
     })
 
 def edit_hotel(request, hotel_id):
