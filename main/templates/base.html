@@ -28,6 +28,17 @@
         .line-chart {
             height: 400px;
         }
+        .sidebar {
+        height: 100vh; /* Garante que o menu lateral ocupe a altura total da janela */
+        position: fixed; /* Fixa o menu lateral para rolar com a página */
+        top: 0;
+        left: 0;
+        overflow-y: auto; /* Permite rolagem caso o conteúdo ultrapasse o tamanho da tela */
+        }
+
+        .main-content {
+            margin-left: 16.67%; /* Ajusta a margem para evitar sobreposição com o menu lateral */
+        }
     </style>
 
 </head>
