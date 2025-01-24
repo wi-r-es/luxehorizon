@@ -85,10 +85,10 @@ def hotel_form(request, hotel_id=None):
                 if uploaded_file:
                     fileup = upload_file_with_metadata(uploaded_file, uploaded_file.name, hotel_id)
                     if not fileup:
-                        messages.error(request, "Erro ao fazer upload do arquivo.")
+                        sweetify.error(request, title='Error', text='Erro ao fazer upload do arquivo.', persistent='Ok')
                         return redirect('hotel_list')
 
-                messages.success(request, "Hotel added successfully!")
+                sweetify.success(request, title='Success', text='Hotel adicionado com sucesso!', persistent='Ok')
                 return redirect('hotel_list')
 
             except Exception as e:
@@ -101,7 +101,7 @@ def hotel_form(request, hotel_id=None):
     return render(request, 'hotel_management/hotel_form.html', {
         'form': form,
         'heading': heading, 
-        'files': files
+        'files': files if hotel_id else []
     })
 
 def edit_hotel(request, hotel_id):
