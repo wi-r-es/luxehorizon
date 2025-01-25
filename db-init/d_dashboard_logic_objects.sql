@@ -1,6 +1,6 @@
 -- FUNCTION TO GET OVERVIEW SECTION IN DASHBOARD
 CREATE OR REPLACE FUNCTION get_overview() --works
-RETURNS TABLE(total_revenue NUMERIC, expected_guests BIGINT, expected_clients BIGINT) AS $$
+RETURNS TABLE(total_revenue NUMERIC, expected_guests BIGINT) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
