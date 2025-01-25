@@ -148,7 +148,12 @@ def reservation_details(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id)
     payment_methods = PaymentMethod.objects.all()   
     nights = (reservation.end_date - reservation.begin_date).days
-    return render(request, 'reservations/payment.html', {'reservation': reservation, 'payment_methods': payment_methods, 'nights': nights})
+    with connection.cursor() as cursor:
+            cursor.execute("""SELECT COUNT(g.id) FROM "reserves.reservation" r
+                            LEFT JOIN "reserves.guest" g ON r.id = g.reservation_id WHERE r.id = %s;""", [reservation_id])
+            total_guests = cursor.fetchone()[0] or 0
+            
+    return render(request, 'reservations/payment.html', {'reservation': reservation, 'payment_methods': payment_methods, 'nights': nights, 'total_guests': total_guests})
 
 def check_in(request, reservation_id):
     try:        
