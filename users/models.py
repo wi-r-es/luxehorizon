@@ -73,6 +73,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "hr.users" 
+        indexes = [
+            models.Index(fields=['utp', 'role'], name='idx_user_type_role'),
+            models.Index(fields=['email', 'is_active'], name='idx_user_email_active'),
+            models.Index(fields=['last_name', 'first_name'], name='idx_user_name')
+        ]
 
     def __str__(self):
         return self.email
@@ -98,6 +103,10 @@ class UserPasswordsDictionary(models.Model):
 
     class Meta:
         db_table = "sec.user_passwords_dictionary"
+        indexes = [
+            models.Index(fields=['user', 'valid_from', 'valid_to'], name='idx_pwd_user_dates'),
+            models.Index(fields=['valid_to', 'user'], name='idx_pwd_validto_user')
+        ]
 
     def __str__(self):
         return f"Password history for {self.user.email}: {self.hashed_password}"

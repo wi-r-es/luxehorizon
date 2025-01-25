@@ -30,6 +30,12 @@ class Invoice(models.Model):
                 name="ck_invoice_status",
             ),
         ]
+        indexes = [
+            models.Index(fields=['emission_date', 'billing_date'], name='idx_invoice_dates'),
+            models.Index(fields=['invoice_status', 'payment_method'], name='idx_invoice_status_method'),
+            models.Index(fields=['client', 'emission_date'], name='idx_invoice_client_date'),
+            models.Index(fields=['reservation', 'invoice_status'], name='idx_invoice_res_status')
+        ]
 
     def __str__(self):
         return f"Invoice {self.id} - {self.client}"
@@ -57,6 +63,10 @@ class Payment(models.Model):
                 check=models.Q(payment_amount__gt=0),
                 name='ck_payment_amount_positive',
             ),
+        ]
+        indexes = [
+            models.Index(fields=['payment_date', 'payment_method'], name='idx_payment_date_method'),
+            models.Index(fields=['invoice', 'payment_date'], name='idx_payment_invoice_date')
         ]
 
     def __str__(self):

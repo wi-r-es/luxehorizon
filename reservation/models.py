@@ -75,6 +75,11 @@ class Reservation(models.Model):
 
     class Meta:
         db_table = 'reserves.reservation'
+        indexes = [
+            models.Index(fields=['begin_date', 'end_date'], name='idx_reservation_dates'),
+            models.Index(fields=['status', 'client'], name='idx_reservation_status_client'),
+            models.Index(fields=['season', 'status'], name='idx_reservation_season_status')
+        ]
 
     def __str__(self):
         return f"Reservation {self.id} for {self.client} ({self.get_status_display()})"
@@ -88,6 +93,9 @@ class RoomReservation(models.Model):
     class Meta:
         db_table = 'reserves.room_reservation'
         unique_together = ('reservation', 'room')
+        indexes = [
+            models.Index(fields=['room', 'reservation'], name='idx_roomres_room_res')
+        ]
 
     def __str__(self):
         return f"Room {self.room.id} in Reservation {self.reservation.id}"
@@ -103,6 +111,10 @@ class Guest(models.Model):
 
     class Meta:
         db_table = 'reserves.guest'
+        indexes = [
+            models.Index(fields=['reservation', 'cc_pass'], name='idx_guest_res_cc'),
+            models.Index(fields=['full_name'], name='idx_guest_name')
+        ]
 
     def __str__(self):
         return f"Guest {self.full_name} for Reservation {self.reservation.id}"
