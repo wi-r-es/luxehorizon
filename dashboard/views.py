@@ -22,7 +22,6 @@ class AdminEmployeeDashboardView(LoginRequiredMixin, TemplateView):
         # Handle None values
         total_revenue = overview.get('total_revenue') or 0
         expected_guests = overview.get('expected_guests') or 0
-        expected_clients = overview.get('expected_clients') or 0
 
         # Transform the data into the required format
         sales_data = [
@@ -36,7 +35,7 @@ class AdminEmployeeDashboardView(LoginRequiredMixin, TemplateView):
 
         context = {
             "total_revenue": f"{total_revenue:,.2f} €",
-            "expected_guests": f"{expected_guests + expected_clients:,}",
+            "expected_guests": f"{expected_guests:,}",
             "top_placements": top_placements,
             "sales_over_time": sales_data,
         }
