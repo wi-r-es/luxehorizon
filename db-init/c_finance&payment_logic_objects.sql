@@ -63,12 +63,12 @@ $$;
                                                                                                                                                                                                                                                                         
 */
 CREATE OR REPLACE PROCEDURE sp_add_payment( --TESTED
-    _invoice_id INT,
-    _payment_amount NUMERIC(10, 2),
-    _payment_method_id INT
+    IN _invoice_id integer, 
+    IN _payment_amount numeric, 
+    IN _payment_method_id integer
 )
 LANGUAGE plpgsql
-AS $$
+AS $procedure$
 DECLARE
     _final_value NUMERIC(10, 2);
     _current_paid NUMERIC(10, 2);
@@ -77,6 +77,7 @@ DECLARE
     content TEXT;
     hint TEXT;
 BEGIN
+    -- Retrieve the invoice details and current paid amount
     SELECT final_value, COALESCE(SUM(p.payment_amount), 0)
     INTO _final_value, _current_paid
     FROM "finance.invoice" i
@@ -87,7 +88,9 @@ BEGIN
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Invoice id % does not exist.', _invoice_id;
     END IF;
+
     BEGIN
+        -- Insert the payment record
         INSERT INTO "finance.payments" (
             invoice_id, payment_amount, payment_date, payment_method_id
         ) VALUES (
@@ -95,10 +98,10 @@ BEGIN
         )
         RETURNING id INTO _payment_id;
 
-        -- Update the INVOICE table if fully paid. 
+        -- Update the INVOICE table if fully paid
         IF _current_paid + _payment_amount >= _final_value THEN
             UPDATE "finance.invoice"
-            SET payment_method_id = _payment_id,
+            SET payment_method_id = _payment_method_id, 
                 billing_date = CURRENT_TIMESTAMP,
                 invoice_status = TRUE
             WHERE id = _invoice_id;
@@ -109,15 +112,16 @@ BEGIN
                 _invoice_id, _final_value - (_current_paid + _payment_amount);
         END IF;
     EXCEPTION WHEN OTHERS THEN
+        -- Log the error details
         GET STACKED DIAGNOSTICS msg = MESSAGE_TEXT,
                                 content = PG_EXCEPTION_DETAIL,
                                 hint = PG_EXCEPTION_HINT;
-        CALL sp_secLogError(msg, hint, content );
+        CALL sp_secLogError(msg, hint, content);
 
         RAISE NOTICE E'--- Call content ---\n%', content;
-    END;    
+    END;
 END;
-$$;
+$procedure$;
 
 
 /*
