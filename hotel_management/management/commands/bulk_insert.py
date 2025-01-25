@@ -129,7 +129,7 @@ class Command(BaseCommand):
                 try:
                     cursor.execute(f"""
                         SELECT id FROM "hr.users"
-                        WHERE email = '{email}';
+                        WHERE email = 'manager{i}@{hotel_name.lower().replace(" ", "")}.com';
                     """)
                     new_user_id = cursor.fetchone()[0]
                     new_user = User.objects.get(id=new_user_id)
