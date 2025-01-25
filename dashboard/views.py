@@ -2,7 +2,11 @@ from django.db import connection
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+from utils.decorators import role_required
 
+@method_decorator(role_required([1, 2]), name='dispatch')
 class AdminEmployeeDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/dashboard.html'
 
@@ -42,5 +46,7 @@ class AdminEmployeeDashboardView(LoginRequiredMixin, TemplateView):
 
         return render(request, self.template_name, context)
 
+@login_required
+@role_required([1,2,3]) 
 def employee_dashboard(request):
     return render(request, 'dashboard/employee_dash.html')
