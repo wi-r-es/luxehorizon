@@ -90,20 +90,35 @@ class Command(BaseCommand):
             
             # Add Hotels
             for name, address, postal_code, city, stars in hotels:
-                safe_execute(cursor, f"""
-                    CALL sp_add_hotel(
-                        '{name}',
-                        '{address}',
-                        '{postal_code}',
-                        '{city}',
-                        'info@{name.lower().replace(" ", "")}.com',
-                        '123456789',
-                        'Description for {name}',
-                        {stars}
-                    );
-                    """,
-                    success_message=f"Hotel {name} added.",
-                    error_message=f"Error adding hotel {name}")
+                # Check if the hotel already exists
+                cursor.execute("""
+                    SELECT 1
+                    FROM "management.hotel"
+                    WHERE h_name = %s
+                """, [name])
+                
+                if cursor.fetchone():
+                    self.stdout.write(f"Hotel {name} already exists. Skipping.")
+                else:
+                    # Add the hotel if it does not exist
+                    safe_execute(
+                        cursor,
+                        f"""
+                        CALL sp_add_hotel(
+                            '{name}',
+                            '{address}',
+                            '{postal_code}',
+                            '{city}',
+                            'info@{name.lower().replace(" ", "")}.com',
+                            '123456789',
+                            'Description for {name}',
+                            {stars}
+                        );
+                        """,
+                        success_message=f"Hotel {name} added.",
+                        error_message=f"Error adding hotel {name}"
+                    )
+
                 #self.stdout.write(f"Hotel---> {name} added .")
             ## MANAGERS
             hashed_password = hash_password('admin')
