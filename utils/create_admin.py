@@ -1,4 +1,5 @@
 from utils.funcs import hash_password, safe_execute
+from django.utils.timezone import now
 
 def create_super_admin(cursor, self):
     hashed_password = hash_password('root')
@@ -26,7 +27,7 @@ def create_super_admin(cursor, self):
         WHERE email = 'god@luxehorizon.com';
     """)
     new_user_id = cursor.fetchone()[0]
-                
+               
     # Update the Role to Manager Level
     safe_execute(
                     cursor,
@@ -34,5 +35,14 @@ def create_super_admin(cursor, self):
                     success_message=f"Role updated for Super admin.",
                     error_message=f"Error updating role for Super admin"
                 )
+
+    safe_execute(
+                    cursor,
+                    f"""UPDATE "hr.users" 
+                    SET last_login = CURRENT_TIMESTAMP
+                    WHERE id = {new_user_id};""",
+                    success_message=f"Role updated for Super admin.",
+                    error_message=f"Error updating role for Super admin"
+                    )
                 
     self.stdout.write(f"General Admin for luxehorizon chain hotels added with user ID {new_user_id}.")
