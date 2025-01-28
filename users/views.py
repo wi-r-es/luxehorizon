@@ -22,6 +22,7 @@ from hotel_management.models import HotelEmployees, Hotel
 import sweetify
 from utils.funcs import hash_password
 from django.utils.timezone import now
+from django.core.paginator import Paginator
 
 # Configura o logger para o módulo atual
 logger = logging.getLogger(__name__)
@@ -346,40 +347,53 @@ def update_profile(request):
 
 def users_list(request):
     query = request.GET.get('q', '')
-    sort = request.GET.get('sort', 'first_name')  
-    order = request.GET.get('order', 'asc')  
+    sort = request.GET.get('sort', 'first_name')
+    order = request.GET.get('order', 'asc')
 
     # Campo de ordenação e ordem
     sort_field = sort if order == 'asc' else f'-{sort}'
 
-    # Obter o perm_level do usuário atual
+    # Obter perm_level e hotel do usuário atual
     user_perm_level = request.user.role.perm_level
+    current_user_hotel = HotelEmployees.objects.filter(employee_id=request.user.id).values_list('hotel_id', flat=True).first()
 
     # Filtrar usuários com base no perm_level
     if user_perm_level == 1:  # Administrador
         users = User.objects.filter(
             Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query)
         ).order_by(sort_field) if query else User.objects.all().order_by(sort_field)
+
     elif user_perm_level == 2:  # Manager
-        # Exibir apenas usuários com permissão de "Employee" ou "None"
+        employee_filter = Q(hotelemployees__hotel_id=current_user_hotel) if current_user_hotel else Q()
         users = User.objects.filter(
-            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query),
-            role__perm_description__in=["Employee", "None"]
-        ).order_by(sort_field) if query else User.objects.filter(role__perm_description__in=["Employee", "None"]).order_by(sort_field)
+            (employee_filter & Q(role__perm_description="Employee")) |
+            Q(role__perm_description="None"),
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query)
+        ).distinct().order_by(sort_field) if query else User.objects.filter(
+            (employee_filter & Q(role__perm_description="Employee")) |
+            Q(role__perm_description="None")
+        ).distinct().order_by(sort_field)
+
     elif user_perm_level == 3:  # Employee
-        # Exibir apenas usuários com permissão de "None"
         users = User.objects.filter(
             Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(email__icontains=query),
             role__perm_description="None"
         ).order_by(sort_field) if query else User.objects.filter(role__perm_description="None").order_by(sort_field)
+
     else:
-        users = User.objects.none()  # Nenhum usuário se o perm_level não for reconhecido
+        users = User.objects.none()
+
+    # Aplicar paginação (10 usuários por página)
+    paginator = Paginator(users, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(request, 'users/users_list.html', {
-        'users': users,
+        'users': page_obj,
         'query': query,
         'sort': sort,
         'order': order,
+        'page_obj': page_obj
     })
 
 def users_form(request, user_id=None):

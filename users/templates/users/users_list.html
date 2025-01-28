@@ -85,5 +85,32 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Paginação -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if users.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&sort={{ sort }}&order={{ order }}&page=1">&laquo; Primeira</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&sort={{ sort }}&order={{ order }}&page={{ users.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ users.number }} de {{ users.paginator.num_pages }}</span>
+            </li>
+
+            {% if users.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&sort={{ sort }}&order={{ order }}&page={{ users.next_page_number }}">Próxima</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&sort={{ sort }}&order={{ order }}&page={{ users.paginator.num_pages }}">Última &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}
