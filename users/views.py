@@ -21,6 +21,7 @@ from .models import AccPermission
 from hotel_management.models import HotelEmployees, Hotel
 import sweetify
 from utils.funcs import hash_password
+from django.utils.timezone import now
 
 # Configura o logger para o módulo atual
 logger = logging.getLogger(__name__)
@@ -68,6 +69,8 @@ def register_user(request, user_id=None):
                 address = form.cleaned_data.get('full_address', '')
                 postal_code = form.cleaned_data.get('postal_code', '')
                 city = form.cleaned_data.get('city', '')
+                last_login = now()
+                print("last_login", last_login)
 
                 if operation == "adicionar":
                     password = form.cleaned_data['password']
@@ -83,6 +86,19 @@ def register_user(request, user_id=None):
                             first_name, last_name, email, hashed_password, nif, phone, 
                             address, postal_code, city, 'C', None, True, False, False
                         ])
+
+                    # Obter o ID do usuário criado
+                        cursor.execute("""SELECT id FROM "hr.users" WHERE email = %s""", [email])
+                        user_id = cursor.fetchone()
+                        if user_id:
+                            user_id = user_id[0]
+
+                            # Atualizar o last_login do usuário
+                            cursor.execute("""
+                                UPDATE "hr.users" 
+                                SET last_login = %s 
+                                WHERE id = %s
+                            """, [last_login, user_id])
 
                 else:
                     # Atualizar utilizador existente
