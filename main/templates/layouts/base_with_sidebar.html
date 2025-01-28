@@ -10,18 +10,42 @@
           <h4 class="sidebar-heading text-center py-3">Painel de Funcionário</h4>
           <ul class="nav flex-column">
             <li class="nav-item">
-              <a class="nav-link text-light" href="{% url 'list_reservations_employee'%}">
+              <a class="nav-link text-light" href="{% url 'list_reservations_employee' %}">
                 <i class="bi bi-building-fill"></i> Reservas
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-light" href="{% url 'users_list' %}">
-                <i class="bi bi-building-fill"></i> Clientes
+                <i class="bi bi-person-circle"></i> Clientes
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-light" href="{% url 'all_room_list' %}"> 
-                <i class="bi bi-building-fill"></i> Quartos
+                <i class="bi bi-door-open-fill"></i> Quartos
+              </a>
+            </li>
+          </ul>
+        {% elif user.role.perm_level == 2 %}
+          <h4 class="sidebar-heading text-center py-3">Painel de Gestor</h4>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'hotel_list' %}">
+                <i class="bi bi-building-fill"></i> Hotéis
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'users_list' %}">
+                <i class="bi bi-person-circle "></i> Utilizadores
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'seasons_list' %}">
+                <i class="bi bi-calendar-event"></i> Estações e Taxas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="{% url 'commodities_list' %}">
+                <i class="bi bi-door-open-fill"></i> Comodidades
               </a>
             </li>
           </ul>
@@ -40,17 +64,17 @@
             </li>
             <li class="nav-item">
               <a class="nav-link text-light" href="{% url 'users_list' %}">
-                <i class="bi bi-building-fill"></i> Utilizadores
+                <i class="bi bi-person-circle"></i> Utilizadores
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-light" href="{% url 'seasons_list' %}">
-                <i class="bi bi-building-fill"></i> Estações e Taxas
+                <i class="bi bi-calendar-event"></i> Estações e Taxas
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-light" href="{% url 'commodities_list' %}">
-                <i class="bi bi-building-fill"></i> Comodidades
+                <i class="bi bi-door-open-fill"></i> Comodidades
               </a>
             </li>
           </ul>

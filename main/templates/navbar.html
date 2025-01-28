@@ -37,9 +37,14 @@
                                 <i class="bi bi-journal-text mr-2"></i> Minhas Reservas
                             </a>
                         {% endif %}
-                        {% if request.user.role.perm_level == 2 or request.user.role.perm_level == 1%}
+                        {% if request.user.role.perm_level == 1%}
                             <a class="dropdown-item d-flex align-items-center" href="{% url 'admin_dashboard' %}">
                                 <i class="bi bi-speedometer2 mr-2"></i> Painel de Controlo
+                            </a>
+                        {% endif %}
+                        {% if request.user.role.perm_level == 2 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'hotel_list' %}">
+                                <i class="bi bi-speedometer2 mr-2"></i> Painel de Gestor
                             </a>
                         {% endif %}
                         {% if request.user.role.perm_level == 3 %}
